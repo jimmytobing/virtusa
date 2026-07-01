@@ -1,4 +1,4 @@
-public with sharing class GrantApplicationRepository {
+public without sharing class GrantApplicationRepository {
 
     public static Id save(
         Grant_Application__c application

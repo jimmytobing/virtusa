@@ -5,6 +5,7 @@
         <members>ContactMatchingService</members>
         <members>ContactTriggerHandler</members>
         <members>GrantApplicationController</members>
+        <members>GrantApplicationRepository</members>
         <members>GrantApplicationService</members>
         <members>GrantDTO</members>
         <members>GrantDisbursementService</members>
