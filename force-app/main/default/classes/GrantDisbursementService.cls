@@ -43,8 +43,7 @@ public with sharing class GrantDisbursementService {
             if (
                 contactRecord.Id == null ||
                 String.isBlank(contactRecord.Support_Option__c) ||
-                contactRecord.Monthly_Income__c == null ||
-                contactRecord.Monthly_Income__c >= 2000
+                contactRecord.Monthly_Income__c == null
             ) {
                 continue;
             }

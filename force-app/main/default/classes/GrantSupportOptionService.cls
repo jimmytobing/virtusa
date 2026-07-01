@@ -38,10 +38,7 @@ public with sharing class GrantSupportOptionService {
                 Active__c,
                 Sort_Order__c
             FROM Grant_Support_Option__mdt
-            WHERE (
-                DeveloperName = :developerName
-                OR MasterLabel = :developerName
-            )
+            WHERE DeveloperName = :developerName
             AND Active__c = TRUE
             LIMIT 1
         ];

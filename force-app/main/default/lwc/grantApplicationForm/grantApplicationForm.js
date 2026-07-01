@@ -10,17 +10,11 @@ import { ShowToastEvent }
     from 'lightning/platformShowToastEvent';
 
 export default class GrantApplicationForm extends LightningElement {
-
     firstName;
-
     lastName;
-
     phone;
-
     mailingPostalCode;
-
     monthlyIncome;
-
     supportOption;
 
     @track
@@ -125,12 +119,43 @@ export default class GrantApplicationForm extends LightningElement {
 
     getErrorMessage(error) {
 
+        if (!error) {
+            return 'Unexpected error(null).';
+        }
+
+        if (typeof error === 'string') {
+            return error;
+        }
+
         if (error && error.body && error.body.message) {
             return error.body.message;
         }
 
         if (error && Array.isArray(error.body)) {
             return error.body.map((item) => item.message).join(', ');
+        }
+
+        if (error.body && error.body.pageErrors) {
+            return error.body.pageErrors
+                .map((item) => item.message)
+                .join(', ');
+        }
+
+        if (error.body && error.body.fieldErrors) {
+            return Object.values(error.body.fieldErrors)
+                .reduce((messages, fieldMessages) => (
+                    messages.concat(fieldMessages)
+                ), [])
+                .map((item) => item.message)
+                .join(', ');
+        }
+
+        if (error.body && typeof error.body === 'string') {
+            return error.body;
+        }
+
+        if (error.message) {
+            return error.message;
         }
 
         return 'Unexpected error.';

@@ -6,7 +6,11 @@ public with sharing class GrantApplicationController {
         System.debug('===== CONTROLLER =====');
         System.debug(JSON.serializePretty(request));
 
-        return GrantApplicationService.submitApplication(request);
+        try {
+            return GrantApplicationService.submitApplication(request);
+        } catch (Exception exceptionRecord) {
+            throw new AuraHandledException(exceptionRecord.getMessage());
+        }
     }
 
     @AuraEnabled(cacheable=true)

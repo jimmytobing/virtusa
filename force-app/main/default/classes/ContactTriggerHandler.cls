@@ -60,11 +60,6 @@ public with sharing class ContactTriggerHandler {
                 );
             }
 
-            if (record.Monthly_Income__c != null && record.Monthly_Income__c >= 2000) {
-                record.addError(
-                    'Eligibility check failed. Monthly Income must be less than SGD 2000.'
-                );
-            }
         }
     }
 

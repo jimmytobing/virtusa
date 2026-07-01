@@ -21,12 +21,6 @@ public with sharing class GrantApplicationService {
 
         Contact applicant = upsertApplicant(request);
 
-        if (request.monthlyIncome >= 2000) {
-            throw new GrantException(
-                'Eligibility check failed. Monthly Income must be less than SGD 2000.'
-            );
-        }
-
         Grant_Application__c application = new Grant_Application__c();
 
         application.Applicant__c = applicant.Id;
@@ -34,8 +28,6 @@ public with sharing class GrantApplicationService {
         application.Requested_Amount__c =
             supportOption.Monthly_Amount__c
             * supportOption.Duration_Months__c;
-        application.Approved_Amount__c = application.Requested_Amount__c;
-        application.Eligibility_Score__c = 100;
         application.Reason__c = request.reason;
         application.Status__c = GrantConstants.STATUS_PENDING;
         application.Application_Date__c = Date.today();
