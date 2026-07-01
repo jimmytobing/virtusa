@@ -23,7 +23,10 @@ public with sharing class GrantApplicationService {
 
         Grant_Application__c application = new Grant_Application__c();
 
-        application.Applicant__c = applicant.Id;
+        if (!isGuestUser()) {
+            application.Applicant__c = applicant.Id;
+        }
+
         application.Grant_Type__c = supportOption.MasterLabel;
         application.Requested_Amount__c =
             supportOption.Monthly_Amount__c
@@ -35,11 +38,24 @@ public with sharing class GrantApplicationService {
 
         Id applicationId = GrantApplicationRepository.save(application);
 
+        if (isGuestUser()) {
+            System.enqueueJob(
+                new GrantApplicationApplicantLinkJob(
+                    applicationId,
+                    applicant.Id
+                )
+            );
+        }
+
         return applicationId;
     }
 
     private static Contact upsertApplicant(GrantDTO request) {
         return ContactMatchingService.upsertApplicantByPhone(request);
+    }
+
+    private static Boolean isGuestUser() {
+        return UserInfo.getUserType() == 'Guest';
     }
 
     public static void validateApplicantRequest(GrantDTO request) {

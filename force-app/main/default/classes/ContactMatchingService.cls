@@ -45,7 +45,8 @@ public without sharing class ContactMatchingService {
         if (
             applicant == null ||
             applicant.AccountId == null ||
-            UserInfo.getUserType() == 'Standard'
+            UserInfo.getUserType() == 'Standard' ||
+            UserInfo.getUserType() == 'Guest'
         ) {
             return;
         }
@@ -142,6 +143,19 @@ public without sharing class ContactMatchingService {
             users[0].Contact.Account.OwnerId != null
         ) {
             return users[0].Contact.Account.OwnerId;
+        }
+
+        List<User> internalUsers = [
+            SELECT Id
+            FROM User
+            WHERE IsActive = TRUE
+            AND UserType = 'Standard'
+            ORDER BY CreatedDate, Id
+            LIMIT 1
+        ];
+
+        if (!internalUsers.isEmpty()) {
+            return internalUsers[0].Id;
         }
 
         return UserInfo.getUserId();
