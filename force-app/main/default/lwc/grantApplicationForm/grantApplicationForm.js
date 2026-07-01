@@ -1,7 +1,10 @@
-import { LightningElement, track } from 'lwc';
+import { LightningElement, track, wire } from 'lwc';
 
 import submitApplication
     from '@salesforce/apex/GrantApplicationController.submitApplication';
+
+import getActiveGrantTypes
+    from '@salesforce/apex/GrantApplicationController.getActiveGrantTypes';
 
 import { ShowToastEvent }
     from 'lightning/platformShowToastEvent';
@@ -19,19 +22,26 @@ export default class GrantApplicationForm extends LightningElement {
     @track
     loading = false;
 
-    grantTypeOptions = [
+    grantTypeOptions = [];
 
-        {
-            label: 'Education Grant',
-            value: 'Education Grant'
-        },
+    @wire(getActiveGrantTypes)
+    wiredGrantTypes({ data, error }) {
 
-        {
-            label: 'Healthcare Grant',
-            value: 'Healthcare Grant'
+        if (data) {
+            this.grantTypeOptions = data.map((grantType) => ({
+                label: grantType,
+                value: grantType
+            }));
+        } else if (error) {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title : 'Error',
+                    message : this.getErrorMessage(error),
+                    variant : 'error'
+                })
+            );
         }
-
-    ];
+    }
 
     handleApplicantChange(event){
 
@@ -113,7 +123,7 @@ export default class GrantApplicationForm extends LightningElement {
                     title : 'Error',
 
                     message :
-                        error.body.message,
+                        this.getErrorMessage(error),
 
                     variant : 'error'
 
@@ -129,6 +139,19 @@ export default class GrantApplicationForm extends LightningElement {
 
         }
 
+    }
+
+    getErrorMessage(error) {
+
+        if (error && error.body && error.body.message) {
+            return error.body.message;
+        }
+
+        if (error && Array.isArray(error.body)) {
+            return error.body.map((item) => item.message).join(', ');
+        }
+
+        return 'Unexpected error.';
     }
 
 }

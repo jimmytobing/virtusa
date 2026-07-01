@@ -21,4 +21,28 @@ public with sharing class GrantConfigurationService {
 
     }
 
+    public static List<String> getActiveGrantTypes() {
+
+        List<String> grantTypes = new List<String>();
+        Set<String> addedGrantTypes = new Set<String>();
+
+        for (
+            Grant_Configuration__mdt config :
+            GrantConfigurationRepository.getActiveConfigurations()
+        ) {
+
+            if (
+                String.isBlank(config.Grant_Type__c) ||
+                addedGrantTypes.contains(config.Grant_Type__c)
+            ) {
+                continue;
+            }
+
+            grantTypes.add(config.Grant_Type__c);
+            addedGrantTypes.add(config.Grant_Type__c);
+        }
+
+        return grantTypes;
+    }
+
 }

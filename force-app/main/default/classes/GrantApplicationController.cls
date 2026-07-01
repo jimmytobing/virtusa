@@ -9,4 +9,10 @@ public with sharing class GrantApplicationController {
         return GrantApplicationService.submitApplication(request);
     }
 
+    @AuraEnabled(cacheable=true)
+    public static List<String> getActiveGrantTypes() {
+
+        return GrantConfigurationService.getActiveGrantTypes();
+    }
+
 }

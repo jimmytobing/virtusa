@@ -26,4 +26,24 @@ public with sharing class GrantConfigurationRepository {
         System.debug('>>> configs size = ' + configs.size());
         return configs.isEmpty() ? null : configs[0];
     }
+
+    /**
+     * Retrieves all active grant configurations by priority.
+     */
+    public static List<Grant_Configuration__mdt> getActiveConfigurations() {
+
+        return [
+            SELECT
+                Grant_Type__c,
+                Maximum_Amount__c,
+                Income_Threshold__c,
+                Minimum_Age__c,
+                Maximum_Age__c,
+                Priority__c,
+                Active__c
+            FROM Grant_Configuration__mdt
+            WHERE Active__c = TRUE
+            ORDER BY Priority__c
+        ];
+    }
 }
