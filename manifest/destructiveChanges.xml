@@ -5,5 +5,9 @@
         <members>GrantEligibilityService</members>
         <name>ApexClass</name>
     </types>
+    <types>
+        <members>Grant_Disbursement__c.Grant_Applicant__c</members>
+        <name>CustomField</name>
+    </types>
     <version>67.0</version>
 </Package>

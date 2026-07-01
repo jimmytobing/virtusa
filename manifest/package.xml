@@ -27,7 +27,7 @@
         <members>Contact.Support_Option__c</members>
         <members>Grant_Disbursement__c.Amount_to_be_disbursed__c</members>
         <members>Grant_Disbursement__c.Disbursed_Date__c</members>
-        <members>Grant_Disbursement__c.Grant_Applicant__c</members>
+        <members>Grant_Disbursement__c.Grant_Applicantion__c</members>
         <members>Grant_Disbursement__c.Grant_is_disbursed__c</members>
         <members>Grant_Disbursement__c.Sequence_Number__c</members>
         <members>Grant_Disbursement__c.Support_Option__c</members>

@@ -3,23 +3,16 @@ public with sharing class GrantDisbursementService {
     public static Boolean bypassContactTrigger = false;
 
     public static void recalculateDisbursements(
-        Id contactId,
+        Id applicationId,
         Grant_Support_Option__mdt option
     ) {
-        if (contactId == null || option == null) {
+        if (applicationId == null || option == null) {
             return;
         }
 
-        Contact contactRecord = new Contact(
-            Id = contactId,
-            Support_Option__c = option.DeveloperName,
-            Monthly_Income__c = 0
-        );
-
-        recalculateForContacts(
-            new List<Contact>{ contactRecord },
-            new Map<String, Grant_Support_Option__mdt>{
-                option.DeveloperName => option
+        recalculateForApplications(
+            new Map<Id, Grant_Support_Option__mdt>{
+                applicationId => option
             }
         );
     }
@@ -60,29 +53,64 @@ public with sharing class GrantDisbursementService {
             return;
         }
 
-        Map<Id, List<Grant_Disbursement__c>> disbursementsByContactId =
+        Map<Id, Grant_Support_Option__mdt> optionsByApplicationId =
+            new Map<Id, Grant_Support_Option__mdt>();
+
+        for (Grant_Application__c application : [
+            SELECT Id, Applicant__c, Grant_Type__c
+            FROM Grant_Application__c
+            WHERE Applicant__c IN :optionsByContactId.keySet()
+        ]) {
+            Grant_Support_Option__mdt option =
+                optionsByContactId.get(application.Applicant__c);
+
+            if (
+                option != null &&
+                (
+                    application.Grant_Type__c == option.DeveloperName ||
+                    application.Grant_Type__c == option.MasterLabel
+                )
+            ) {
+                optionsByApplicationId.put(application.Id, option);
+            }
+        }
+
+        recalculateForApplications(optionsByApplicationId);
+    }
+
+    private static void recalculateForApplications(
+        Map<Id, Grant_Support_Option__mdt> optionsByApplicationId
+    ) {
+        if (
+            optionsByApplicationId == null ||
+            optionsByApplicationId.isEmpty()
+        ) {
+            return;
+        }
+
+        Map<Id, List<Grant_Disbursement__c>> disbursementsByApplicationId =
             new Map<Id, List<Grant_Disbursement__c>>();
 
         for (Grant_Disbursement__c disbursement : [
             SELECT
                 Id,
-                Grant_Applicant__c,
+                Grant_Applicantion__c,
                 Amount_to_be_disbursed__c,
                 Grant_is_disbursed__c,
                 Disbursed_Date__c
             FROM Grant_Disbursement__c
-            WHERE Grant_Applicant__c IN :optionsByContactId.keySet()
+            WHERE Grant_Applicantion__c IN :optionsByApplicationId.keySet()
             ORDER BY Disbursed_Date__c
         ]) {
-            if (!disbursementsByContactId.containsKey(disbursement.Grant_Applicant__c)) {
-                disbursementsByContactId.put(
-                    disbursement.Grant_Applicant__c,
+            if (!disbursementsByApplicationId.containsKey(disbursement.Grant_Applicantion__c)) {
+                disbursementsByApplicationId.put(
+                    disbursement.Grant_Applicantion__c,
                     new List<Grant_Disbursement__c>()
                 );
             }
 
-            disbursementsByContactId.get(
-                disbursement.Grant_Applicant__c
+            disbursementsByApplicationId.get(
+                disbursement.Grant_Applicantion__c
             ).add(disbursement);
         }
 
@@ -92,12 +120,12 @@ public with sharing class GrantDisbursementService {
             new List<Grant_Disbursement__c>();
         Date today = Date.today();
 
-        for (Id contactId : optionsByContactId.keySet()) {
+        for (Id applicationId : optionsByApplicationId.keySet()) {
             Grant_Support_Option__mdt option =
-                optionsByContactId.get(contactId);
+                optionsByApplicationId.get(applicationId);
             List<Grant_Disbursement__c> existingDisbursements =
-                disbursementsByContactId.containsKey(contactId)
-                    ? disbursementsByContactId.get(contactId)
+                disbursementsByApplicationId.containsKey(applicationId)
+                    ? disbursementsByApplicationId.get(applicationId)
                     : new List<Grant_Disbursement__c>();
 
             Decimal totalReceived = 0;
@@ -144,7 +172,7 @@ public with sharing class GrantDisbursementService {
 
             for (Integer monthNumber = 1; monthNumber <= remainingMonths; monthNumber++) {
                 disbursementsToInsert.add(new Grant_Disbursement__c(
-                    Grant_Applicant__c = contactId,
+                    Grant_Applicantion__c = applicationId,
                     Amount_to_be_disbursed__c = monthlyAmount,
                     Grant_is_disbursed__c = true,
                     Disbursed_Date__c = disbursementDate.addMonths(monthNumber - 1),

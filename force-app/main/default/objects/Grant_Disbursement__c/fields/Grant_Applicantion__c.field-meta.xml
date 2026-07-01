@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Grant_Applicant__c</fullName>
+    <fullName>Grant_Applicantion__c</fullName>
     <deleteConstraint>SetNull</deleteConstraint>
-    <label>Grant Applicant</label>
-    <referenceTo>Contact</referenceTo>
-    <relationshipLabel>Grant Disbursed</relationshipLabel>
-    <relationshipName>Grant_Disbursed</relationshipName>
+    <label>Grant Application</label>
+    <referenceTo>Grant_Application__c</referenceTo>
+    <relationshipLabel>Grant Disbursements</relationshipLabel>
+    <relationshipName>Grant_Disbursements</relationshipName>
     <required>false</required>
     <trackHistory>false</trackHistory>
     <trackTrending>false</trackTrending>
