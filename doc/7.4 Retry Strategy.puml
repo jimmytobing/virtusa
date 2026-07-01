@@ -1,0 +1,35 @@
+@startuml
+
+start
+
+:REST Callout;
+
+if (Successful?) then (Yes)
+
+:Continue Processing;
+
+stop
+
+else
+
+:Log Exception;
+
+if (Retryable?) then (Yes)
+
+:Increment Retry Count;
+
+:Queue Retry Job;
+
+stop
+
+else
+
+:Notify Support Team;
+
+stop
+
+endif
+
+endif
+
+@enduml

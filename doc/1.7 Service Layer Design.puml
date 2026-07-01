@@ -1,0 +1,29 @@
+@startuml
+
+package "Service Layer" {
+
+class ApplicationService
+
+class ContactService
+
+class GrantCalculationService
+
+class CitizenVerificationService
+
+class FileUploadService
+
+class GrantOptionService
+
+}
+
+ApplicationService --> ContactService
+
+ApplicationService --> GrantCalculationService
+
+ApplicationService --> CitizenVerificationService
+
+ApplicationService --> FileUploadService
+
+GrantCalculationService --> GrantOptionService
+
+@enduml

@@ -1,0 +1,13 @@
+@startuml
+
+object Contact
+
+object Application
+
+object Disbursement
+
+Contact "1" --> "*" Application
+
+Application "1" --> "*" Disbursement
+
+@enduml

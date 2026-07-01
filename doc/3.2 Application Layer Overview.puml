@@ -1,0 +1,67 @@
+@startuml
+
+package "Presentation Layer" {
+
+component "Experience Cloud"
+
+component "Lightning Web Components"
+
+}
+
+package "Application Layer" {
+
+component "Record Trigger Flow"
+
+component "Screen Flow"
+
+}
+
+package "Business Services" {
+
+component "Application Service"
+
+component "Eligibility Service"
+
+component "Grant Calculation Service"
+
+component "Verification Service"
+
+component "Notification Service"
+
+component "Bulk Upload Service"
+
+}
+
+package "Persistence Layer" {
+
+component "Trigger Handler"
+
+component "Repository"
+
+}
+
+database "Salesforce Database"
+
+"Experience Cloud" --> "Lightning Web Components"
+
+"Lightning Web Components" --> "Record Trigger Flow"
+
+"Record Trigger Flow" --> "Application Service"
+
+"Application Service" --> "Eligibility Service"
+
+"Application Service" --> "Grant Calculation Service"
+
+"Application Service" --> "Verification Service"
+
+"Application Service" --> "Notification Service"
+
+"Application Service" --> "Bulk Upload Service"
+
+"Grant Calculation Service" --> "Trigger Handler"
+
+"Trigger Handler" --> Repository
+
+Repository --> "Salesforce Database"
+
+@enduml

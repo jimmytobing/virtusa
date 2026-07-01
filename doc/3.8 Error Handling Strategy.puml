@@ -1,0 +1,27 @@
+@startuml
+
+start
+
+:Execute Business Logic;
+
+if (Success?) then (Yes)
+
+:Commit Transaction;
+
+stop
+
+else
+
+:Capture Exception;
+
+:Log Error Record;
+
+:Rollback Transaction;
+
+:Return Friendly Message;
+
+stop
+
+endif
+
+@enduml

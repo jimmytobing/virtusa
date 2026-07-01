@@ -1,0 +1,19 @@
+@startuml
+
+entity Grant_Option__mdt {
+
+OptionName
+
+IncomeThreshold
+
+MonthlyAmount
+
+MaximumMonths
+
+DisplayOrder
+
+Active
+
+}
+
+@enduml

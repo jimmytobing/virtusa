@@ -1,0 +1,55 @@
+@startuml
+
+start
+
+:Citizen accesses Experience Cloud;
+
+:Complete Application Form;
+
+:LWC Validation;
+
+if (Valid?) then (Yes)
+
+:Submit Request;
+
+:Flow Orchestration;
+
+:Verify Citizen;
+
+:Find Existing Contact;
+
+if (Contact Exists?) then (Yes)
+
+:Update Contact;
+
+else
+
+:Create Contact;
+
+endif
+
+:Evaluate Eligibility;
+
+if (Eligible?) then (Yes)
+
+:Generate Grant Schedule;
+
+:Create Grant Disbursement Records;
+
+else
+
+:Reject Application;
+
+endif
+
+:Notify Applicant;
+
+else
+
+:Display Validation Errors;
+
+endif
+
+stop
+
+@enduml

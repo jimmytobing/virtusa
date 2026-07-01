@@ -1,0 +1,83 @@
+@startuml
+
+skinparam componentStyle rectangle
+
+actor Citizen
+
+cloud "Microsoft Azure AD\n(Optional Future SSO)" as AAD
+
+package "Salesforce Experience Cloud" {
+
+    [Experience Site]
+
+    [Lightning Web Components]
+
+}
+
+package "Salesforce Platform" {
+
+    [Flow]
+
+    [Apex Service Layer]
+
+    [Trigger Framework]
+
+    [Custom Metadata]
+
+}
+
+database "Salesforce Data" {
+
+    [Contact]
+
+    [Grant Application]
+
+    [Grant Disbursement]
+
+    [Case]
+
+    [Knowledge]
+
+    [Files]
+
+}
+
+cloud "API Gateway" {
+
+}
+
+cloud "Master Data Management" {
+
+}
+
+Citizen --> [Experience Site]
+
+[Experience Site] --> [Lightning Web Components]
+
+[Lightning Web Components] --> [Flow]
+
+[Flow] --> [Apex Service Layer]
+
+[Apex Service Layer] --> [Trigger Framework]
+
+[Apex Service Layer] --> [Custom Metadata]
+
+[Apex Service Layer] --> [Contact]
+
+[Apex Service Layer] --> [Grant Application]
+
+[Apex Service Layer] --> [Grant Disbursement]
+
+[Apex Service Layer] --> [Case]
+
+[Apex Service Layer] --> [Knowledge]
+
+[Apex Service Layer] --> [Files]
+
+[Apex Service Layer] --> "API Gateway"
+
+"API Gateway" --> "Master Data Management"
+
+AAD --> [Experience Site]
+
+@enduml

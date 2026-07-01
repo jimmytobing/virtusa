@@ -1,0 +1,22 @@
+@startuml
+left to right direction
+
+[*] --> Draft
+
+Draft --> Submitted
+
+Submitted --> Verification
+
+Verification --> Approved
+
+Verification --> Rejected
+
+Approved --> Active
+
+Active --> Completed
+
+Rejected --> Closed
+
+Completed --> Closed
+
+@enduml

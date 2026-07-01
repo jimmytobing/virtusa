@@ -1,0 +1,57 @@
+@startuml
+
+start
+
+:Citizen opens portal;
+
+:Load Grant Options;
+
+:Complete Form;
+
+:LWC Validation;
+
+if (Validation Passed?) then (Yes)
+
+:Submit Application;
+
+:Application Service;
+
+:Find Existing Contact;
+
+if (Contact Exists?) then (Yes)
+
+:Update Contact;
+
+else
+
+:Create Contact;
+
+endif
+
+:Eligibility Evaluation;
+
+if (Eligible?) then (Yes)
+
+:Generate Payment Schedule;
+
+:Create Grant Application;
+
+:Create Grant Disbursement Records;
+
+:Send Confirmation;
+
+else
+
+:Reject Application;
+
+endif
+
+else
+
+:Display Validation Errors;
+
+endif
+
+stop
+
+@enduml

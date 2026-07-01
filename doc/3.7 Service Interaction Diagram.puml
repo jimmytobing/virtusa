@@ -1,0 +1,45 @@
+@startuml
+
+participant Citizen
+
+participant LWC
+
+participant Flow
+
+participant ApplicationService
+
+participant ContactService
+
+participant EligibilityService
+
+participant GrantCalculationService
+
+database Salesforce
+
+Citizen -> LWC : Submit Application
+
+LWC -> Flow : Invoke
+
+Flow -> ApplicationService : Start Processing
+
+ApplicationService -> ContactService : Upsert Contact
+
+ContactService --> ApplicationService
+
+ApplicationService -> EligibilityService : Check Eligibility
+
+EligibilityService --> ApplicationService
+
+ApplicationService -> GrantCalculationService : Generate Schedule
+
+GrantCalculationService --> Salesforce : Save Records
+
+Salesforce --> GrantCalculationService
+
+GrantCalculationService --> ApplicationService
+
+ApplicationService --> Flow
+
+Flow --> Citizen : Success
+
+@enduml

@@ -1,0 +1,73 @@
+@startuml
+
+package "Presentation Layer" {
+
+[Experience Cloud]
+
+[LWC]
+
+}
+
+package "Application Layer" {
+
+[Flow]
+
+}
+
+package "Business Layer" {
+
+[Application Service]
+
+[Grant Service]
+
+[Contact Service]
+
+[Verification Service]
+
+}
+
+package "Persistence Layer" {
+
+[Trigger Framework]
+
+[Salesforce Objects]
+
+}
+
+package "Integration Layer" {
+
+[REST Client]
+
+[Named Credential]
+
+}
+
+package "External Systems" {
+
+[Master Data System]
+
+}
+
+[Experience Cloud] --> [LWC]
+
+[LWC] --> [Flow]
+
+[Flow] --> [Application Service]
+
+[Application Service] --> [Grant Service]
+
+[Application Service] --> [Verification Service]
+
+[Application Service] --> [Contact Service]
+
+[Grant Service] --> [Trigger Framework]
+
+[Trigger Framework] --> [Salesforce Objects]
+
+[Verification Service] --> [REST Client]
+
+[REST Client] --> [Named Credential]
+
+[Named Credential] --> [Master Data System]
+
+@enduml

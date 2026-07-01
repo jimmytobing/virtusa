@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+
+[*] --> Scheduled
+
+Scheduled --> Processing
+
+Processing --> Paid
+
+Processing --> Failed
+
+Failed --> Retry
+
+Retry --> Paid
+
+Paid --> Completed
+
+@enduml

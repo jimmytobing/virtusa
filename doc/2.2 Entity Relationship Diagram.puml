@@ -1,0 +1,47 @@
+@startuml
+
+hide methods
+hide circle
+
+entity Contact {
+    * Id
+    --
+    FirstName
+    LastName
+    Phone
+    Email
+    DateOfBirth
+    PostalCode
+    AnnualIncome
+}
+
+entity Grant_Application {
+    * Id
+    --
+    ApplicationNumber
+    Status
+    RequestedOption
+    SubmissionDate
+    VerificationStatus
+}
+
+entity Grant_Disbursement {
+    * Id
+    --
+    SequenceNo
+    Amount
+    DueDate
+    PaymentStatus
+}
+
+entity ContentDocument {
+    * Id
+}
+
+Contact ||--o{ Grant_Application
+
+Grant_Application ||--o{ Grant_Disbursement
+
+Grant_Application ||--o{ ContentDocument
+
+@enduml
