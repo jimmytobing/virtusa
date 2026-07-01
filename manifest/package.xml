@@ -2,6 +2,7 @@
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
         <members>ContactRepository</members>
+        <members>ContactMatchingService</members>
         <members>ContactTriggerHandler</members>
         <members>GrantApplicationController</members>
         <members>GrantApplicationService</members>
