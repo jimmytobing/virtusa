@@ -1,3 +1,56 @@
 <template>
-    
+
+    <lightning-card title="Grant Application">
+
+        <div class="slds-p-around_medium">
+
+            <template if:true={loading}>
+                <lightning-spinner
+                    alternative-text="Submitting"
+                    size="medium">
+                </lightning-spinner>
+            </template>
+
+            <lightning-record-picker
+                label="Applicant"
+                placeholder="Search Contact..."
+                object-api-name="Contact"
+                value={applicantId}
+                onchange={handleApplicantChange}>
+            </lightning-record-picker>
+
+            <lightning-combobox
+                class="slds-m-top_medium"
+                label="Grant Type"
+                value={grantType}
+                options={grantTypeOptions}
+                onchange={handleGrantTypeChange}>
+            </lightning-combobox>
+
+            <lightning-input
+                class="slds-m-top_medium"
+                type="number"
+                label="Requested Amount"
+                value={requestedAmount}
+                onchange={handleAmountChange}>
+            </lightning-input>
+
+            <lightning-textarea
+                class="slds-m-top_medium"
+                label="Reason"
+                value={reason}
+                onchange={handleReasonChange}>
+            </lightning-textarea>
+
+            <lightning-button
+                class="slds-m-top_large"
+                label="Submit"
+                variant="brand"
+                onclick={submitApplication}>
+            </lightning-button>
+
+        </div>
+
+    </lightning-card>
+
 </template>
