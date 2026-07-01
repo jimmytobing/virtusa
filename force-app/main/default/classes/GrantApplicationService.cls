@@ -35,11 +35,6 @@ public with sharing class GrantApplicationService {
 
         Id applicationId = GrantApplicationRepository.save(application);
 
-        GrantDisbursementService.recalculateDisbursements(
-            applicationId,
-            supportOption
-        );
-
         return applicationId;
     }
 

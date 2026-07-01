@@ -17,6 +17,28 @@ public with sharing class GrantDisbursementService {
         );
     }
 
+    @InvocableMethod(
+        label='Recalculate Grant Disbursements'
+        description='Creates or recalculates Grant Disbursement records for Grant Applications.'
+    )
+    public static void recalculateDisbursementsFromFlow(
+        List<FlowRequest> requests
+    ) {
+        if (requests == null || requests.isEmpty()) {
+            return;
+        }
+
+        Set<Id> applicationIds = new Set<Id>();
+
+        for (FlowRequest request : requests) {
+            if (request != null && request.grantApplicationId != null) {
+                applicationIds.add(request.grantApplicationId);
+            }
+        }
+
+        recalculateForApplicationIds(applicationIds);
+    }
+
     public static void recalculateForContacts(List<Contact> contacts) {
         if (contacts == null || contacts.isEmpty()) {
             return;
@@ -71,6 +93,36 @@ public with sharing class GrantDisbursementService {
                     application.Grant_Type__c == option.MasterLabel
                 )
             ) {
+                optionsByApplicationId.put(application.Id, option);
+            }
+        }
+
+        recalculateForApplications(optionsByApplicationId);
+    }
+
+    private static void recalculateForApplicationIds(Set<Id> applicationIds) {
+        if (applicationIds == null || applicationIds.isEmpty()) {
+            return;
+        }
+
+        Map<String, Grant_Support_Option__mdt> optionsByDeveloperName =
+            getActiveOptionsByDeveloperName();
+        Map<Id, Grant_Support_Option__mdt> optionsByApplicationId =
+            new Map<Id, Grant_Support_Option__mdt>();
+
+        for (Grant_Application__c application : [
+            SELECT Id, Grant_Type__c
+            FROM Grant_Application__c
+            WHERE Id IN :applicationIds
+        ]) {
+            if (String.isBlank(application.Grant_Type__c)) {
+                continue;
+            }
+
+            Grant_Support_Option__mdt option =
+                optionsByDeveloperName.get(application.Grant_Type__c);
+
+            if (option != null) {
                 optionsByApplicationId.put(application.Id, option);
             }
         }
@@ -220,5 +272,14 @@ public with sharing class GrantDisbursementService {
             sourceDate.month(),
             1
         ).addMonths(1);
+    }
+
+    public class FlowRequest {
+        @InvocableVariable(
+            label='Grant Application Id'
+            description='The Grant Application record to create or recalculate disbursements for.'
+            required=true
+        )
+        public Id grantApplicationId;
     }
 }
