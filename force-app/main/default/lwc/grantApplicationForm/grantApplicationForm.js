@@ -3,34 +3,38 @@ import { LightningElement, track, wire } from 'lwc';
 import submitApplication
     from '@salesforce/apex/GrantApplicationController.submitApplication';
 
-import getActiveGrantTypes
-    from '@salesforce/apex/GrantApplicationController.getActiveGrantTypes';
+import getActiveSupportOptions
+    from '@salesforce/apex/GrantApplicationController.getActiveSupportOptions';
 
 import { ShowToastEvent }
     from 'lightning/platformShowToastEvent';
 
 export default class GrantApplicationForm extends LightningElement {
 
-    applicantId;
+    firstName;
 
-    grantType;
+    lastName;
 
-    requestedAmount;
+    phone;
 
-    reason;
+    mailingPostalCode;
+
+    monthlyIncome;
+
+    supportOption;
 
     @track
     loading = false;
 
-    grantTypeOptions = [];
+    supportOptionOptions = [];
 
-    @wire(getActiveGrantTypes)
-    wiredGrantTypes({ data, error }) {
-
+    @wire(getActiveSupportOptions)
+    wiredSupportOptions({ data, error }) {
         if (data) {
-            this.grantTypeOptions = data.map((grantType) => ({
-                label: grantType,
-                value: grantType
+            this.supportOptionOptions = data.map((option) => ({
+                label:
+                    `${option.label} - SGD ${option.monthlyAmount} per month for ${option.durationMonths} months`,
+                value: option.value
             }));
         } else if (error) {
             this.dispatchEvent(
@@ -43,31 +47,16 @@ export default class GrantApplicationForm extends LightningElement {
         }
     }
 
-    handleApplicantChange(event){
-
-        this.applicantId = event.detail.recordId;
-
-    }
-
-    handleGrantTypeChange(event){
-
-        this.grantType = event.detail.value;
-
-    }
-
-    handleAmountChange(event){
-
-        this.requestedAmount = Number(event.detail.value);
-
-    }
-
-    handleReasonChange(event){
-
-        this.reason = event.detail.value;
-
+    handleInputChange(event) {
+        const { name, value } = event.target;
+        this[name] = name === 'monthlyIncome' ? Number(value) : value;
     }
 
     async submitApplication(){
+
+        if (!this.validateForm()) {
+            return;
+        }
 
         this.loading = true;
 
@@ -75,21 +64,14 @@ export default class GrantApplicationForm extends LightningElement {
 
             const dto = {
 
-                applicantId : this.applicantId,
-
-                grantType : this.grantType,
-
-                requestedAmount : this.requestedAmount,
-
-                reason : this.reason
+                firstName : this.firstName,
+                lastName : this.lastName,
+                phone : this.phone,
+                mailingPostalCode : this.mailingPostalCode,
+                monthlyIncome : this.monthlyIncome,
+                supportOption : this.supportOption
 
             };
-
-            console.log('DTO =', JSON.stringify(dto));
-            console.log('Applicant =', this.applicantId);
-            console.log('GrantType =', this.grantType);
-            console.log('Amount =', this.requestedAmount);
-            console.log('Reason =', this.reason);
 
             const applicationId =
                 await submitApplication({
@@ -103,7 +85,7 @@ export default class GrantApplicationForm extends LightningElement {
                     title : 'Success',
 
                     message :
-                        'Application submitted. Id : '
+                        'Application submitted. Id: '
                         + applicationId,
 
                     variant : 'success'
@@ -152,6 +134,19 @@ export default class GrantApplicationForm extends LightningElement {
         }
 
         return 'Unexpected error.';
+    }
+
+    validateForm() {
+        const inputs = [
+            ...this.template.querySelectorAll(
+                'lightning-input, lightning-combobox'
+            )
+        ];
+
+        return inputs.reduce((validSoFar, input) => {
+            input.reportValidity();
+            return validSoFar && input.checkValidity();
+        }, true);
     }
 
 }

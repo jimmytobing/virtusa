@@ -11,36 +11,67 @@
                 </lightning-spinner>
             </template>
 
-            <lightning-record-picker
-                label="Applicant"
-                placeholder="Search Contact..."
-                object-api-name="Contact"
-                value={applicantId}
-                onchange={handleApplicantChange}>
-            </lightning-record-picker>
-
-            <lightning-combobox
-                class="slds-m-top_medium"
-                label="Grant Type"
-                value={grantType}
-                options={grantTypeOptions}
-                onchange={handleGrantTypeChange}>
-            </lightning-combobox>
+            <lightning-input
+                name="firstName"
+                label="Applicant First Name"
+                value={firstName}
+                required
+                onchange={handleInputChange}>
+            </lightning-input>
 
             <lightning-input
                 class="slds-m-top_medium"
-                type="number"
-                label="Requested Amount"
-                value={requestedAmount}
-                onchange={handleAmountChange}>
+                name="lastName"
+                label="Applicant Last Name"
+                value={lastName}
+                required
+                onchange={handleInputChange}>
             </lightning-input>
 
-            <lightning-textarea
+            <lightning-input
                 class="slds-m-top_medium"
-                label="Reason"
-                value={reason}
-                onchange={handleReasonChange}>
-            </lightning-textarea>
+                name="phone"
+                label="Phone"
+                value={phone}
+                pattern="^65 [0-9]{4} [0-9]{4}$"
+                message-when-pattern-mismatch="Phone must use Singapore format 65 6812 3456."
+                required
+                onchange={handleInputChange}>
+            </lightning-input>
+
+            <lightning-input
+                class="slds-m-top_medium"
+                name="mailingPostalCode"
+                label="Mailing Postal Code"
+                value={mailingPostalCode}
+                pattern="^[0-9]{6}$"
+                message-when-pattern-mismatch="Mailing Postal Code must be a 6 digit number."
+                required
+                onchange={handleInputChange}>
+            </lightning-input>
+
+            <lightning-input
+                class="slds-m-top_medium"
+                name="monthlyIncome"
+                type="number"
+                label="Monthly Income"
+                formatter="currency"
+                step="1"
+                min="0"
+                value={monthlyIncome}
+                required
+                onchange={handleInputChange}>
+            </lightning-input>
+
+            <lightning-combobox
+                class="slds-m-top_medium"
+                name="supportOption"
+                label="Support Option"
+                value={supportOption}
+                options={supportOptionOptions}
+                required
+                onchange={handleInputChange}>
+            </lightning-combobox>
 
             <lightning-button
                 class="slds-m-top_large"

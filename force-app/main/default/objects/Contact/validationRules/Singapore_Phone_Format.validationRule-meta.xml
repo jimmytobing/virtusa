@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Singapore_Phone_Format</fullName>
+    <active>true</active>
+    <description>Requires applicant phone numbers to use the Agency X Singapore format.</description>
+    <errorConditionFormula>AND(
+    OR(
+        NOT(ISBLANK(Support_Option__c)),
+        NOT(ISBLANK(Monthly_Income__c))
+    ),
+    NOT(REGEX(Phone, &quot;^65 [0-9]{4} [0-9]{4}$&quot;))
+)</errorConditionFormula>
+    <errorDisplayField>Phone</errorDisplayField>
+    <errorMessage>Phone must use Singapore format 65 6812 3456.</errorMessage>
+</ValidationRule>

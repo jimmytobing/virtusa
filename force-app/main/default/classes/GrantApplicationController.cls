@@ -15,4 +15,10 @@ public with sharing class GrantApplicationController {
         return GrantConfigurationService.getActiveGrantTypes();
     }
 
+    @AuraEnabled(cacheable=true)
+    public static List<GrantSupportOptionDTO> getActiveSupportOptions() {
+
+        return GrantSupportOptionService.getActiveOptions();
+    }
+
 }
