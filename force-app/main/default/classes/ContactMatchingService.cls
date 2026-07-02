@@ -23,7 +23,10 @@ public without sharing class ContactMatchingService {
         applicant.Monthly_Income__c = request.monthlyIncome;
         applicant.Annual_Income__c = request.monthlyIncome * 12;
         applicant.Support_Option__c = request.supportOption;
-        applicant.AccountId = resolveApplicantAccountId(applicant);
+
+        if (shouldManageContactAccount()) {
+            applicant.AccountId = resolveApplicantAccountId(applicant);
+        }
 
         if (isNewApplicant) {
             insert applicant;
@@ -179,6 +182,13 @@ public without sharing class ContactMatchingService {
         }
 
         return getHoldingAccountId();
+    }
+
+    private static Boolean shouldManageContactAccount() {
+        return UserInfo.getUserType() != 'Guest' &&
+            Schema.SObjectType.Contact.fields.getMap().containsKey(
+                'AccountId'
+            );
     }
 
     private static Id getHoldingAccountId() {

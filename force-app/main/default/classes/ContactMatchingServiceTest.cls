@@ -125,6 +125,40 @@ private class ContactMatchingServiceTest {
     }
 
     @IsTest
+    static void contactRepositoryFindsApplicantsByIdAndPhone() {
+        Account accountRecord = new Account(Name = 'Repository Account');
+        insert accountRecord;
+
+        Contact applicant = new Contact(
+            AccountId = accountRecord.Id,
+            FirstName = 'Repository',
+            LastName = 'Applicant',
+            Phone = '65 6812 3462',
+            MailingPostalCode = '123456',
+            Monthly_Income__c = 900,
+            Support_Option__c = 'Option One'
+        );
+        insert applicant;
+
+        Test.startTest();
+        Contact applicantById = ContactRepository.getById(applicant.Id);
+        Contact applicantByPhone = ContactRepository.getByPhone(
+            '65 6812 3462'
+        );
+        Contact missingById = ContactRepository.getById(null);
+        Contact missingByPhone = ContactRepository.getByPhone(null);
+        Test.stopTest();
+
+        System.assertEquals(applicant.Id, applicantById.Id);
+        System.assertEquals(accountRecord.Id, applicantById.AccountId);
+        System.assertEquals('Repository Applicant', applicantById.Name);
+        System.assertEquals(applicant.Id, applicantByPhone.Id);
+        System.assertEquals(accountRecord.Id, applicantByPhone.AccountId);
+        System.assertEquals(null, missingById);
+        System.assertEquals(null, missingByPhone);
+    }
+
+    @IsTest
     static void mergeDuplicatePhoneContactsIgnoresRecordsWithoutPhone() {
         Contact applicant = new Contact(LastName = 'Applicant');
 
