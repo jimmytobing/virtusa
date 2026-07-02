@@ -1,0 +1,64 @@
+@startuml
+skinparam activity {
+    BackgroundColor<<future>> #FFF4E6
+    BorderColor<<future>> #C47F36
+    BorderStyle<<future>> dashed
+}
+
+start
+
+:Citizen submits enquiry or feedback\nvia website, phone, chat/mobile, or email; <<future>>
+
+:Create Case with channel origin,\nrecord type, service category, and attachments; <<future>>
+
+:Verify citizen by phone or email\nagainst external MDM; <<future>>
+
+if (Citizen verified?) then (Yes)
+    :Link or update Contact; <<future>>
+else (No)
+    :Flag for manual verification\nand continue with restricted access; <<future>>
+endif
+
+:Route through Omni-Channel\nusing expertise, language,\nworkload, and availability; <<future>>
+
+:Agent reviews Case in Service Console; <<future>>
+
+if (Case type?) then (Enquiry)
+    :Search Knowledge for existing solution; <<future>>
+
+    if (Existing solution available?) then (Yes)
+        :Provide approved solution\nto citizen; <<future>>
+    else (No)
+        :Develop resolution and\nsubmit new Knowledge draft; <<future>>
+    endif
+
+    if (Complex enquiry?) then (Yes)
+        :Escalate to Supervisor; <<future>>
+    endif
+
+    :Perform follow-up until\ncitizen confirms resolution; <<future>>
+
+else (Feedback)
+    :Analyse satisfaction level,\nservice category, and improvement area; <<future>>
+
+    if (Citizen response required?) then (Yes)
+        :Respond to citizen; <<future>>
+    endif
+
+    :Include in internal feedback\nreporting and trend analysis; <<future>>
+
+    :Supervisor evaluates handling\noutcome and agent performance; <<future>>
+endif
+
+:Close Case with resolution summary,\nconfirmation, and audit trail; <<future>>
+
+:Branch Admin monitors dashboards\nby division, channel, SLA, and agent; <<future>>
+
+stop
+
+legend right
+  |= Style |= Meaning |
+  |<#FFF4E6> Amber activity | Future Service Cloud case-management behavior |
+endlegend
+
+@enduml

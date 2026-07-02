@@ -7,9 +7,9 @@ skinparam activity {
 
 start
 
-:Integration or scheduled retry trigger\n(future); <<#FFF4E6>>
+:Integration, channel ingestion,\nor scheduled retry trigger\n(future); <<#FFF4E6>>
 
-:Execute retryable operation\n(future); <<#FFF4E6>>
+:Execute retryable operation\nsuch as MDM verification,\ncase creation, email ingestion,\nor file link processing\n(future); <<#FFF4E6>>
 
 if (Successful?) then (Yes)
 
@@ -19,7 +19,7 @@ stop
 
 else
 
-:Store or update Integration Error\n(future behavior); <<#FFF4E6>>
+:Store or update Integration Error\nand related Case reference\n(future behavior); <<#FFF4E6>>
 
 if (Retryable?) then (Yes)
 

@@ -13,14 +13,39 @@ skinparam cloud {
 }
 
 actor Citizen
+actor "Branch Admin" as BranchAdmin
+actor Supervisor
+actor Agent
 
-cloud "Microsoft Azure AD\n(Optional Future SSO)" as AAD <<future>>
+cloud "Microsoft Azure AD\n(Future Internal SSO)" as AAD <<future>>
 
 package "Salesforce Experience Cloud" {
 
     [Experience Site]
 
     [Lightning Web Components]
+
+}
+
+package "Salesforce Service Channels\n(Future Case Intake)" <<future>> {
+
+    component "Web Case Intake" as WebCaseFuture <<future>>
+
+    component "Phone Case Intake" as PhoneCaseFuture <<future>>
+
+    component "Chat / Mobile Case Intake" as ChatMobileCaseFuture <<future>>
+
+    component "Email Case Intake" as EmailCaseFuture <<future>>
+
+    component "Omni-Channel Routing" as OmniChannelFuture <<future>>
+
+}
+
+package "Salesforce Service Operations\n(Future Internal Users)" <<future>> {
+
+    component "Service Console" as ServiceConsoleFuture <<future>>
+
+    component "Reports and Dashboards" as ReportsFuture <<future>>
 
 }
 
@@ -52,6 +77,8 @@ database "Salesforce Data" {
 
     component "Files" as FilesFuture <<future>>
 
+    component "Service Division" as ServiceDivisionFuture <<future>>
+
 }
 
 cloud "API Gateway" as ApiGateway <<future>> {
@@ -64,9 +91,28 @@ cloud "Master Data Management" as MDM <<future>> {
 
 Citizen --> [Experience Site]
 
+Citizen ..> WebCaseFuture : future web enquiry / feedback
+Citizen ..> PhoneCaseFuture : future call
+Citizen ..> ChatMobileCaseFuture : future real-time assistance
+Citizen ..> EmailCaseFuture : future email
+
+BranchAdmin ..> ReportsFuture : future oversight
+Supervisor ..> ServiceConsoleFuture : future supervision
+Agent ..> ServiceConsoleFuture : future case handling
+
 [Experience Site] --> [Lightning Web Components]
 
-[Lightning Web Components] --> [Apex Service Layer]
+[Lightning Web Components] --> [Flow]
+
+WebCaseFuture ..> OmniChannelFuture : future assignment
+PhoneCaseFuture ..> OmniChannelFuture : future assignment
+ChatMobileCaseFuture ..> OmniChannelFuture : future assignment
+EmailCaseFuture ..> OmniChannelFuture : future assignment
+OmniChannelFuture ..> ServiceConsoleFuture
+ServiceConsoleFuture ..> CaseFuture
+ServiceConsoleFuture ..> KnowledgeFuture
+ServiceConsoleFuture ..> FilesFuture
+ReportsFuture ..> CaseFuture
 
 [Flow] --> [Apex Service Layer]
 
@@ -88,11 +134,13 @@ Citizen --> [Experience Site]
 
 [Apex Service Layer] ..> FilesFuture : future document upload
 
+[Apex Service Layer] ..> ServiceDivisionFuture : future division security
+
 [Apex Service Layer] ..> ApiGateway : future integration
 
 ApiGateway ..> MDM
 
-AAD ..> [Experience Site] : future SSO
+AAD ..> ServiceConsoleFuture : future internal SSO
 
 legend right
   |= Style |= Meaning |

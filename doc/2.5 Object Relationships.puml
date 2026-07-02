@@ -1,4 +1,9 @@
 @startuml
+skinparam object {
+    BackgroundColor<<future>> #FFF4E6
+    BorderColor<<future>> #C47F36
+    BorderStyle<<future>> dashed
+}
 
 object Account
 
@@ -12,6 +17,22 @@ object Grant_Support_Option__mdt
 
 object Grant_Configuration__mdt
 
+object Case <<future>>
+
+object Knowledge__kav <<future>>
+
+object ContentDocumentLink <<future>>
+
+object User <<future>>
+
+object Group_Queue <<future>>
+
+object Service_Division__c <<future>>
+
+object CaseRoutingRule__mdt <<future>>
+
+object Migration_Batch__c <<future>>
+
 Account "1" --> "*" Contact
 
 Contact "1" --> "*" Grant_Application__c
@@ -23,4 +44,25 @@ Grant_Support_Option__mdt ..> Grant_Application__c
 Grant_Configuration__mdt ..> Grant_Application__c
 
 Contact <-- Grant_Application__c : active application lookup
+
+Contact "1" --> "*" Case : future citizen cases
+
+Service_Division__c "1" --> "*" Case : future branch/division scope
+
+User "1" --> "*" Case : future agent ownership
+
+Group_Queue "1" --> "*" Case : future queue ownership
+
+Case "1" --> "*" ContentDocumentLink : future photos/files
+
+Knowledge__kav ..> Case : future known solution
+
+CaseRoutingRule__mdt ..> Case : future routing criteria
+
+Migration_Batch__c ..> Case : future historical load
+
+legend right
+  |= Style |= Meaning |
+  |<#FFF4E6> Dashed border | Future case-management extension / not active in current implementation |
+endlegend
 @enduml
