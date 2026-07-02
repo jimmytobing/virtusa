@@ -1,22 +1,5 @@
 public with sharing class GrantDisbursementService {
 
-    public static Boolean bypassContactTrigger = false;
-
-    public static void recalculateDisbursements(
-        Id applicationId,
-        Grant_Support_Option__mdt option
-    ) {
-        if (applicationId == null || option == null) {
-            return;
-        }
-
-        recalculateForApplications(
-            new Map<Id, Grant_Support_Option__mdt>{
-                applicationId => option
-            }
-        );
-    }
-
     @InvocableMethod(
         label='Recalculate Grant Disbursements'
         description='Creates or recalculates Grant Disbursement records for Grant Applications.'
@@ -39,67 +22,6 @@ public with sharing class GrantDisbursementService {
         recalculateForApplicationIds(applicationIds);
     }
 
-    public static void recalculateForContacts(List<Contact> contacts) {
-        if (contacts == null || contacts.isEmpty()) {
-            return;
-        }
-
-        recalculateForContacts(contacts, getActiveOptionsByDeveloperName());
-    }
-
-    private static void recalculateForContacts(
-        List<Contact> contacts,
-        Map<String, Grant_Support_Option__mdt> optionsByDeveloperName
-    ) {
-        Map<Id, Grant_Support_Option__mdt> optionsByContactId =
-            new Map<Id, Grant_Support_Option__mdt>();
-
-        for (Contact contactRecord : contacts) {
-            if (
-                contactRecord.Id == null ||
-                String.isBlank(contactRecord.Support_Option__c) ||
-                contactRecord.Monthly_Income__c == null
-            ) {
-                continue;
-            }
-
-            Grant_Support_Option__mdt option =
-                optionsByDeveloperName.get(contactRecord.Support_Option__c);
-
-            if (option != null) {
-                optionsByContactId.put(contactRecord.Id, option);
-            }
-        }
-
-        if (optionsByContactId.isEmpty()) {
-            return;
-        }
-
-        Map<Id, Grant_Support_Option__mdt> optionsByApplicationId =
-            new Map<Id, Grant_Support_Option__mdt>();
-
-        for (Grant_Application__c application : [
-            SELECT Id, Applicant__c, Grant_Type__c
-            FROM Grant_Application__c
-            WHERE Applicant__c IN :optionsByContactId.keySet()
-        ]) {
-            Grant_Support_Option__mdt option =
-                optionsByContactId.get(application.Applicant__c);
-
-            if (
-                option != null &&
-                (
-                    application.Grant_Type__c == option.DeveloperName ||
-                    application.Grant_Type__c == option.MasterLabel
-                )
-            ) {
-                optionsByApplicationId.put(application.Id, option);
-            }
-        }
-
-        recalculateForApplications(optionsByApplicationId);
-    }
-
     private static void recalculateForApplicationIds(Set<Id> applicationIds) {
         if (applicationIds == null || applicationIds.isEmpty()) {
             return;
@@ -109,25 +31,56 @@ public with sharing class GrantDisbursementService {
             getActiveOptionsByDeveloperName();
         Map<Id, Grant_Support_Option__mdt> optionsByApplicationId =
             new Map<Id, Grant_Support_Option__mdt>();
+        List<Grant_Application__c> applicationsToUpdate =
+            new List<Grant_Application__c>();
 
         for (Grant_Application__c application : [
-            SELECT Id, Grant_Type__c
+            SELECT
+                Id,
+                Grant_Type__c,
+                Requested_Amount__c,
+                Applicant__r.Support_Option__c
             FROM Grant_Application__c
             WHERE Id IN :applicationIds
         ]) {
-            if (String.isBlank(application.Grant_Type__c)) {
+            String applicantSupportOption = application.Applicant__r == null
+                ? null
+                : application.Applicant__r.Support_Option__c;
+            String optionName = !String.isBlank(applicantSupportOption)
+                ? applicantSupportOption
+                : application.Grant_Type__c;
+
+            if (String.isBlank(optionName)) {
                 continue;
             }
 
             Grant_Support_Option__mdt option =
-                optionsByDeveloperName.get(application.Grant_Type__c);
+                optionsByDeveloperName.get(optionName);
 
             if (option != null) {
                 optionsByApplicationId.put(application.Id, option);
+
+                Decimal optionTotal =
+                    option.Monthly_Amount__c * option.Duration_Months__c;
+
+                if (
+                    application.Grant_Type__c != option.MasterLabel ||
+                    application.Requested_Amount__c != optionTotal
+                ) {
+                    applicationsToUpdate.add(new Grant_Application__c(
+                        Id = application.Id,
+                        Grant_Type__c = option.MasterLabel,
+                        Requested_Amount__c = optionTotal
+                    ));
+                }
             }
         }
 
         recalculateForApplications(optionsByApplicationId);
+
+        if (!applicationsToUpdate.isEmpty()) {
+            update applicationsToUpdate;
+        }
     }
 
     private static void recalculateForApplications(
@@ -226,7 +179,7 @@ public with sharing class GrantDisbursementService {
                 disbursementsToInsert.add(new Grant_Disbursement__c(
                     Grant_Applicantion__c = applicationId,
                     Amount_to_be_disbursed__c = monthlyAmount,
-                    Grant_is_disbursed__c = true,
+                    Grant_is_disbursed__c = false,
                     Disbursed_Date__c = disbursementDate.addMonths(monthNumber - 1),
                     Support_Option__c = option.MasterLabel,
                     Sequence_Number__c = receivedMonths + monthNumber

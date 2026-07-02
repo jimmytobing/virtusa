@@ -11,41 +11,13 @@ public with sharing class ContactTriggerHandler {
     }
 
     public void afterInsert(List<Contact> records) {
-        Set<Id> contactsHandledByMerge = mergeDuplicatePhoneContacts(records);
-        List<Contact> contactsToProcess = new List<Contact>();
-
-        for (Contact record : records) {
-            if (!contactsHandledByMerge.contains(record.Id)) {
-                contactsToProcess.add(record);
-            }
-        }
-
-        processGrantDisbursements(contactsToProcess);
+        mergeDuplicatePhoneContacts(records);
     }
 
     public void afterUpdate(
         List<Contact> records,
         Map<Id, Contact> oldMap
     ) {
-        List<Contact> changedRecords = new List<Contact>();
-
-        for (Contact record : records) {
-            Contact oldRecord = oldMap.get(record.Id);
-
-            if (
-                oldRecord == null ||
-                record.FirstName != oldRecord.FirstName ||
-                record.LastName != oldRecord.LastName ||
-                record.Phone != oldRecord.Phone ||
-                record.MailingPostalCode != oldRecord.MailingPostalCode ||
-                record.Monthly_Income__c != oldRecord.Monthly_Income__c ||
-                record.Support_Option__c != oldRecord.Support_Option__c
-            ) {
-                changedRecords.add(record);
-            }
-        }
-
-        processGrantDisbursements(changedRecords);
     }
 
     private static void validateGrantFields(List<Contact> records) {
@@ -61,14 +33,6 @@ public with sharing class ContactTriggerHandler {
             }
 
         }
-    }
-
-    private static void processGrantDisbursements(List<Contact> records) {
-        if (GrantDisbursementService.bypassContactTrigger) {
-            return;
-        }
-
-        GrantDisbursementService.recalculateForContacts(records);
     }
 
     private static Set<Id> mergeDuplicatePhoneContacts(List<Contact> records) {

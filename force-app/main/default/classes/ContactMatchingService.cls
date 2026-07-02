@@ -24,16 +24,10 @@ public without sharing class ContactMatchingService {
         applicant.Support_Option__c = request.supportOption;
         applicant.AccountId = resolveApplicantAccountId(applicant);
 
-        GrantDisbursementService.bypassContactTrigger = true;
-
-        try {
-            if (isNewApplicant) {
-                insert applicant;
-            } else {
-                update applicant;
-            }
-        } finally {
-            GrantDisbursementService.bypassContactTrigger = false;
+        if (isNewApplicant) {
+            insert applicant;
+        } else {
+            update applicant;
         }
 
         ensureContactReferenceAccess(applicant);
