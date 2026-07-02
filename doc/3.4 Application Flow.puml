@@ -38,7 +38,7 @@ if (Eligible?) then (Yes)
 
 :Create Grant Disbursement Records;
 
-:Send Confirmation;
+:Show submission success;
 
 else
 

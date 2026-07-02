@@ -1,4 +1,14 @@
 @startuml
+skinparam component {
+    BackgroundColor<<future>> #FFF4E6
+    BorderColor<<future>> #C47F36
+    BorderStyle<<future>> dashed
+}
+skinparam rectangle {
+    BackgroundColor<<future>> #FFF4E6
+    BorderColor<<future>> #C47F36
+    BorderStyle<<future>> dashed
+}
 
 package "Presentation Layer" {
 
@@ -10,9 +20,11 @@ package "Presentation Layer" {
 
 package "Application Layer" {
 
-[Record-Triggered Flow]
+[Flow]
 
 }
+
+
 
 package "Business Layer" {
 
@@ -40,25 +52,23 @@ package "Persistence Layer" {
 
 package "Integration Layer" {
 
-[REST Client]
+component "REST Client" as RestClient <<future>>
 
-[Named Credential]
-
-[GrantIntegrationService]
+component "Named Credential" as NamedCredential <<future>>
 
 }
 
 package "External Systems" {
 
-[Master Data System]
+component "Master Data System" as MasterDataSystem <<future>>
 
 }
 
 [Experience Cloud] --> [LWC]
 
-[LWC] --> [GrantApplicationService]
+[LWC] --> [Flow]
 
-[Record-Triggered Flow] --> [GrantDisbursementService]
+[Flow] --> [GrantApplicationService]
 
 [GrantApplicationService] --> [ContactMatchingService]
 
@@ -66,18 +76,21 @@ package "External Systems" {
 
 [GrantApplicationService] --> [GrantDisbursementService]
 
-[GrantDisbursementService] --> [GrantConfigurationService]
+[GrantDisbursementService] -> [GrantConfigurationService]
 
 [GrantDisbursementService] --> [Trigger Framework]
 
 [Trigger Framework] --> [Salesforce Objects]
 
-[GrantExceptionService] --> [Salesforce Objects]
+[ContactMatchingService] ..> RestClient
 
-[GrantIntegrationService] --> [REST Client]
+RestClient ..> NamedCredential
 
-[REST Client] --> [Named Credential]
+NamedCredential ..> MasterDataSystem
 
-[Named Credential] --> [Master Data System]
+legend right
+  |= Style |= Meaning |
+  |<#FFF4E6> Dashed border | Future enhancement / not active in current implementation |
+endlegend
 
 @enduml

@@ -1,10 +1,15 @@
 @startuml
+skinparam activity {
+    BackgroundColor<<future>> #FFF4E6
+    BorderColor<<future>> #C47F36
+    BorderStyle<<future>> dashed
+}
 
 start
 
-:Integration or scheduled retry trigger;
+:Integration or scheduled retry trigger\n(future); <<#FFF4E6>>
 
-:Execute retryable operation;
+:Execute retryable operation\n(future); <<#FFF4E6>>
 
 if (Successful?) then (Yes)
 
@@ -14,24 +19,29 @@ stop
 
 else
 
-:Store or update Integration Error;
+:Store or update Integration Error\n(future behavior); <<#FFF4E6>>
 
 if (Retryable?) then (Yes)
 
-:Increment Retry Count;
+:Increment Retry Count\n(future behavior); <<#FFF4E6>>
 
-:Keep status ready for next retry cycle;
+:Keep status ready for next retry cycle\n(future behavior); <<#FFF4E6>>
 
 stop
 
 else
 
-:Notify Support Team;
+:Notify Support Team\n(future behavior); <<#FFF4E6>>
 
 stop
 
 endif
 
 endif
+
+legend right
+  |= Style |= Meaning |
+  |<#FFF4E6> Amber activity | Future retry behavior / not active in current implementation |
+endlegend
 
 @enduml

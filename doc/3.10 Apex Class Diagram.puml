@@ -8,6 +8,11 @@ skinparam RoundCorner 25
 skinparam packageStyle rectangle
 skinparam classAttributeIconSize 0
 skinparam shadowing false
+skinparam class {
+    BackgroundColor<<future>> #FFF4E6
+    BorderColor<<future>> #C47F36
+    BorderStyle<<future>> dashed
+}
 hide empty members
 
 package "Presentation" {
@@ -47,8 +52,8 @@ package "DTOs and Shared" {
 }
 
 package "Integration / Retry Stubs" {
-    class GrantIntegrationService <<Service>>
-    class GrantRetryService <<Service>>
+    class GrantIntegrationService <<future>>
+    class GrantRetryService <<future>>
     class GrantExceptionService <<Service>>
     class Integration_Error__c <<Custom Object>>
     class Grant_Error_Message__mdt <<Custom Metadata>>
@@ -88,5 +93,10 @@ GrantDisbursementService --> GrantExceptionService
 GrantApplicationApplicantLinkJob --> Grant_Application__c
 GrantApplicationGuestUpdateJob --> Grant_Application__c
 GrantExceptionService --> Grant_Error_Message__mdt
+
+legend right
+  |= Style |= Meaning |
+  |<#FFF4E6> Dashed border | Future enhancement / stub only in current implementation |
+endlegend
 
 @enduml

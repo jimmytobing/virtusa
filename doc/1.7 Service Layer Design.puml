@@ -1,4 +1,9 @@
 @startuml
+skinparam class {
+    BackgroundColor<<future>> #FFF4E6
+    BorderColor<<future>> #C47F36
+    BorderStyle<<future>> dashed
+}
 
 package "Service Layer" {
 
@@ -16,9 +21,9 @@ class GrantApplicationBulkUploadService
 
 class GrantExceptionService
 
-class GrantIntegrationService
+class GrantIntegrationService <<future>>
 
-class GrantRetryService
+class GrantRetryService <<future>>
 
 }
 
@@ -36,8 +41,13 @@ GrantApplicationBulkUploadService --> GrantDisbursementService
 
 GrantApplicationService --> GrantExceptionService
 
-GrantIntegrationService --> GrantExceptionService
+GrantIntegrationService ..> GrantExceptionService : future integration errors
 
 GrantRetryService ..> GrantIntegrationService : future retry
+
+legend right
+  |= Style |= Meaning |
+  |<#FFF4E6> Dashed border | Future enhancement / stub only in current implementation |
+endlegend
 
 @enduml

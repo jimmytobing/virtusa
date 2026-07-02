@@ -1,10 +1,20 @@
 @startuml
 
 skinparam componentStyle rectangle
+skinparam component {
+    BackgroundColor<<future>> #FFF4E6
+    BorderColor<<future>> #C47F36
+    BorderStyle<<future>> dashed
+}
+skinparam cloud {
+    BackgroundColor<<future>> #FFF4E6
+    BorderColor<<future>> #C47F36
+    BorderStyle<<future>> dashed
+}
 
 actor Citizen
 
-cloud "Microsoft Azure AD\n(Optional Future SSO)" as AAD
+cloud "Microsoft Azure AD\n(Optional Future SSO)" as AAD <<future>>
 
 package "Salesforce Experience Cloud" {
 
@@ -36,19 +46,19 @@ database "Salesforce Data" {
 
     [Integration Error]
 
-    [Case]
+    component "Case" as CaseFuture <<future>>
 
-    [Knowledge]
+    component "Knowledge" as KnowledgeFuture <<future>>
 
-    [Files]
-
-}
-
-cloud "API Gateway" {
+    component "Files" as FilesFuture <<future>>
 
 }
 
-cloud "Master Data Management" {
+cloud "API Gateway" as ApiGateway <<future>> {
+
+}
+
+cloud "Master Data Management" as MDM <<future>> {
 
 }
 
@@ -72,16 +82,21 @@ Citizen --> [Experience Site]
 
 [Apex Service Layer] --> [Integration Error]
 
-[Apex Service Layer] --> [Case]
+[Apex Service Layer] ..> CaseFuture : future support case
 
-[Apex Service Layer] --> [Knowledge]
+[Apex Service Layer] ..> KnowledgeFuture : future support content
 
-[Apex Service Layer] --> [Files]
+[Apex Service Layer] ..> FilesFuture : future document upload
 
-[Apex Service Layer] ..> "API Gateway" : future integration
+[Apex Service Layer] ..> ApiGateway : future integration
 
-"API Gateway" --> "Master Data Management"
+ApiGateway ..> MDM
 
-AAD --> [Experience Site]
+AAD ..> [Experience Site] : future SSO
+
+legend right
+  |= Style |= Meaning |
+  |<#FFF4E6> Dashed border | Future enhancement / not active in current implementation |
+endlegend
 
 @enduml

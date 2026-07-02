@@ -22,5 +22,5 @@ Grant_Support_Option__mdt ..> Grant_Application__c
 
 Grant_Configuration__mdt ..> Grant_Application__c
 
-Contact --> Grant_Application__c : active application lookup
+Contact <-- Grant_Application__c : active application lookup
 @enduml
