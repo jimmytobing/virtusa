@@ -1,4 +1,4 @@
-public with sharing class ContactRepository {
+public without sharing class ContactRepository {
 
     /**
      * Retrieves a Contact by Id.
@@ -12,6 +12,7 @@ public with sharing class ContactRepository {
         List<Contact> contacts = [
             SELECT
                 Id,
+                AccountId,
                 FirstName,
                 LastName,
                 Name,
@@ -40,6 +41,7 @@ public with sharing class ContactRepository {
         List<Contact> contacts = [
             SELECT
                 Id,
+                AccountId,
                 FirstName,
                 LastName,
                 Phone,
@@ -49,7 +51,7 @@ public with sharing class ContactRepository {
                 Support_Option__c
             FROM Contact
             WHERE Phone = :phone
-            ORDER BY CreatedDate
+            ORDER BY CreatedDate, Id
             LIMIT 1
         ];
 

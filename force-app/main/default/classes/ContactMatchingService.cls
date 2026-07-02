@@ -8,7 +8,7 @@ public without sharing class ContactMatchingService {
             throw new GrantException('Request cannot be null.');
         }
 
-        Contact applicant = findByPhone(request.phone);
+        Contact applicant = ContactRepository.getByPhone(request.phone);
         Boolean isNewApplicant = applicant == null;
 
         if (isNewApplicant) {
@@ -73,24 +73,6 @@ public without sharing class ContactMatchingService {
             CaseAccessLevel = 'None',
             RowCause = Schema.AccountShare.RowCause.Manual
         );
-    }
-
-    private static Contact findByPhone(String phone) {
-        if (String.isBlank(phone)) {
-            return null;
-        }
-
-        List<Contact> contacts = [
-            SELECT Id, AccountId
-            FROM Contact
-            WHERE Phone = :phone
-            ORDER BY CreatedDate, Id
-            LIMIT 1
-        ];
-
-        return contacts.isEmpty()
-            ? null
-            : contacts[0];
     }
 
     private static Id resolveApplicantAccountId(Contact applicant) {
