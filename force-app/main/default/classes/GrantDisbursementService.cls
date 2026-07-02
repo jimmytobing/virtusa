@@ -254,7 +254,10 @@ public without sharing class GrantDisbursementService {
 
       if (totalReceived > newTotalAmount) {
         throw new GrantException(
-          'Support Option cannot be changed because the total disbursed amount is greater than the new option total.'
+          GrantExceptionService.getMessage(
+            GrantExceptionService.DISBURSEMENT_OPTION_TOTAL_TOO_LOW,
+            'Support Option cannot be changed because the total disbursed amount is greater than the new option total.'
+          )
         );
       }
 
@@ -264,7 +267,10 @@ public without sharing class GrantDisbursementService {
 
       if (remainingAmount > 0 && remainingMonths <= 0) {
         throw new GrantException(
-          'Support Option cannot be changed because there are no remaining months available.'
+          GrantExceptionService.getMessage(
+            GrantExceptionService.DISBURSEMENT_OPTION_NO_MONTHS,
+            'Support Option cannot be changed because there are no remaining months available.'
+          )
         );
       }
 

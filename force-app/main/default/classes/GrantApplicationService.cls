@@ -15,7 +15,12 @@ public without sharing class GrantApplicationService {
 
   public static Id submitApplication(GrantDTO request) {
     if (request == null) {
-      throw new GrantException('Request cannot be null.');
+      throw new GrantException(
+        GrantExceptionService.getMessage(
+          GrantExceptionService.REQUEST_NULL,
+          'Request cannot be null.'
+        )
+      );
     }
 
     validateApplicantRequest(request);
@@ -160,40 +165,75 @@ public without sharing class GrantApplicationService {
 
   public static void validateApplicantRequest(GrantDTO request) {
     if (String.isBlank(request.firstName)) {
-      throw new GrantException('Applicant First Name is required.');
+      throw new GrantException(
+        GrantExceptionService.getMessage(
+          GrantExceptionService.APPLICANT_FIRST_NAME_REQUIRED,
+          'Applicant First Name is required.'
+        )
+      );
     }
 
     if (String.isBlank(request.lastName)) {
-      throw new GrantException('Applicant Last Name is required.');
+      throw new GrantException(
+        GrantExceptionService.getMessage(
+          GrantExceptionService.APPLICANT_LAST_NAME_REQUIRED,
+          'Applicant Last Name is required.'
+        )
+      );
     }
 
     if (
       String.isBlank(request.phone) ||
       !SINGAPORE_PHONE_PATTERN.matcher(request.phone).matches()
     ) {
-      throw new GrantException('Phone must use Singapore format 65 6812 3456.');
+      throw new GrantException(
+        GrantExceptionService.getMessage(
+          GrantExceptionService.PHONE_INVALID,
+          'Phone must use Singapore format 65 6812 3456.'
+        )
+      );
     }
 
     if (
       String.isBlank(request.email) ||
       !EMAIL_PATTERN.matcher(request.email).matches()
     ) {
-      throw new GrantException('Email must be a valid email address.');
+      throw new GrantException(
+        GrantExceptionService.getMessage(
+          GrantExceptionService.EMAIL_INVALID,
+          'Email must be a valid email address.'
+        )
+      );
     }
 
     if (
       String.isBlank(request.mailingPostalCode) ||
       !POSTAL_CODE_PATTERN.matcher(request.mailingPostalCode).matches()
     ) {
-      throw new GrantException('Mailing Postal Code must be a 6 digit number.');
+      throw new GrantException(
+        GrantExceptionService.getMessage(
+          GrantExceptionService.POSTAL_CODE_INVALID,
+          'Mailing Postal Code must be a 6 digit number.'
+        )
+      );
     }
 
     if (request.monthlyIncome == null || request.monthlyIncome < 0) {
-      throw new GrantException('Monthly Income must be a valid SGD amount.');
+      throw new GrantException(
+        GrantExceptionService.getMessage(
+          GrantExceptionService.MONTHLY_INCOME_INVALID,
+          'Monthly Income must be a valid SGD amount.'
+        )
+      );
     }
 
     if (String.isBlank(request.supportOption)) {
-      throw new GrantException('Support Option is required.');
+      throw new GrantException(
+        GrantExceptionService.getMessage(
+          GrantExceptionService.SUPPORT_OPTION_REQUIRED,
+          'Support Option is required.'
+        )
+      );
     }
   }
 }

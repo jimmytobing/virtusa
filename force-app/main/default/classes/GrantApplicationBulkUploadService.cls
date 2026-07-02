@@ -243,32 +243,57 @@ public without sharing class GrantApplicationBulkUploadService {
     Map<String, Grant_Support_Option__mdt> optionsByUploadValue
   ) {
     if (String.isBlank(application.Applicant_First_Name__c)) {
-      application.addError('Applicant First Name is required.');
+      application.addError(
+        GrantExceptionService.getMessage(
+          GrantExceptionService.APPLICANT_FIRST_NAME_REQUIRED,
+          'Applicant First Name is required.'
+        )
+      );
     }
 
     if (String.isBlank(application.Applicant_Last_Name__c)) {
-      application.addError('Applicant Last Name is required.');
+      application.addError(
+        GrantExceptionService.getMessage(
+          GrantExceptionService.APPLICANT_LAST_NAME_REQUIRED,
+          'Applicant Last Name is required.'
+        )
+      );
     }
 
     if (
       String.isBlank(application.Applicant_Phone__c) ||
       !SINGAPORE_PHONE_PATTERN.matcher(application.Applicant_Phone__c).matches()
     ) {
-      application.addError('Phone must use Singapore format 65 6812 3456.');
+      application.addError(
+        GrantExceptionService.getMessage(
+          GrantExceptionService.PHONE_INVALID,
+          'Phone must use Singapore format 65 6812 3456.'
+        )
+      );
     }
 
     if (
       String.isBlank(application.Mailing_Postal_Code__c) ||
       !POSTAL_CODE_PATTERN.matcher(application.Mailing_Postal_Code__c).matches()
     ) {
-      application.addError('Mailing Postal Code must be a 6 digit number.');
+      application.addError(
+        GrantExceptionService.getMessage(
+          GrantExceptionService.POSTAL_CODE_INVALID,
+          'Mailing Postal Code must be a 6 digit number.'
+        )
+      );
     }
 
     if (
       application.Monthly_Income__c == null ||
       application.Monthly_Income__c < 0
     ) {
-      application.addError('Monthly Income must be a valid SGD amount.');
+      application.addError(
+        GrantExceptionService.getMessage(
+          GrantExceptionService.MONTHLY_INCOME_INVALID,
+          'Monthly Income must be a valid SGD amount.'
+        )
+      );
     }
 
     if (
@@ -277,7 +302,12 @@ public without sharing class GrantApplicationBulkUploadService {
         normalizeUploadValue(application.Support_Option__c)
       )
     ) {
-      application.addError('Support Option is not available.');
+      application.addError(
+        GrantExceptionService.getMessage(
+          GrantExceptionService.SUPPORT_OPTION_UNAVAILABLE,
+          'Support Option is not available.'
+        )
+      );
     }
   }
 

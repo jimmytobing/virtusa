@@ -1,48 +1,39 @@
 public with sharing class GrantConfigurationService {
+  public static Grant_Configuration__mdt getConfiguration(String grantType) {
+    Grant_Configuration__mdt config = GrantConfigurationRepository.getByGrantType(
+      grantType
+    );
 
-    public static Grant_Configuration__mdt getConfiguration(
-        String grantType
-    ){
-
-        Grant_Configuration__mdt config =
-            GrantConfigurationRepository.getByGrantType(
-                grantType
-            );
-
-        if(config == null){
-
-            throw new GrantException(
-                'Grant Configuration not found.'
-            );
-
-        }
-
-        return config;
-
+    if (config == null) {
+      throw new GrantException(
+        GrantExceptionService.getMessage(
+          GrantExceptionService.GRANT_CONFIGURATION_NOT_FOUND,
+          'Grant Configuration not found.'
+        )
+      );
     }
 
-    public static List<String> getActiveGrantTypes() {
+    return config;
+  }
 
-        List<String> grantTypes = new List<String>();
-        Set<String> addedGrantTypes = new Set<String>();
+  public static List<String> getActiveGrantTypes() {
+    List<String> grantTypes = new List<String>();
+    Set<String> addedGrantTypes = new Set<String>();
 
-        for (
-            Grant_Configuration__mdt config :
-            GrantConfigurationRepository.getActiveConfigurations()
-        ) {
+    for (
+      Grant_Configuration__mdt config : GrantConfigurationRepository.getActiveConfigurations()
+    ) {
+      if (
+        String.isBlank(config.Grant_Type__c) ||
+        addedGrantTypes.contains(config.Grant_Type__c)
+      ) {
+        continue;
+      }
 
-            if (
-                String.isBlank(config.Grant_Type__c) ||
-                addedGrantTypes.contains(config.Grant_Type__c)
-            ) {
-                continue;
-            }
-
-            grantTypes.add(config.Grant_Type__c);
-            addedGrantTypes.add(config.Grant_Type__c);
-        }
-
-        return grantTypes;
+      grantTypes.add(config.Grant_Type__c);
+      addedGrantTypes.add(config.Grant_Type__c);
     }
 
+    return grantTypes;
+  }
 }

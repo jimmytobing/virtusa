@@ -31,7 +31,7 @@
         label="Phone"
         value={phone}
         pattern="^65 [0-9]{4} [0-9]{4}$"
-        message-when-pattern-mismatch="Phone must use Singapore format 65 6812 3456."
+        message-when-pattern-mismatch={phonePatternMessage}
         required
         onchange={handleInputChange}
       >
@@ -54,7 +54,7 @@
         label="Mailing Postal Code"
         value={mailingPostalCode}
         pattern="^[0-9]{6}$"
-        message-when-pattern-mismatch="Mailing Postal Code must be a 6 digit number."
+        message-when-pattern-mismatch={postalCodePatternMessage}
         required
         onchange={handleInputChange}
       >

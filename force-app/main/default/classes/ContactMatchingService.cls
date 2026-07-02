@@ -5,7 +5,12 @@ public without sharing class ContactMatchingService {
 
   public static Contact upsertApplicantByPhone(GrantDTO request) {
     if (request == null) {
-      throw new GrantException('Request cannot be null.');
+      throw new GrantException(
+        GrantExceptionService.getMessage(
+          GrantExceptionService.REQUEST_NULL,
+          'Request cannot be null.'
+        )
+      );
     }
 
     Contact applicant = ContactRepository.getByPhone(request.phone);

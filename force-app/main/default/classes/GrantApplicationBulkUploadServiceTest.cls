@@ -8,7 +8,7 @@ private class GrantApplicationBulkUploadServiceTest {
         'Lee',
         '65 8989 8989',
         '123456',
-        2500,
+        2000,
         'Option 1'
       ),
       createUploadApplication(
@@ -16,7 +16,7 @@ private class GrantApplicationBulkUploadServiceTest {
         'Yew',
         '65 9000 0001',
         '654321',
-        2001,
+        2000,
         'Option 2'
       )
     };
@@ -55,8 +55,8 @@ private class GrantApplicationBulkUploadServiceTest {
     System.assertEquals('Andrew', applicants[0].FirstName);
     System.assertEquals('Lee', applicants[0].LastName);
     System.assertEquals('123456', applicants[0].MailingPostalCode);
-    System.assertEquals(2500, applicants[0].Monthly_Income__c);
-    System.assertEquals(30000, applicants[0].Annual_Income__c);
+    System.assertEquals(2000, applicants[0].Monthly_Income__c);
+    System.assertEquals(24000, applicants[0].Annual_Income__c);
     System.assertEquals('Option_One', applicants[0].Support_Option__c);
 
     System.assertEquals(2, savedApplications.size());

@@ -3,6 +3,7 @@ import { LightningElement, track, wire } from "lwc";
 import submitApplication from "@salesforce/apex/GrantApplicationController.submitApplication";
 
 import getActiveSupportOptions from "@salesforce/apex/GrantApplicationController.getActiveSupportOptions";
+import getClientMessages from "@salesforce/apex/GrantExceptionService.getClientMessages";
 
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 
@@ -19,6 +20,7 @@ export default class GrantApplicationForm extends LightningElement {
   loading = false;
 
   supportOptionOptions = [];
+  clientMessages = {};
 
   @wire(getActiveSupportOptions)
   wiredSupportOptions({ data, error }) {
@@ -36,6 +38,27 @@ export default class GrantApplicationForm extends LightningElement {
         })
       );
     }
+  }
+
+  @wire(getClientMessages)
+  wiredClientMessages({ data }) {
+    if (data) {
+      this.clientMessages = data;
+    }
+  }
+
+  get phonePatternMessage() {
+    return this.getClientMessage(
+      "PHONE_INVALID",
+      "Phone must use Singapore format 65 6812 3456."
+    );
+  }
+
+  get postalCodePatternMessage() {
+    return this.getClientMessage(
+      "POSTAL_CODE_INVALID",
+      "Mailing Postal Code must be a 6 digit number."
+    );
   }
 
   handleInputChange(event) {
@@ -91,7 +114,10 @@ export default class GrantApplicationForm extends LightningElement {
 
   getErrorMessage(error) {
     if (!error) {
-      return "Unexpected error(null).";
+      return this.getClientMessage(
+        "UNEXPECTED_ERROR_NULL",
+        "Unexpected error(null)."
+      );
     }
 
     if (typeof error === "string") {
@@ -125,7 +151,13 @@ export default class GrantApplicationForm extends LightningElement {
       return error.message;
     }
 
-    return "Unexpected error.";
+    return this.getClientMessage("UNEXPECTED_ERROR", "Unexpected error.");
+  }
+
+  getClientMessage(code, defaultMessage) {
+    return this.clientMessages && this.clientMessages[code]
+      ? this.clientMessages[code]
+      : defaultMessage;
   }
 
   validateForm() {

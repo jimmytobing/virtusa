@@ -1,8 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Mailing_Postal_Code_Format</fullName>
-    <active>true</active>
-    <description>Requires applicant mailing postal code to be exactly 6 digits.</description>
+    <active>false</active>
+    <description
+  >Requires applicant mailing postal code to be exactly 6 digits.</description>
     <errorConditionFormula>AND(
     OR(
         NOT(ISBLANK(Support_Option__c)),
