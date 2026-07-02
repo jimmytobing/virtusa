@@ -1,0 +1,264 @@
+@startuml
+
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Controller" {
+    class GrantApplicationController {
+        +submitApplication(request: GrantDTO): Id
+        +getActiveGrantTypes(): List<String>
+        +getActiveSupportOptions(): List<GrantSupportOptionDTO>
+    }
+}
+
+package "Application Services" {
+    class GrantApplicationService {
+        {static} -SINGAPORE_PHONE_PATTERN: Pattern
+        {static} -POSTAL_CODE_PATTERN: Pattern
+        {static} +submitApplication(request: GrantDTO): Id
+        {static} +validateApplicantRequest(request: GrantDTO): void
+        {static} -upsertApplicant(request: GrantDTO): Contact
+        {static} -isGuestUser(): Boolean
+    }
+
+    class ContactMatchingService {
+        {static} -HOLDING_ACCOUNT_NAME: String
+        {static} +upsertApplicantByPhone(request: GrantDTO): Contact
+        {static} -ensureContactReferenceAccess(applicant: Contact): void
+        {static} -findByPhone(phone: String): Contact
+        {static} -resolveApplicantAccountId(applicant: Contact): Id
+        {static} -getHoldingAccountId(): Id
+        {static} -getDefaultAccountOwnerId(): Id
+    }
+
+    class GrantDisbursementService {
+        {static} +bypassContactTrigger: Boolean
+        {static} +recalculateDisbursements(applicationId: Id, option: Grant_Support_Option__mdt): void
+        {static} +recalculateDisbursementsFromFlow(requests: List<FlowRequest>): void
+        {static} +recalculateForContacts(contacts: List<Contact>): void
+        {static} -recalculateForContacts(contacts: List<Contact>, optionsByDeveloperName: Map<String, Grant_Support_Option__mdt>): void
+        {static} -recalculateForApplicationIds(applicationIds: Set<Id>): void
+        {static} -recalculateForApplications(optionsByApplicationId: Map<Id, Grant_Support_Option__mdt>): void
+        {static} -getActiveOptionsByDeveloperName(): Map<String, Grant_Support_Option__mdt>
+        {static} -firstDayOfNextMonth(sourceDate: Date): Date
+    }
+
+    class GrantConfigurationService {
+        {static} +getConfiguration(grantType: String): Grant_Configuration__mdt
+        {static} +getActiveGrantTypes(): List<String>
+    }
+
+    class GrantSupportOptionService {
+        {static} +getActiveOptions(): List<GrantSupportOptionDTO>
+        {static} +getActiveOption(developerName: String): Grant_Support_Option__mdt
+    }
+
+    class GrantExceptionService {
+        +GrantExceptionService()
+    }
+
+    class GrantIntegrationService {
+        +GrantIntegrationService()
+    }
+
+    class GrantRetryService {
+        +GrantRetryService()
+    }
+}
+
+package "Repositories" {
+    class ContactRepository {
+        {static} +getById(contactId: Id): Contact
+        {static} +getByPhone(phone: String): Contact
+    }
+
+    class GrantApplicationRepository {
+        {static} +save(application: Grant_Application__c): Id
+        {static} +getById(applicationId: Id): Grant_Application__c
+    }
+
+    class GrantConfigurationRepository {
+        {static} +getByGrantType(grantType: String): Grant_Configuration__mdt
+        {static} +getActiveConfigurations(): List<Grant_Configuration__mdt>
+    }
+}
+
+package "Trigger Handlers" {
+    class ContactTriggerHandler {
+        {static} -mergingDuplicatePhones: Boolean
+        +beforeInsert(records: List<Contact>): void
+        +beforeUpdate(records: List<Contact>): void
+        +afterInsert(records: List<Contact>): void
+        +afterUpdate(records: List<Contact>, oldMap: Map<Id, Contact>): void
+        {static} -validateGrantFields(records: List<Contact>): void
+        {static} -processGrantDisbursements(records: List<Contact>): void
+        {static} -mergeDuplicatePhoneContacts(records: List<Contact>): Set<Id>
+    }
+
+    class GrantApplicationTriggerHandler {
+        +beforeInsert(records: List<Grant_Application__c>): void
+        +beforeUpdate(records: List<Grant_Application__c>, oldMap: Map<Id, Grant_Application__c>): void
+        +afterInsert(records: List<Grant_Application__c>): void
+        +afterUpdate(records: List<Grant_Application__c>, oldMap: Map<Id, Grant_Application__c>): void
+    }
+}
+
+package "Async" {
+    class GrantApplicationApplicantLinkJob {
+        -applicationId: Id
+        -applicantId: Id
+        +GrantApplicationApplicantLinkJob(applicationId: Id, applicantId: Id)
+        +execute(context: QueueableContext): void
+    }
+}
+
+package "DTOs and Utilities" {
+    class GrantDTO {
+        +applicationId: Id
+        +applicantId: Id
+        +firstName: String
+        +lastName: String
+        +phone: String
+        +mailingPostalCode: String
+        +monthlyIncome: Decimal
+        +supportOption: String
+        +grantType: String
+        +requestedAmount: Decimal
+        +reason: String
+        +status: String
+    }
+
+    class GrantSupportOptionDTO {
+        +value: String
+        +label: String
+        +monthlyAmount: Decimal
+        +durationMonths: Integer
+        +totalAmount: Decimal
+        +GrantSupportOptionDTO(option: Grant_Support_Option__mdt)
+    }
+
+    class GrantResponse {
+        +success: Boolean
+        +message: String
+        +recordId: Id
+        +data: Object
+    }
+
+    class GrantConstants {
+        {static} +STATUS_DRAFT: String
+        {static} +STATUS_PENDING: String
+        {static} +STATUS_APPROVED: String
+        {static} +STATUS_REJECTED: String
+        {static} +INTEGRATION_PENDING: String
+        {static} +INTEGRATION_SUCCESS: String
+        {static} +INTEGRATION_FAILED: String
+        {static} +GRANT_EDUCATION: String
+        {static} +GRANT_HEALTHCARE: String
+        {static} +ERROR_VALIDATION: String
+        {static} +ERROR_INTEGRATION: String
+        {static} +ERROR_SYSTEM: String
+        {static} +MAX_RETRY: Integer
+    }
+
+    class GrantUtility {
+        {static} +isBlank(value: String): Boolean
+        {static} +isNull(value: Object): Boolean
+        {static} +generateTransactionId(): String
+    }
+
+    class GrantException
+}
+
+package "Nested Request Types" {
+    class "GrantDisbursementService.FlowRequest" as GrantDisbursementService_FlowRequest {
+        +grantApplicationId: Id
+    }
+}
+
+package "Sample and Tests" {
+    class coba {
+        +coba()
+        {static} +getAccountsWithActiveOpportunities(): List<Account>
+        {static} +parseAccountPayload(jsonBody: String): SampleAccountPayload
+        {static} +getAccountPayloadFromRest(endpoint: String): SampleAccountPayload
+        {static} +publishSampleAccountEvent(accountId: Id, accountName: String, message: String): Id
+    }
+
+    class "coba.SampleAccountPayload" as coba_SampleAccountPayload {
+        +id: String
+        +name: String
+        +username: String
+        +email: String
+    }
+
+    class "coba.RestCalloutException" as coba_RestCalloutException
+    class "coba.PlatformEventPublishException" as coba_PlatformEventPublishException
+
+    class cobaTest {
+        {static} -getAccountsWithActiveOpportunitiesReturnsOnlyMatchingAccounts(): void
+        {static} -parseAccountPayloadDeserializesJsonBody(): void
+        {static} -getAccountPayloadFromRestReturnsDeserializedResponse(): void
+        {static} -publishSampleAccountEventPublishesPlatformEvent(): void
+    }
+
+    class "cobaTest.AccountPayloadCalloutMock" as cobaTest_AccountPayloadCalloutMock {
+        +respond(request: HttpRequest): HttpResponse
+    }
+}
+
+interface Queueable
+interface HttpCalloutMock
+class Exception
+
+GrantApplicationApplicantLinkJob ..|> Queueable
+cobaTest_AccountPayloadCalloutMock ..|> HttpCalloutMock
+GrantException --|> Exception
+coba_RestCalloutException --|> Exception
+coba_PlatformEventPublishException --|> Exception
+
+GrantApplicationController ..> GrantApplicationService
+GrantApplicationController ..> GrantConfigurationService
+GrantApplicationController ..> GrantSupportOptionService
+GrantApplicationController ..> GrantDTO
+GrantApplicationController ..> GrantSupportOptionDTO
+
+GrantApplicationService ..> GrantDTO
+GrantApplicationService ..> GrantSupportOptionService
+GrantApplicationService ..> ContactMatchingService
+GrantApplicationService ..> GrantApplicationRepository
+GrantApplicationService ..> GrantApplicationApplicantLinkJob
+GrantApplicationService ..> GrantConstants
+GrantApplicationService ..> GrantException
+GrantApplicationService ..> GrantDisbursementService : bypass flag
+
+ContactMatchingService ..> GrantDTO
+ContactMatchingService ..> GrantDisbursementService : bypass trigger
+ContactMatchingService ..> GrantException
+
+GrantConfigurationService ..> GrantConfigurationRepository
+GrantConfigurationService ..> GrantException
+GrantSupportOptionService ..> GrantSupportOptionDTO
+GrantSupportOptionService ..> GrantException
+
+ContactTriggerHandler ..> GrantDisbursementService
+GrantApplicationApplicantLinkJob ..> Grant_Application__c
+GrantDisbursementService ..> GrantDisbursementService_FlowRequest
+GrantDisbursementService ..> GrantException
+GrantDisbursementService ..> Grant_Support_Option__mdt
+GrantDisbursementService ..> Grant_Application__c
+GrantDisbursementService ..> Grant_Disbursement__c
+
+GrantSupportOptionDTO ..> Grant_Support_Option__mdt
+GrantConfigurationRepository ..> Grant_Configuration__mdt
+GrantApplicationRepository ..> Grant_Application__c
+ContactRepository ..> Contact
+
+coba *-- coba_SampleAccountPayload
+coba *-- coba_RestCalloutException
+coba *-- coba_PlatformEventPublishException
+coba ..> Sample_Account_Event__e
+cobaTest ..> coba
+cobaTest *-- cobaTest_AccountPayloadCalloutMock
+
+@enduml

@@ -2,46 +2,109 @@
 
 hide methods
 hide circle
+skinparam linetype ortho
+
+entity Account {
+    * Id
+    --
+    Name
+    OwnerId
+}
 
 entity Contact {
     * Id
     --
+    AccountId <<Lookup(Account)>>
     FirstName
     LastName
     Phone
     Email
-    DateOfBirth
-    PostalCode
-    AnnualIncome
+    MailingPostalCode
+    Birthdate
+    Monthly_Income__c
+    Annual_Income__c
+    Support_Option__c
+    National_ID__c
+    Employment_Status__c
+    Citizenship_Status__c
 }
 
-entity Grant_Application {
+entity Grant_Application__c {
     * Id
     --
-    ApplicationNumber
-    Status
-    RequestedOption
-    SubmissionDate
-    VerificationStatus
+    Applicant__c <<Lookup(Contact)>>
+    Grant_Type__c
+    Requested_Amount__c
+    Approved_Amount__c
+    Reason__c
+    Status__c
+    Current_Stage__c
+    Eligibility_Score__c
+    Application_Date__c
+    Submitted_Date__c
+    Approval_Date__c
 }
 
-entity Grant_Disbursement {
+entity Grant_Disbursement__c {
     * Id
     --
-    SequenceNo
-    Amount
-    DueDate
-    PaymentStatus
+    Grant_Applicantion__c <<Lookup(Grant_Application__c)>>
+    Sequence_Number__c
+    Amount_to_be_disbursed__c
+    Disbursed_Date__c
+    Grant_is_disbursed__c
+    Support_Option__c
 }
 
-entity ContentDocument {
+entity Grant_Support_Option__mdt {
+    * DeveloperName
+    --
+    MasterLabel
+    Monthly_Amount__c
+    Duration_Months__c
+    Active__c
+    Sort_Order__c
+}
+
+entity Grant_Configuration__mdt {
+    * DeveloperName
+    --
+    Grant_Type__c
+    Maximum_Amount__c
+    Income_Threshold__c
+    Minimum_Age__c
+    Maximum_Age__c
+    Priority__c
+    Active__c
+}
+
+entity Integration_Error__c {
     * Id
+    --
+    Service_Name__c
+    Error_Type__c
+    Error_Message__c
+    Status__c
+    Transaction_Id__c
+    Request_Payload__c
+    Response_Payload__c
+    Stack_Trace__c
+    Retry_Count__c
+    Processed_Date__c
 }
 
-Contact ||--o{ Grant_Application
+Account ||--o{ Contact : owns
+Contact ||--o{ Grant_Application__c : submits
+Grant_Application__c ||--o{ Grant_Disbursement__c : schedules
 
-Grant_Application ||--o{ Grant_Disbursement
+Grant_Support_Option__mdt ..> Contact : selected option
+Grant_Support_Option__mdt ..> Grant_Application__c : grant option
+Grant_Support_Option__mdt ..> Grant_Disbursement__c : disbursement option
+Grant_Configuration__mdt ..> Grant_Application__c : grant type rules
 
-Grant_Application ||--o{ ContentDocument
+note right of Grant_Disbursement__c
+  Field name is currently
+  Grant_Applicantion__c in metadata.
+end note
 
 @enduml
