@@ -201,6 +201,108 @@ private class GrantApplicationBulkUploadServiceTest {
     System.assertEquals(0, [SELECT COUNT() FROM Grant_Disbursement__c]);
   }
 
+  @IsTest
+  static void invalidUploadedApplicationsCoverRequiredFieldBranches() {
+    List<Grant_Application__c> invalidApplications = new List<Grant_Application__c>{
+      createUploadApplication(
+        null,
+        'Missing First',
+        '65 9000 0005',
+        '123456',
+        1000,
+        'Option 1'
+      ),
+      createUploadApplication(
+        'Missing Last',
+        null,
+        '65 9000 0006',
+        '123456',
+        1000,
+        'Option 1'
+      ),
+      createUploadApplication(
+        'Missing',
+        'Income',
+        '65 9000 0007',
+        '123456',
+        null,
+        'Option 1'
+      ),
+      createUploadApplication(
+        'Invalid',
+        'Income',
+        '65 9000 0008',
+        '123456',
+        -1,
+        'Option 1'
+      ),
+      createUploadApplication(
+        'Missing',
+        'Support',
+        '65 9000 0009',
+        '123456',
+        1000,
+        null
+      ),
+      createUploadApplication(
+        'Unavailable',
+        'Support',
+        '65 9000 0010',
+        '123456',
+        1000,
+        'Unavailable Option'
+      )
+    };
+
+    Test.startTest();
+    List<Database.SaveResult> results = Database.insert(
+      invalidApplications,
+      false
+    );
+    Test.stopTest();
+
+    for (Database.SaveResult result : results) {
+      System.assertEquals(false, result.isSuccess());
+      System.assertEquals(1, result.getErrors().size());
+    }
+    System.assertEquals(
+      0,
+      [
+        SELECT COUNT()
+        FROM Contact
+        WHERE
+          Phone IN (
+            '65 9000 0005',
+            '65 9000 0006',
+            '65 9000 0007',
+            '65 9000 0008',
+            '65 9000 0009',
+            '65 9000 0010'
+          )
+      ]
+    );
+  }
+
+  @IsTest
+  static void publicHandlersIgnoreEmptyInputs() {
+    Test.startTest();
+    GrantApplicationBulkUploadService.validateBeforeInsert(null);
+    GrantApplicationBulkUploadService.validateBeforeInsert(
+      new List<Grant_Application__c>()
+    );
+    GrantApplicationBulkUploadService.processAfterInsert(null);
+    GrantApplicationBulkUploadService.processAfterInsert(
+      new List<Grant_Application__c>()
+    );
+    GrantApplicationBulkUploadService.processAfterUpdate(
+      new List<Grant_Application__c>(),
+      null
+    );
+    Test.stopTest();
+
+    System.assertEquals(0, [SELECT COUNT() FROM Grant_Application__c]);
+  }
+
   private static Grant_Application__c createUploadApplication(
     String firstName,
     String lastName,
