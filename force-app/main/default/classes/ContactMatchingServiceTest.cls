@@ -159,6 +159,109 @@ private class ContactMatchingServiceTest {
     }
 
     @IsTest
+    static void submitApplicationLinksApplicantImmediately() {
+        GrantDTO request = createGrantRequest('65 6812 3463');
+        request.supportOption = 'Option_One';
+
+        Test.startTest();
+        Id applicationId = GrantApplicationService.submitApplication(request);
+        Test.stopTest();
+
+        Grant_Application__c application = [
+            SELECT Applicant__c, Grant_Type__c, Requested_Amount__c
+            FROM Grant_Application__c
+            WHERE Id = :applicationId
+        ];
+
+        Contact applicant = [
+            SELECT Id
+            FROM Contact
+            WHERE Phone = '65 6812 3463'
+            LIMIT 1
+        ];
+
+        System.assertEquals(applicant.Id, application.Applicant__c);
+        System.assertEquals('Option One', application.Grant_Type__c);
+        System.assertEquals(1500, application.Requested_Amount__c);
+    }
+
+    @IsTest
+    static void submitApplicationLinksExistingApplicantAfterDuplicateMerge() {
+        Contact existingApplicant = new Contact(
+            FirstName = 'Existing',
+            LastName = 'Applicant',
+            Phone = '65 6812 3464',
+            MailingPostalCode = '111111',
+            Monthly_Income__c = 500,
+            Support_Option__c = 'Option One'
+        );
+        insert existingApplicant;
+
+        GrantDTO request = createGrantRequest('65 6812 3464');
+        request.supportOption = 'Option_One';
+        request.firstName = 'Updated';
+        request.mailingPostalCode = '222222';
+
+        Test.startTest();
+        Id applicationId = GrantApplicationService.submitApplication(request);
+        Test.stopTest();
+
+        Grant_Application__c application = [
+            SELECT Applicant__c
+            FROM Grant_Application__c
+            WHERE Id = :applicationId
+        ];
+
+        List<Contact> applicants = [
+            SELECT Id, FirstName, MailingPostalCode
+            FROM Contact
+            WHERE Phone = '65 6812 3464'
+        ];
+
+        System.assertEquals(1, applicants.size());
+        System.assertEquals(existingApplicant.Id, applicants[0].Id);
+        System.assertEquals(existingApplicant.Id, application.Applicant__c);
+        System.assertEquals('Updated', applicants[0].FirstName);
+        System.assertEquals('222222', applicants[0].MailingPostalCode);
+    }
+
+    @IsTest
+    static void applicantLinkJobLinksApplicationAfterInsert() {
+        Contact applicant = new Contact(
+            FirstName = 'Async',
+            LastName = 'Applicant',
+            Phone = '65 6812 3465'
+        );
+        insert applicant;
+
+        Grant_Application__c application = new Grant_Application__c(
+            Grant_Type__c = 'Option One',
+            Requested_Amount__c = 1500,
+            Status__c = GrantConstants.STATUS_PENDING,
+            Application_Date__c = Date.today(),
+            Submitted_Date__c = Datetime.now()
+        );
+        insert application;
+
+        Test.startTest();
+        System.enqueueJob(
+            new GrantApplicationApplicantLinkJob(
+                application.Id,
+                applicant.Id
+            )
+        );
+        Test.stopTest();
+
+        Grant_Application__c linkedApplication = [
+            SELECT Applicant__c
+            FROM Grant_Application__c
+            WHERE Id = :application.Id
+        ];
+
+        System.assertEquals(applicant.Id, linkedApplication.Applicant__c);
+    }
+
+    @IsTest
     static void mergeDuplicatePhoneContactsIgnoresRecordsWithoutPhone() {
         Contact applicant = new Contact(LastName = 'Applicant');
 

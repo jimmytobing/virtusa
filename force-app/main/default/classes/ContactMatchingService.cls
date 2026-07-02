@@ -3,6 +3,7 @@ public without sharing class ContactMatchingService {
     private static final String HOLDING_ACCOUNT_NAME =
         'Grant Applicant Holding Account';
     private static Boolean mergingDuplicatePhones = false;
+    private static Map<Id, Id> keeperIdByMergedContactId = new Map<Id, Id>();
 
     public static Contact upsertApplicantByPhone(GrantDTO request) {
         if (request == null) {
@@ -33,6 +34,8 @@ public without sharing class ContactMatchingService {
         } else {
             update applicant;
         }
+
+        applicant = getActiveApplicantByPhone(request.phone, applicant);
 
         ensureContactReferenceAccess(applicant);
 
@@ -114,6 +117,7 @@ public without sharing class ContactMatchingService {
             );
 
             contactsToDelete.add(new Contact(Id = insertedContact.Id));
+            keeperIdByMergedContactId.put(insertedContact.Id, keeper.Id);
             contactsHandledByMerge.add(insertedContact.Id);
 
             if (insertedContactIds.contains(keeper.Id)) {
@@ -189,6 +193,28 @@ public without sharing class ContactMatchingService {
             Schema.SObjectType.Contact.fields.getMap().containsKey(
                 'AccountId'
             );
+    }
+
+    private static Contact getActiveApplicantByPhone(
+        String phone,
+        Contact fallbackApplicant
+    ) {
+        if (
+            fallbackApplicant != null &&
+            keeperIdByMergedContactId.containsKey(fallbackApplicant.Id)
+        ) {
+            return new Contact(
+                Id = keeperIdByMergedContactId.get(fallbackApplicant.Id)
+            );
+        }
+
+        Contact activeApplicant = ContactRepository.getByPhone(phone);
+
+        if (activeApplicant != null) {
+            return activeApplicant;
+        }
+
+        return fallbackApplicant;
     }
 
     private static Id getHoldingAccountId() {
