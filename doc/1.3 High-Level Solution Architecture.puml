@@ -34,6 +34,8 @@ database "Salesforce Data" {
 
     [Grant Disbursement]
 
+    [Integration Error]
+
     [Case]
 
     [Knowledge]
@@ -54,7 +56,7 @@ Citizen --> [Experience Site]
 
 [Experience Site] --> [Lightning Web Components]
 
-[Lightning Web Components] --> [Flow]
+[Lightning Web Components] --> [Apex Service Layer]
 
 [Flow] --> [Apex Service Layer]
 
@@ -68,13 +70,15 @@ Citizen --> [Experience Site]
 
 [Apex Service Layer] --> [Grant Disbursement]
 
+[Apex Service Layer] --> [Integration Error]
+
 [Apex Service Layer] --> [Case]
 
 [Apex Service Layer] --> [Knowledge]
 
 [Apex Service Layer] --> [Files]
 
-[Apex Service Layer] --> "API Gateway"
+[Apex Service Layer] ..> "API Gateway" : future integration
 
 "API Gateway" --> "Master Data Management"
 

@@ -10,25 +10,25 @@ component "Lightning Web Components"
 
 package "Application Layer" {
 
-component "Record Trigger Flow"
+component "Before-Save Lifecycle Flow"
 
-component "Screen Flow"
+component "After-Save Notification Flow"
 
 }
 
 package "Business Services" {
 
-component "Application Service"
+component "GrantApplicationService"
 
-component "Eligibility Service"
+component "ContactMatchingService"
 
-component "Grant Calculation Service"
+component "GrantDisbursementService"
 
-component "Verification Service"
+component "GrantConfigurationService"
 
-component "Notification Service"
+component "GrantSupportOptionService"
 
-component "Bulk Upload Service"
+component "GrantApplicationBulkUploadService"
 
 }
 
@@ -38,27 +38,29 @@ component "Trigger Handler"
 
 component "Repository"
 
+component "Grant Application"
+
 }
 
 database "Salesforce Database"
 
 "Experience Cloud" --> "Lightning Web Components"
 
-"Lightning Web Components" --> "Record Trigger Flow"
+"Lightning Web Components" --> "GrantApplicationService"
 
-"Record Trigger Flow" --> "Application Service"
+"Before-Save Lifecycle Flow" --> "Salesforce Database"
 
-"Application Service" --> "Eligibility Service"
+"After-Save Notification Flow" --> "Grant Application"
 
-"Application Service" --> "Grant Calculation Service"
+"GrantApplicationService" --> "ContactMatchingService"
 
-"Application Service" --> "Verification Service"
+"GrantApplicationService" --> "GrantSupportOptionService"
 
-"Application Service" --> "Notification Service"
+"GrantApplicationService" --> "GrantDisbursementService"
 
-"Application Service" --> "Bulk Upload Service"
+"GrantApplicationBulkUploadService" --> "GrantDisbursementService"
 
-"Grant Calculation Service" --> "Trigger Handler"
+"GrantDisbursementService" --> "Trigger Handler"
 
 "Trigger Handler" --> Repository
 

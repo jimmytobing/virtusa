@@ -27,12 +27,19 @@ entity Contact {
     National_ID__c
     Employment_Status__c
     Citizenship_Status__c
+    Grant_Application__c <<Lookup(Grant_Application__c)>>
 }
 
 entity Grant_Application__c {
     * Id
     --
     Applicant__c <<Lookup(Contact)>>
+    Applicant_First_Name__c
+    Applicant_Last_Name__c
+    Applicant_Phone__c
+    Mailing_Postal_Code__c
+    Monthly_Income__c
+    Support_Option__c
     Grant_Type__c
     Requested_Amount__c
     Approved_Amount__c
@@ -43,6 +50,8 @@ entity Grant_Application__c {
     Application_Date__c
     Submitted_Date__c
     Approval_Date__c
+    Total_Disbursements__c
+    Paid_Disbursements__c
 }
 
 entity Grant_Disbursement__c {

@@ -1,18 +1,48 @@
 @startuml
 
-entity Grant_Option__mdt {
+entity Grant_Support_Option__mdt {
 
-OptionName
+DeveloperName
 
-IncomeThreshold
+MasterLabel
 
-MonthlyAmount
+Monthly_Amount__c
 
-MaximumMonths
+Duration_Months__c
 
-DisplayOrder
+Sort_Order__c
 
-Active
+Active__c
+
+}
+
+entity Grant_Configuration__mdt {
+
+Grant_Type__c
+
+Maximum_Amount__c
+
+Income_Threshold__c
+
+Minimum_Age__c
+
+Maximum_Age__c
+
+Priority__c
+
+Active__c
+
+}
+
+entity Grant_Error_Message__mdt {
+
+DeveloperName
+
+Message__c
+
+Category__c
+
+Active__c
 
 }
 

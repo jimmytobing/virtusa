@@ -2,7 +2,9 @@
 
 start
 
-:REST Callout;
+:Integration or scheduled retry trigger;
+
+:Execute retryable operation;
 
 if (Successful?) then (Yes)
 
@@ -12,13 +14,13 @@ stop
 
 else
 
-:Log Exception;
+:Store or update Integration Error;
 
 if (Retryable?) then (Yes)
 
 :Increment Retry Count;
 
-:Queue Retry Job;
+:Keep status ready for next retry cycle;
 
 stop
 

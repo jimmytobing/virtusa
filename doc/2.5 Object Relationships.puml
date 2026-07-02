@@ -1,13 +1,26 @@
 @startuml
 
+object Account
+
 object Contact
 
-object Application
+object Grant_Application__c
 
-object Disbursement
+object Grant_Disbursement__c
 
-Contact "1" --> "*" Application
+object Grant_Support_Option__mdt
 
-Application "1" --> "*" Disbursement
+object Grant_Configuration__mdt
 
+Account "1" --> "*" Contact
+
+Contact "1" --> "*" Grant_Application__c
+
+Grant_Application__c "1" --> "*" Grant_Disbursement__c
+
+Grant_Support_Option__mdt ..> Grant_Application__c
+
+Grant_Configuration__mdt ..> Grant_Application__c
+
+Contact --> Grant_Application__c : active application lookup
 @enduml

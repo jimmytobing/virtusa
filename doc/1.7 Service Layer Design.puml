@@ -2,28 +2,42 @@
 
 package "Service Layer" {
 
-class ApplicationService
+class GrantApplicationService
 
-class ContactService
+class ContactMatchingService
 
-class GrantCalculationService
+class GrantDisbursementService
 
-class CitizenVerificationService
+class GrantConfigurationService
 
-class FileUploadService
+class GrantSupportOptionService
 
-class GrantOptionService
+class GrantApplicationBulkUploadService
+
+class GrantExceptionService
+
+class GrantIntegrationService
+
+class GrantRetryService
 
 }
 
-ApplicationService --> ContactService
+GrantApplicationService --> ContactMatchingService
 
-ApplicationService --> GrantCalculationService
+GrantApplicationService --> GrantDisbursementService
 
-ApplicationService --> CitizenVerificationService
+GrantApplicationService --> GrantSupportOptionService
 
-ApplicationService --> FileUploadService
+GrantDisbursementService --> GrantConfigurationService
 
-GrantCalculationService --> GrantOptionService
+GrantApplicationBulkUploadService --> ContactMatchingService
+
+GrantApplicationBulkUploadService --> GrantDisbursementService
+
+GrantApplicationService --> GrantExceptionService
+
+GrantIntegrationService --> GrantExceptionService
+
+GrantRetryService ..> GrantIntegrationService : future retry
 
 @enduml

@@ -14,7 +14,7 @@ if (Validation Passed?) then (Yes)
 
 :Submit Application;
 
-:Application Service;
+:GrantApplicationService;
 
 :Find Existing Contact;
 
@@ -28,7 +28,7 @@ else
 
 endif
 
-:Eligibility Evaluation;
+:Income and support option validation;
 
 if (Eligible?) then (Yes)
 
@@ -42,7 +42,7 @@ if (Eligible?) then (Yes)
 
 else
 
-:Reject Application;
+:Save application without pending schedule;
 
 endif
 

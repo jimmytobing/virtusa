@@ -14,7 +14,7 @@ else
 
 :Capture Exception;
 
-:Log Error Record;
+:Resolve friendly message from Grant_Error_Message__mdt;
 
 :Rollback Transaction;
 

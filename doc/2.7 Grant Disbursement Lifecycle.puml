@@ -1,18 +1,18 @@
 @startuml
 left to right direction
 
+state "Application Reference Cleared" as ApplicationReferenceCleared
+
 [*] --> Scheduled
 
-Scheduled --> Processing
+Scheduled --> Disbursed
 
-Processing --> Paid
+Scheduled --> Recalculated
 
-Processing --> Failed
+Recalculated --> Scheduled
 
-Failed --> Retry
+Disbursed --> Completed
 
-Retry --> Paid
-
-Paid --> Completed
+Completed --> ApplicationReferenceCleared
 
 @enduml

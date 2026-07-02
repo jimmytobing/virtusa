@@ -4,7 +4,7 @@
 
 The proposed solution is designed following Salesforce Well-Architected principles by separating presentation, orchestration, business logic, integration, and data persistence into independent layers.
 
-The solution leverages Salesforce Experience Cloud as the citizen-facing portal, Lightning Web Components (LWC) for the user interface, Flow for declarative orchestration, Apex for complex business logic and integrations, and Custom Metadata Types to support configurable business rules.
+The solution leverages Salesforce portal capabilities as the citizen-facing channel, Lightning Web Components (LWC) for the primary user interface, Flow for simple record automation, Apex for reusable business logic, and Custom Metadata Types to support configurable business rules.
 
 The architecture follows the principle of using declarative capabilities whenever possible while reserving Apex for scenarios requiring complex calculations, reusable business logic, or performance-critical processing.
 
@@ -12,14 +12,14 @@ The architecture follows the principle of using declarative capabilities wheneve
 
 The solution is designed based on the following principles.
 
-| Principle | Implementation |
-| ----- | ----- |
-| Configuration over Customization | Business rules are stored in Custom Metadata Types whenever possible. |
-| Separation of Concerns | UI, orchestration, business logic, integration, and persistence are implemented independently. |
-| Reusability | Business services are implemented as reusable Apex service classes. |
-| Scalability | Business logic is bulkified and designed for large-volume processing. |
-| Security by Design | Named Credentials, Sharing Model, Permission Sets, and Experience Cloud Profiles are used. |
-| Maintainability | Simple automation uses Flow while complex logic is implemented in Apex. |
+| Principle                        | Implementation                                                                                 |
+| -------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Configuration over Customization | Business rules are stored in Custom Metadata Types whenever possible.                          |
+| Separation of Concerns           | UI, orchestration, business logic, integration, and persistence are implemented independently. |
+| Reusability                      | Business services are implemented as reusable Apex service classes.                            |
+| Scalability                      | Business logic is bulkified and designed for large-volume processing.                          |
+| Security by Design               | Named Credentials, Sharing Model, Permission Sets, and Experience Cloud Profiles are used.     |
+| Maintainability                  | Simple automation uses Flow while complex logic is implemented in Apex.                        |
 
 ## 1.3 High-Level Solution Architecture
 
@@ -35,17 +35,17 @@ Lightning Web Components are responsible only for user experience, client-side v
 
 Flow orchestrates declarative processes such as notifications, routing, and simple business automation. This allows administrators to modify business processes without requiring code deployment.
 
-Complex business logic, integrations, grant calculations, redistribution algorithms, and bulk processing are implemented within Apex Service Classes. This improves testability, scalability, and maintainability.
+Complex business logic, contact matching, grant validation, disbursement schedule generation, and import processing are implemented within Apex service classes. This improves testability, scalability, and maintainability.
 
 Business configuration such as grant options, eligibility thresholds, and future support schemes are externalized into Custom Metadata Types instead of hardcoded Apex logic.
 
-External systems are integrated through Named Credentials and REST APIs to provide secure authentication while avoiding hardcoded credentials.
+External integration and retry classes are available as extension points. When live REST integration is enabled, it should use Named Credentials so authentication details remain outside Apex code.
 
 ## 1.5 Layered Architecture
 
 [1.5 Layered Architecture.puml](<./1.5 Layered Architecture.puml>)
 
-# 
+#
 
 ## 1.6 Why Flow Instead of Apex?
 
@@ -53,20 +53,20 @@ The solution intentionally follows a declarative-first architecture.
 
 Flow is used for:
 
-* Record orchestration  
-* Notifications  
-* Approval routing  
-* Assignment  
-* Simple business automation
+- Record orchestration
+- Notifications
+- Approval routing
+- Assignment
+- Simple business automation
 
 Apex is reserved for:
 
-* Complex grant calculations  
-* Redistribution logic  
-* External REST integrations  
-* Bulk upload processing  
-* Performance-critical algorithms  
-* Reusable enterprise services
+- Complex grant calculations
+- Redistribution logic
+- External REST integrations
+- Bulk upload processing
+- Performance-critical algorithms
+- Reusable enterprise services
 
 This design minimizes technical debt while ensuring future maintainability.
 
@@ -78,7 +78,7 @@ This design minimizes technical debt while ensuring future maintainability.
 
 [1.8 Business Flow.puml](<./1.8 Business Flow.puml>)
 
-## 
+##
 
 ## **1.9. Scope**
 
@@ -88,39 +88,41 @@ This solution addresses the functional and technical requirements described in t
 
 The proposed solution includes:
 
-* Citizen self-service application through Experience Cloud.  
-* Grant application submission using Lightning Web Components.  
-* Contact management.  
-* Grant application management.  
-* Grant disbursement schedule generation.  
-* Eligibility validation.  
-* Integration with the external Master Data Management (MDM) system.  
-* Document upload using Salesforce Files.  
-* Administrator-configurable grant options using Custom Metadata Types.  
-* Centralized exception handling and operational monitoring.  
-* Security architecture based on Salesforce security best practices.  
-* Solution Architecture documentation.
+- Citizen self-service application through Experience Cloud.
+- Grant application submission using Lightning Web Components.
+- Contact management.
+- Grant application management.
+- Grant disbursement schedule generation.
+- Eligibility validation.
+- Contact matching and applicant profile maintenance.
+- Administrator-configurable grant options using Custom Metadata Types.
+- Configurable user-facing error messages using Custom Metadata Types.
+- Integration error object and retry service placeholders for future operational monitoring.
+- Security architecture based on Salesforce security best practices.
+- Solution Architecture documentation.
 
 ### **Out of Scope**
 
 The following items are intentionally excluded from this assessment because they are outside the stated business requirements.
 
-* Payment gateway implementation.  
-* Identity Provider (SSO) implementation.  
-* Infrastructure provisioning.  
-* CI/CD pipeline implementation.  
-* Monitoring platform implementation.  
-* Salesforce environment strategy.  
-* License estimation.  
-* Disaster recovery implementation.  
-* Production deployment planning.  
-* External financial system implementation.  
-* Data migration from legacy systems.  
-* Performance testing.  
-* User training.  
-* Operational support procedures.
+- Payment gateway implementation.
+- Live external MDM integration implementation.
+- Identity Provider (SSO) implementation.
+- Infrastructure provisioning.
+- CI/CD pipeline implementation.
+- Monitoring platform implementation.
+- Salesforce environment strategy.
+- License estimation.
+- Disaster recovery implementation.
+- Production deployment planning.
+- External financial system implementation.
+- Data migration from legacy systems.
+- Supporting document upload implementation.
+- Performance testing.
+- User training.
+- Operational support procedures.
 
-# 
+#
 
 # 2\. Data Architecture
 
@@ -128,7 +130,7 @@ The following items are intentionally excluded from this assessment because they
 
 The proposed data model separates master data from transactional data to improve maintainability, scalability, reporting capability, and future extensibility.
 
-Instead of storing all business information directly within the Contact object, the solution introduces a dedicated ***Grant Application*** object and ***Grant Disbursement*** object.
+Instead of storing all business information directly within the Contact object, the solution introduces a dedicated _**Grant Application**_ object and _**Grant Disbursement**_ object.
 
 This approach enables multiple grant applications to be associated with a single citizen while preserving application history and supporting future business enhancements without modifying the core Contact record.
 
@@ -138,14 +140,16 @@ This approach enables multiple grant applications to be associated with a single
 
 ## 2.3 Data Ownership
 
-| Object | Purpose |
-| ----- | ----- |
-| Contact | Citizen master profile |
-| Grant Application | Individual grant application |
-| Grant Disbursement | Monthly payment schedule |
-| Case | Citizen enquiries |
-| Knowledge | Knowledge articles for support agents |
-| ContentDocument | Uploaded supporting documents |
+| Object                        | Purpose                                                    |
+| ----------------------------- | ---------------------------------------------------------- |
+| Account                       | Holding account for grant applicants where required        |
+| Contact                       | Citizen master profile                                     |
+| Grant Application             | Individual application and submitted applicant details     |
+| Grant Disbursement            | Monthly payment schedule                                   |
+| Grant Support Option Metadata | Configurable monthly amount and duration                   |
+| Grant Configuration Metadata  | Configurable grant rules such as income threshold          |
+| Grant Error Message Metadata  | Configurable validation and user-facing messages           |
+| Integration Error             | Operational error tracking for integration/retry scenarios |
 
 ## 2.4 Why Introduce Grant Application?
 
@@ -153,16 +157,16 @@ Although the requirement only requires **Contact** and **Grant Disbursement** re
 
 Benefits include:
 
-* Separation between master data and transactional data.  
-* Preservation of application history.  
-* Support for multiple applications submitted by the same citizen.  
-* Improved reporting capabilities.  
-* Easier implementation of future business requirements.  
-* Better normalization of the data model.
+- Separation between master data and transactional data.
+- Preservation of application history.
+- Support for multiple applications submitted by the same citizen.
+- Improved reporting capabilities.
+- Easier implementation of future business requirements.
+- Better normalization of the data model.
 
 This design aligns with enterprise CRM modeling practices.
 
-## 
+##
 
 ## 2.5 Object Relationships
 
@@ -176,19 +180,19 @@ This design aligns with enterprise CRM modeling practices.
 
 [2.7 Grant Disbursement Lifecycle.puml](<./2.7 Grant Disbursement Lifecycle.puml>)
 
-## 
+##
 
 ## 2.8 Data Validation Strategy
 
 Data validation is implemented using multiple validation layers.
 
-| Layer | Responsibility |
-| ----- | ----- |
-| LWC | User experience validation |
-| Validation Rules | Standard field validation |
-| Apex | Cross-object validation and complex business rules |
-| Trigger | Data integrity enforcement |
-| Database | Referential integrity |
+| Layer            | Responsibility                                     |
+| ---------------- | -------------------------------------------------- |
+| LWC              | User experience validation                         |
+| Validation Rules | Standard field validation                          |
+| Apex             | Cross-object validation and complex business rules |
+| Trigger          | Data integrity enforcement                         |
+| Database         | Referential integrity                              |
 
 The layered validation approach prevents invalid data from entering the system while providing immediate feedback to end users.
 
@@ -199,24 +203,24 @@ The solution avoids hardcoded business logic by externalizing configurable value
 [2.9 Configurable Business Rules.puml](<./2.9 Configurable Business Rules.puml>)  
 Administrators can introduce new grant schemes or modify existing configurations without requiring Apex code changes or deployments.
 
-## 
+##
 
 ## 2.10 Future Scalability
 
 The proposed data model supports future enhancements including:
 
-* Multiple grant programs.  
-* Multiple applications per citizen.  
-* Additional verification stages.  
-* Appeals and reassessments.  
-* Payment integrations.  
-* Audit history.  
-* Government reporting.  
-* Historical grant analytics.
+- Multiple grant programs.
+- Multiple applications per citizen.
+- Additional verification stages.
+- Appeals and reassessments.
+- Payment integrations.
+- Audit history.
+- Government reporting.
+- Historical grant analytics.
 
 The architecture minimizes future schema changes while maintaining backward compatibility.
 
-# 
+#
 
 # 3\. Application Architecture
 
@@ -234,22 +238,22 @@ This architecture minimizes technical debt while improving maintainability and l
 
 [3.2 Application Layer Overview.puml](<./3.2 Application Layer Overview.puml>)
 
-## 
+##
 
 ## 3.3 Business Service Responsibilities
 
-| Service | Responsibility |
-| ----- | ----- |
-| ApplicationService | Coordinates the complete grant application process |
-| ContactService | Creates or updates citizen information |
-| EligibilityService | Evaluates eligibility based on configurable business rules |
-| GrantCalculationService | Calculates payment schedule and redistribution logic |
-| VerificationService | Calls external citizen verification services |
-| NotificationService | Sends email notifications and platform events |
-| BulkUploadService | Processes CSV uploads using Batch Apex |
-| GrantOptionService | Retrieves configurable grant options from Custom Metadata |
+| Service                                     | Responsibility                                                                 |
+| ------------------------------------------- | ------------------------------------------------------------------------------ |
+| GrantApplicationService                     | Coordinates submission, validation, applicant linking, and schedule creation   |
+| ContactMatchingService                      | Finds or creates applicants by phone and maintains citizen profile data        |
+| GrantDisbursementService                    | Creates and recalculates disbursement schedules from active support options    |
+| GrantConfigurationService                   | Retrieves active grant configuration such as available grant types             |
+| GrantSupportOptionService                   | Retrieves active support options from Custom Metadata                          |
+| GrantApplicationBulkUploadService           | Handles imported grant applications through trigger-based bulk-safe processing |
+| GrantExceptionService                       | Resolves configurable business and validation messages                         |
+| GrantIntegrationService / GrantRetryService | Extension points for future REST integration and retry handling                |
 
-## 
+##
 
 ## 3.4 Application Flow
 
@@ -259,17 +263,17 @@ This architecture minimizes technical debt while improving maintainability and l
 
 One of the key architectural decisions is determining whether a requirement should be implemented using Salesforce Flow or Apex.
 
-| Requirement | Technology | Justification |
-| ----- | ----- | ----- |
-| Email Notifications | Flow | Declarative, easy to maintain |
-| Assignment Rules | Flow | Administrator configurable |
-| Approval Process | Flow | Native Salesforce capability |
-| Grant Eligibility | Apex | Complex business rules |
-| Payment Redistribution | Apex | Performance-critical calculations |
-| REST Integration | Apex | HTTP callouts are required |
-| Bulk CSV Processing | Apex Batch | Large-volume processing |
-| Complex Validation | Apex | Cross-object validation |
-| Grant Option Retrieval | Custom Metadata \+ Apex | Configuration-driven solution |
+| Requirement                    | Technology              | Justification                                                                |
+| ------------------------------ | ----------------------- | ---------------------------------------------------------------------------- |
+| Email Notifications            | Flow                    | Declarative, easy to maintain                                                |
+| Assignment Rules               | Flow                    | Administrator configurable                                                   |
+| Approval Process               | Flow                    | Native Salesforce capability                                                 |
+| Grant Eligibility              | Apex                    | Income and support option rules require reusable validation                  |
+| Payment Schedule Recalculation | Apex                    | Existing paid disbursements must be preserved when options change            |
+| REST Integration               | Apex                    | Placeholder service exists; live callouts should be added only when required |
+| Bulk CSV Processing            | Apex Service + Trigger  | Imported records are normalized and recalculated in bulk-safe logic          |
+| Complex Validation             | Apex                    | Cross-object validation                                                      |
+| Support Option Retrieval       | Custom Metadata \+ Apex | Configuration-driven solution                                                |
 
 ## 3.6 Why Apex Is Used Only When Necessary
 
@@ -277,13 +281,13 @@ The solution intentionally minimizes custom code.
 
 Apex is implemented only when one or more of the following conditions are met:
 
-* Complex payload transformation.  
-* Performance-critical calculations.  
-* External REST integrations.  
-* Bulk data processing.  
-* Cross-object business validation.  
-* Reusable enterprise services.  
-* Scenarios that cannot be implemented declaratively.
+- Complex payload transformation.
+- Performance-critical calculations.
+- External REST integrations.
+- Bulk data processing.
+- Cross-object business validation.
+- Reusable enterprise services.
+- Scenarios that cannot be implemented declaratively.
 
 All other business automation is implemented using Salesforce Flow to reduce maintenance costs and improve administrator productivity. This approach follows Salesforce's recommendation to favor declarative capabilities before introducing custom code.
 
@@ -297,18 +301,17 @@ The application adopts a centralized error handling strategy.
 
 [3.8 Error Handling Strategy.puml](<./3.8 Error Handling Strategy.puml>)
 
-All exceptions are captured using a centralized exception framework.
+Business exceptions are converted into friendly, configurable messages through `Grant_Error_Message__mdt`.
 
-Unexpected exceptions are stored in a dedicated custom object (`Integration_Error__c` or `Application_Error__c`) together with the following information:
+The project also includes `Integration_Error__c` for operational tracking when integration/retry processing is enabled. The object supports the following information:
 
-* Timestamp  
-* User  
-* Transaction ID  
-* Request Payload  
-* Response Payload  
-* Stack Trace  
-* Retry Count  
-* Processing Status
+- Transaction ID
+- Request Payload
+- Response Payload
+- Stack Trace
+- Retry Count
+- Processing Status
+- Processed Date
 
 This approach simplifies operational monitoring, troubleshooting, and future retry processing.
 
@@ -336,10 +339,10 @@ Introduce a custom object named **Grant\_Application\_\_c** between Contact and 
 
 ### **Alternatives Considered**
 
-| Option | Description |
-| ----- | ----- |
+| Option                                    | Description                                                    |
+| ----------------------------------------- | -------------------------------------------------------------- |
 | Store all information directly in Contact | Simpler implementation but mixes master and transactional data |
-| Introduce Grant Application object | Adds one object but provides a cleaner domain model |
+| Introduce Grant Application object        | Adds one object but provides a cleaner domain model            |
 
 ### **Rationale**
 
@@ -349,15 +352,15 @@ Separating application data from citizen master data provides better normalizati
 
 Positive:
 
-* Better scalability  
-* Cleaner data model  
-* Easier maintenance  
-* Historical tracking
+- Better scalability
+- Cleaner data model
+- Easier maintenance
+- Historical tracking
 
 Trade-off:
 
-* One additional custom object  
-* Slightly higher implementation complexity
+- One additional custom object
+- Slightly higher implementation complexity
 
 ### **ADR-002 — Flow First, Apex When Necessary**
 
@@ -377,25 +380,25 @@ Flow provides better maintainability for administrators and reduces long-term te
 
 Apex is reserved for scenarios requiring:
 
-* Complex calculations  
-* External integrations  
-* Bulk processing  
-* Performance-critical algorithms  
-* Cross-object validation
+- Complex calculations
+- External integrations
+- Bulk processing
+- Performance-critical algorithms
+- Cross-object validation
 
 ### **Consequences**
 
 Positive:
 
-* Easier administration  
-* Lower maintenance cost  
-* Reduced custom code  
-* Better alignment with Salesforce best practices
+- Easier administration
+- Lower maintenance cost
+- Reduced custom code
+- Better alignment with Salesforce best practices
 
 Trade-off:
 
-* Logic is distributed between Flow and Apex  
-* Clear governance is required
+- Logic is distributed between Flow and Apex
+- Clear governance is required
 
 ### **ADR-003 — Configuration over Hardcoded Business Rules**
 
@@ -409,10 +412,10 @@ Store grant configuration in **Custom Metadata Types**.
 
 ### **Alternatives Considered**
 
-| Option | Description |
-| ----- | ----- |
-| Hardcoded Apex Constants | Requires deployment for every business change |
-| Custom Metadata Type | Business configuration managed by administrators |
+| Option                   | Description                                      |
+| ------------------------ | ------------------------------------------------ |
+| Hardcoded Apex Constants | Requires deployment for every business change    |
+| Custom Metadata Type     | Business configuration managed by administrators |
 
 ### **Rationale**
 
@@ -424,13 +427,13 @@ Externalizing configuration enables administrators to manage grant options witho
 
 Positive:
 
-* No deployment required  
-* Better flexibility  
-* Easier administration
+- No deployment required
+- Better flexibility
+- Easier administration
 
 Trade-off:
 
-* Slightly more complex initial implementation
+- Slightly more complex initial implementation
 
 ### **ADR-004 — Layered Service Architecture**
 
@@ -446,21 +449,21 @@ Implement a dedicated Service Layer.
 
 Each service has a single responsibility.
 
-Services are reusable across LWC, Flow, Batch Apex, Scheduled Apex, and REST APIs.
+Services are reusable across LWC, Flow, Queueable Apex, future Batch Apex, Scheduled Apex, and REST APIs.
 
 ### **Consequences**
 
 Positive:
 
-* High cohesion  
-* Loose coupling  
-* Easier unit testing  
-* Better scalability
+- High cohesion
+- Loose coupling
+- Easier unit testing
+- Better scalability
 
 Trade-off:
 
-* Additional classes  
-* Slightly more project structure
+- Additional classes
+- Slightly more project structure
 
 ### **ADR-005 — Trigger Handler Pattern**
 
@@ -482,37 +485,37 @@ Business logic belongs inside service classes.
 
 Positive:
 
-* Cleaner triggers  
-* Reusable logic  
-* Easier testing  
-* Better governance
+- Cleaner triggers
+- Reusable logic
+- Easier testing
+- Better governance
 
 Trade-off:
 
-* More Apex classes
+- More Apex classes
 
-## 
+##
 
 ### **ADR-006 — Named Credentials for External Integration**
 
 ### **Context**
 
-Citizen verification requires communication with an external Master Data Management system.
+Citizen verification may require communication with an external Master Data Management system in a future release.
 
 ### **Decision**
 
-Use Named Credentials together with External Credentials.
+Keep the integration service separate from the core application service. When live REST integration is enabled, use Named Credentials together with External Credentials.
 
 ### **Alternatives Considered**
 
-| Option | Description |
-| ----- | ----- |
-| Hardcoded endpoint and credentials | Security risk |
-| Named Credentials | Secure and maintainable |
+| Option                             | Description             |
+| ---------------------------------- | ----------------------- |
+| Hardcoded endpoint and credentials | Security risk           |
+| Named Credentials                  | Secure and maintainable |
 
 ### **Rationale**
 
-Authentication details are managed outside application code.
+Authentication details should be managed outside application code.
 
 Credentials can be rotated without modifying Apex.
 
@@ -520,86 +523,79 @@ Credentials can be rotated without modifying Apex.
 
 Positive:
 
-* Improved security  
-* Easier credential rotation  
-* Cleaner Apex code
+- Improved security
+- Easier credential rotation
+- Cleaner Apex code
 
 Trade-off:
 
-* Additional Salesforce configuration
+- Additional Salesforce configuration
 
-## 
+##
 
-### **ADR-007 — Centralized Error Logging**
+### **ADR-007 — Configurable Error Messages and Integration Error Tracking**
 
 ### **Context**
 
-External integrations and batch processing may fail unexpectedly.
+Validation, disbursement calculation, external integrations, and import processing may fail unexpectedly.
 
 ### **Decision**
 
-Persist unexpected exceptions into a dedicated custom object.
-
-Suggested object:
-
-| Application\_Error\_\_c or Integration\_Error\_\_c |
-| :---- |
+Use `Grant_Error_Message__mdt` for friendly user-facing messages and `Integration_Error__c` for operational tracking of integration/retry failures.
 
 ### **Stored Information**
 
-* Timestamp  
-* User  
-* Transaction Id  
-* Error Code  
-* Error Message  
-* Stack Trace  
-* Request Payload  
-* Response Payload  
-* Retry Count  
-* Processing Status
+- Transaction Id
+- Error Type
+- Error Message
+- Stack Trace
+- Request Payload
+- Response Payload
+- Retry Count
+- Processing Status
 
 ### **Rationale**
 
-Centralized logging simplifies production support and enables retry mechanisms.
+Configurable messages keep the user experience business-friendly, while integration error records simplify production support and enable retry mechanisms when live integrations are added.
 
 ### **Consequences**
 
 Positive:
 
-* Easier troubleshooting  
-* Operational monitoring  
-* Retry capability  
-* Audit history
+- Easier troubleshooting
+- Operational monitoring
+- Retry capability
+- Audit history
 
 Trade-off:
 
-* Additional storage consumption
+- Additional storage consumption
 
-### **ADR-008 — Batch Apex for Bulk Processing**
+### **ADR-008 — Bulk-Safe Import Processing**
 
 ### **Context**
 
-The assessment requires processing bulk CSV uploads.
+Grant applications may be created through data import tools as well as the portal.
 
 ### **Decision**
 
-Use Batch Apex rather than synchronous processing.
+Use trigger-based bulk-safe Apex services to validate imported rows, match or create Contacts, link applications, and recalculate disbursements.
 
 ### **Rationale**
 
-Batch Apex provides better governor limit management, fault isolation, and scalability.
+The current implementation keeps import handling close to the `Grant_Application__c` lifecycle and uses collection-based SOQL/DML to stay within governor limits. Batch Apex can still be introduced later if file sizes or operational requirements exceed synchronous import limits.
 
 ### **Consequences**
 
 Positive:
 
-* Handles large datasets  
-* Better resilience  
-* Supports partial retries
+- Keeps imported data consistent with portal submissions
+- Reuses the same support option and disbursement rules
+- Avoids unnecessary framework complexity for the current scope
 
 Trade-off:
 
-* Slightly higher implementation complexity
+- Very large imports may require a future Batch Apex wrapper
 
 ### **ADR-009 — Enterprise Security Model**
 
@@ -613,13 +609,13 @@ Implement Salesforce's layered security model.
 
 ### **Components**
 
-* Organization-Wide Defaults (OWD)  
-* Role Hierarchy  
-* Sharing Rules  
-* Permission Sets  
-* Experience Cloud Profiles  
-* Field-Level Security  
-* Named Credentials
+- Organization-Wide Defaults (OWD)
+- Role Hierarchy
+- Sharing Rules
+- Permission Sets
+- Experience Cloud Profiles
+- Field-Level Security
+- Named Credentials
 
 ### **Rationale**
 
@@ -629,30 +625,30 @@ Each layer addresses a different security concern, providing defense in depth.
 
 Positive:
 
-* Least privilege access  
-* Regulatory compliance  
-* Simplified security governance
+- Least privilege access
+- Regulatory compliance
+- Simplified security governance
 
 Trade-off:
 
-* Additional configuration effort
+- Additional configuration effort
 
-### **ADR-010 — Salesforce Files Instead of Legacy Attachments**
+### **ADR-010 — Future Document Storage Should Use Salesforce Files**
 
 ### **Context**
 
-The assessment requires applicants to upload supporting documents.
+If supporting document upload is added in a future release, the solution needs a modern document storage approach.
 
 ### **Decision**
 
-Store uploaded documents using Salesforce Files (`ContentVersion`, `ContentDocument`, and `ContentDocumentLink`).
+Use Salesforce Files (`ContentVersion`, `ContentDocument`, and `ContentDocumentLink`) instead of legacy Attachments.
 
 ### **Alternatives Considered**
 
-| Option | Description |
-| ----- | ----- |
-| Attachment | Legacy feature with limited capabilities |
-| Salesforce Files | Modern file management model |
+| Option           | Description                              |
+| ---------------- | ---------------------------------------- |
+| Attachment       | Legacy feature with limited capabilities |
+| Salesforce Files | Modern file management model             |
 
 ### **Rationale**
 
@@ -662,13 +658,13 @@ Salesforce Files supports versioning, sharing, preview, and future integrations 
 
 Positive:
 
-* Modern architecture  
-* Better file lifecycle management  
-* Native sharing and version control
+- Modern architecture
+- Better file lifecycle management
+- Native sharing and version control
 
 Trade-off:
 
-* Slightly more complex data model compared to legacy attachments
+- Slightly more complex data model compared to legacy attachments
 
 ## 4.2 ADR Summary
 
@@ -688,12 +684,12 @@ The application is designed to minimize server processing time and optimize the 
 
 ### Design Considerations
 
-* Client-side validation is implemented using Lightning Web Components to reduce unnecessary server round trips.  
-* Business logic is bulkified to efficiently process multiple records within Salesforce governor limits.  
-* SOQL and DML operations are optimized to prevent excessive database operations.  
-* Collections (List, Set, and Map) are used to eliminate nested loops and reduce processing time.  
-* Long-running processes are executed asynchronously using Queueable Apex or Batch Apex where appropriate.  
-* External REST integrations are executed only when required to minimize network latency.
+- Client-side validation is implemented using Lightning Web Components to reduce unnecessary server round trips.
+- Business logic is bulkified to efficiently process multiple records within Salesforce governor limits.
+- SOQL and DML operations are optimized to prevent excessive database operations.
+- Collections (List, Set, and Map) are used to eliminate nested loops and reduce processing time.
+- Guest-user linking is handled asynchronously using Queueable Apex where required.
+- External REST integrations are isolated behind dedicated service classes and should be executed only when required.
 
 ## 5.3 Scalability
 
@@ -701,12 +697,12 @@ The architecture supports future business growth without requiring major structu
 
 ### Design Considerations
 
-* Separation between master data and transactional data.  
-* Configuration-driven business rules using Custom Metadata Types.  
-* Reusable Apex service classes.  
-* Layered application architecture.  
-* Batch processing for large-volume imports.  
-* Support for additional grant programs without changing application logic.
+- Separation between master data and transactional data.
+- Configuration-driven business rules using Custom Metadata Types.
+- Reusable Apex service classes.
+- Layered application architecture.
+- Bulk-safe trigger processing for imported applications.
+- Support for additional grant programs without changing application logic.
 
 The proposed design allows new grant schemes, eligibility rules, and business configurations to be introduced through metadata rather than source code modifications.
 
@@ -716,15 +712,15 @@ Security follows Salesforce's defense-in-depth approach.
 
 ### Security Controls
 
-* Organization-Wide Defaults  
-* Role Hierarchy  
-* Sharing Rules  
-* Permission Sets  
-* Field-Level Security  
-* Experience Cloud Profiles  
-* Named Credentials  
-* Secure REST authentication  
-* Platform Encryption (Future Enhancement)
+- Organization-Wide Defaults
+- Role Hierarchy
+- Sharing Rules
+- Permission Sets
+- Field-Level Security
+- Experience Cloud Profiles
+- Named Credentials
+- Secure REST authentication
+- Platform Encryption (Future Enhancement)
 
 Sensitive information is protected using Salesforce security mechanisms while external credentials remain outside application code.
 
@@ -740,12 +736,12 @@ Temporary failures from external systems do not impact overall platform availabi
 
 The application incorporates several reliability mechanisms.
 
-* Centralized exception handling  
-* Retry mechanism for integration failures  
-* Transaction rollback  
-* Validation before persistence  
-* Error logging  
-* Batch isolation for bulk processing
+- Centralized exception handling
+- Retry service placeholder for future integration failures
+- Transaction rollback
+- Validation before persistence
+- Integration error tracking object
+- Bulk-safe import processing
 
 These mechanisms improve operational stability and simplify production support.
 
@@ -767,17 +763,17 @@ The architecture is intentionally designed to support future enhancements.
 
 Examples include:
 
-* Additional grant schemes  
-* New eligibility rules  
-* Multiple payment providers  
-* Additional external integrations  
-* Mobile applications  
-* AI-assisted citizen support  
-* Government reporting platforms
+- Additional grant schemes
+- New eligibility rules
+- Multiple payment providers
+- Additional external integrations
+- Mobile applications
+- AI-assisted citizen support
+- Government reporting platforms
 
 These enhancements can be introduced with minimal impact on the existing architecture.
 
-# 
+#
 
 # 6\. Assumptions and Constraints
 
@@ -785,49 +781,49 @@ These enhancements can be introduced with minimal impact on the existing archite
 
 The following assumptions have been made during the solution design.
 
-| ID | Assumption |
-| ----- | ----- |
-| A-01 | The Master Data Management (MDM) system exposes secure REST APIs for citizen verification. |
-| A-02 | Each citizen can be uniquely identified using a government-issued identifier. |
-| A-03 | Authentication for Experience Cloud users is managed through the organization's identity provider. |
-| A-04 | Grant eligibility criteria are maintained by business administrators. |
-| A-05 | Grant payment execution is performed by an external financial system. |
-| A-06 | Business administrators are responsible for maintaining Custom Metadata records. |
-| A-07 | Uploaded files comply with Salesforce storage limitations. |
-| A-08 | External services provide acceptable response times for synchronous verification. |
+| ID   | Assumption                                                                                                                 |
+| ---- | -------------------------------------------------------------------------------------------------------------------------- |
+| A-01 | If MDM verification is enabled later, the MDM system exposes secure REST APIs.                                             |
+| A-02 | In the current implementation, applicant matching primarily uses phone number.                                             |
+| A-03 | Authentication for Experience Cloud users can be integrated with the organization's identity provider in a future release. |
+| A-04 | Grant eligibility criteria are maintained by business administrators.                                                      |
+| A-05 | Grant payment execution is performed by an external financial system.                                                      |
+| A-06 | Business administrators are responsible for maintaining Custom Metadata records.                                           |
+| A-07 | If supporting document upload is added later, uploaded files comply with Salesforce storage limitations.                   |
+| A-08 | External services, when enabled, provide acceptable response times or support asynchronous retry.                          |
 
-## 
+##
 
 ## 6.2 Constraints
 
 The following technical constraints apply to the proposed solution.
 
-| ID | Constraint |
-| ----- | ----- |
-| C-01 | Salesforce governor limits apply to all Apex transactions. |
-| C-02 | REST integrations depend on external system availability. |
-| C-03 | File storage capacity is governed by Salesforce platform limits. |
-| C-04 | Network latency may impact external API response time. |
-| C-05 | Batch Apex execution follows Salesforce asynchronous processing limits. |
-| C-06 | Platform upgrades and releases follow Salesforce release schedules. |
-| C-07 | The assessment excludes implementation of payment gateway functionality. |
-| C-08 | Infrastructure management is outside the scope of the Salesforce solution. |
+| ID   | Constraint                                                                                                                   |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------- |
+| C-01 | Salesforce governor limits apply to all Apex transactions.                                                                   |
+| C-02 | REST integrations are not active in the current implementation and will depend on external system availability when enabled. |
+| C-03 | If file upload is added later, file storage capacity is governed by Salesforce platform limits.                              |
+| C-04 | Network latency may impact external API response time.                                                                       |
+| C-05 | Queueable Apex and future Batch Apex execution follow Salesforce asynchronous processing limits.                             |
+| C-06 | Platform upgrades and releases follow Salesforce release schedules.                                                          |
+| C-07 | The assessment excludes implementation of payment gateway functionality.                                                     |
+| C-08 | Infrastructure management is outside the scope of the Salesforce solution.                                                   |
 
-## 
+##
 
 ## 6.3 Design Trade-offs
 
 Several architectural trade-offs were intentionally accepted.
 
-| Decision | Benefit | Trade-off |
-| ----- | ----- | ----- |
-| Introduce Grant Application object | Better normalization | Additional custom object |
-| Use Flow for orchestration | Easier administration | Multiple automation technologies |
-| Use Apex Service Layer | Better scalability | More implementation effort |
-| Custom Metadata | Configuration-driven | Additional setup |
-| Error Logging Framework | Better operational support | Increased storage usage |
+| Decision                                                 | Benefit                                          | Trade-off                        |
+| -------------------------------------------------------- | ------------------------------------------------ | -------------------------------- |
+| Introduce Grant Application object                       | Better normalization                             | Additional custom object         |
+| Use Flow for orchestration                               | Easier administration                            | Multiple automation technologies |
+| Use Apex Service Layer                                   | Better scalability and reuse                     | More implementation effort       |
+| Custom Metadata                                          | Configuration-driven                             | Additional setup                 |
+| Configurable error messages and Integration Error object | Better user experience and operational readiness | Additional metadata and storage  |
 
-# 
+#
 
 # 7\. Risks and Mitigation
 
@@ -839,47 +835,45 @@ The proposed architecture includes mitigation strategies to reduce both the like
 
 ## 7.2 Risk Register
 
-| Risk ID | Risk | Impact | Mitigation |
-| ----- | ----- | ----- | ----- |
-| R-01 | External verification service unavailable | Citizen verification cannot be completed | Retry mechanism, centralized error logging, manual verification process |
-| R-02 | Duplicate citizen applications | Duplicate grant allocation | Duplicate Rules, Matching Rules, external verification |
-| R-03 | Salesforce governor limit exceeded | Transaction failure | Bulkification, optimized SOQL, efficient collections |
-| R-04 | Business rules change frequently | Frequent deployments | Store configuration in Custom Metadata |
-| R-05 | Large CSV imports | Long processing time | Batch Apex |
-| R-06 | Integration timeout | Delayed application processing | Timeout handling, retry queue |
-| R-07 | Invalid uploaded documents | Application rejection | Client-side and server-side validation |
-| R-08 | Unexpected Apex exception | Transaction rollback | Centralized exception framework |
-| R-09 | Unauthorized data access | Security breach | Salesforce security model, least privilege principle |
-| R-10 | Future grant scheme changes | High maintenance effort | Metadata-driven architecture |
+| Risk ID | Risk                                                   | Impact                              | Mitigation                                                               |
+| ------- | ------------------------------------------------------ | ----------------------------------- | ------------------------------------------------------------------------ |
+| R-01    | External verification service unavailable when enabled | Citizen verification may be delayed | Retry mechanism, integration error tracking, manual verification process |
+| R-02    | Duplicate citizen applications                         | Duplicate grant allocation          | Phone-based contact matching and active application reuse                |
+| R-03    | Salesforce governor limit exceeded                     | Transaction failure                 | Bulkification, optimized SOQL, efficient collections                     |
+| R-04    | Business rules change frequently                       | Frequent deployments                | Store configuration in Custom Metadata                                   |
+| R-05    | Large CSV imports                                      | Long processing time                | Bulk-safe import service; add Batch Apex if volume grows                 |
+| R-06    | Integration timeout                                    | Delayed application processing      | Timeout handling, retry queue                                            |
+| R-07    | Invalid supporting documents if upload is added later  | Application review delay            | Client-side and server-side validation                                   |
+| R-08    | Unexpected Apex exception                              | Transaction rollback                | Centralized exception framework                                          |
+| R-09    | Unauthorized data access                               | Security breach                     | Salesforce security model, least privilege principle                     |
+| R-10    | Future grant scheme changes                            | High maintenance effort             | Metadata-driven architecture                                             |
 
 ## 7.3 Operational Monitoring
 
 The solution includes centralized operational monitoring.
 
-Production incidents are captured using a dedicated error logging framework.
+Production incidents for integration/retry scenarios can be captured using the `Integration_Error__c` object.
 
 Captured information includes:
 
-* Transaction Identifier  
-* Timestamp  
-* User  
-* Error Category  
-* Exception Message  
-* Stack Trace  
-* Request Payload  
-* Response Payload  
-* Retry Count  
-* Processing Status
+- Transaction Identifier
+- Error Category
+- Exception Message
+- Stack Trace
+- Request Payload
+- Response Payload
+- Retry Count
+- Processing Status
 
-Operational dashboards can be built using Salesforce Reports and Dashboards to monitor failed transactions and retry queues.
+Operational dashboards can be built using Salesforce Reports and Dashboards to monitor failed transactions and retry status.
 
 ## 7.4 Retry Strategy
 
-External integration failures are classified into retryable and non-retryable errors.
+When external integration is enabled, failures should be classified into retryable and non-retryable errors.
 
 [7.4 Retry Strategy.puml](<./7.4 Retry Strategy.puml>)
 
-Retry attempts are limited to prevent infinite processing loops. Each retry updates the retry counter and processing status to provide complete operational visibility.
+Retry attempts should be limited to prevent infinite processing loops. Each retry updates the retry counter and processing status to provide complete operational visibility.
 
 ## 7.5 Disaster Recovery Considerations
 
@@ -887,9 +881,9 @@ The proposed solution relies on Salesforce Platform resilience and disaster reco
 
 Additional operational recommendations include:
 
-* Scheduled data exports  
-* Version-controlled source code repository  
-* Automated deployment pipeline  
-* Backup strategy for metadata  
-* Monitoring of integration endpoints  
-* Production alerting for failed integrations
+- Scheduled data exports
+- Version-controlled source code repository
+- Automated deployment pipeline
+- Backup strategy for metadata
+- Monitoring of integration endpoints
+- Production alerting for failed integrations

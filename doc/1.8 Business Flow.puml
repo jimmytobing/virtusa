@@ -12,9 +12,9 @@ if (Valid?) then (Yes)
 
 :Submit Request;
 
-:Flow Orchestration;
+:Apex application service validates request;
 
-:Verify Citizen;
+:Load active support option;
 
 :Find Existing Contact;
 
@@ -28,7 +28,7 @@ else
 
 endif
 
-:Evaluate Eligibility;
+:Evaluate income eligibility;
 
 if (Eligible?) then (Yes)
 
@@ -38,11 +38,11 @@ if (Eligible?) then (Yes)
 
 else
 
-:Reject Application;
+:Do not create pending disbursements;
 
 endif
 
-:Notify Applicant;
+:Create review task or notification workflow;
 
 else
 

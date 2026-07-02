@@ -6,40 +6,40 @@ participant LWC
 
 participant Flow
 
-participant ApplicationService
+participant GrantApplicationService
 
-participant ContactService
+participant ContactMatchingService
 
-participant EligibilityService
+participant GrantSupportOptionService
 
-participant GrantCalculationService
+participant GrantDisbursementService
 
 database Salesforce
 
 Citizen -> LWC : Submit Application
 
-LWC -> Flow : Invoke
+LWC -> GrantApplicationService : submitApplication
 
-Flow -> ApplicationService : Start Processing
+GrantApplicationService -> GrantSupportOptionService : Get active option
 
-ApplicationService -> ContactService : Upsert Contact
+GrantSupportOptionService --> GrantApplicationService
 
-ContactService --> ApplicationService
+GrantApplicationService -> ContactMatchingService : Upsert applicant by phone
 
-ApplicationService -> EligibilityService : Check Eligibility
+ContactMatchingService --> GrantApplicationService
 
-EligibilityService --> ApplicationService
+GrantApplicationService --> Salesforce : Save Grant Application
 
-ApplicationService -> GrantCalculationService : Generate Schedule
+GrantApplicationService -> GrantDisbursementService : Recalculate schedule
 
-GrantCalculationService --> Salesforce : Save Records
+GrantDisbursementService --> Salesforce : Save Disbursements
 
-Salesforce --> GrantCalculationService
+Flow -> Salesforce : Set lifecycle fields / create tasks
 
-GrantCalculationService --> ApplicationService
+GrantDisbursementService --> GrantApplicationService
 
-ApplicationService --> Flow
+GrantApplicationService --> LWC
 
-Flow --> Citizen : Success
+LWC --> Citizen : Success
 
 @enduml

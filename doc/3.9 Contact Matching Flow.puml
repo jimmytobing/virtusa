@@ -4,7 +4,7 @@ title Applicant Contact Matching and Application Linking Flow
 
 start
 
-partition "Grant Application Service\n(with sharing)" {
+partition "Grant Application Service\n(without sharing)" {
     :Receive submitted application data;
 }
 
@@ -41,7 +41,7 @@ partition "Contact Matching Service\n(without sharing)" {
     endif
 }
 
-partition "Grant Application Service\n(with sharing)" {
+partition "Grant Application Service\n(without sharing)" {
     if (Is the applicant a Guest user?) then (Yes)
         :Queue a background job;
     else (No)
@@ -65,7 +65,7 @@ partition "Background Job\n(without sharing)" {
     endif
 }
 
-partition "Grant Application Service\n(with sharing)" {
+partition "Grant Application Service\n(without sharing)" {
     :Show the application submission success message;
 }
 

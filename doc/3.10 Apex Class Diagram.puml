@@ -20,6 +20,7 @@ package "Application Services" {
     class GrantDisbursementService <<Domain Service>>
     class GrantConfigurationService <<Configuration Service>>
     class GrantSupportOptionService <<Configuration Service>>
+    class GrantApplicationBulkUploadService <<Import Service>>
 }
 
 package "Data Access" {
@@ -31,7 +32,9 @@ package "Data Access" {
 package "Automation" {
     class ContactTriggerHandler <<Trigger Handler>>
     class GrantApplicationTriggerHandler <<Trigger Handler>>
+    class GrantDisbursementTrigger <<Trigger>>
     class GrantApplicationApplicantLinkJob <<Queueable>>
+    class GrantApplicationGuestUpdateJob <<Queueable>>
     class "GrantDisbursementService.FlowRequest" as FlowRequest <<Invocable Request>>
 }
 
@@ -47,6 +50,8 @@ package "Integration / Retry Stubs" {
     class GrantIntegrationService <<Service>>
     class GrantRetryService <<Service>>
     class GrantExceptionService <<Service>>
+    class Integration_Error__c <<Custom Object>>
+    class Grant_Error_Message__mdt <<Custom Metadata>>
 }
 
 package "Salesforce Data Model" {
@@ -65,6 +70,9 @@ GrantApplicationController --> GrantSupportOptionService
 GrantApplicationService --> ContactMatchingService
 GrantApplicationService --> GrantApplicationRepository
 GrantApplicationService --> GrantApplicationApplicantLinkJob
+GrantApplicationService --> GrantApplicationGuestUpdateJob
+GrantApplicationService --> GrantDisbursementService
+GrantApplicationService --> GrantExceptionService
 
 ContactMatchingService --> ContactRepository
 ContactMatchingService ..> GrantDisbursementService : bypass trigger
@@ -73,6 +81,12 @@ GrantConfigurationService --> GrantConfigurationRepository
 GrantSupportOptionService --> GrantSupportOptionDTO
 
 ContactTriggerHandler --> GrantDisbursementService
+GrantApplicationTriggerHandler --> GrantApplicationBulkUploadService
+GrantDisbursementTrigger --> GrantDisbursementService
+GrantDisbursementService --> GrantConfigurationRepository
+GrantDisbursementService --> GrantExceptionService
 GrantApplicationApplicantLinkJob --> Grant_Application__c
+GrantApplicationGuestUpdateJob --> Grant_Application__c
+GrantExceptionService --> Grant_Error_Message__mdt
 
 @enduml
