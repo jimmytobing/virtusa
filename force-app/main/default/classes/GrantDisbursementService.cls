@@ -100,15 +100,26 @@ public without sharing class GrantDisbursementService {
   }
 
   private static Decimal getActiveIncomeThreshold() {
+    Grant_Configuration__mdt selectedConfiguration;
+
     for (
       Grant_Configuration__mdt configuration : GrantConfigurationRepository.getActiveConfigurations()
     ) {
-      if (configuration.Income_Threshold__c != null) {
-        return configuration.Income_Threshold__c;
+      if (configuration.Income_Threshold__c == null) {
+        continue;
+      }
+
+      if (
+        selectedConfiguration == null ||
+        configuration.Priority__c < selectedConfiguration.Priority__c
+      ) {
+        selectedConfiguration = configuration;
       }
     }
 
-    return null;
+    return selectedConfiguration == null
+      ? null
+      : selectedConfiguration.Income_Threshold__c;
   }
 
   private static void clearUndisbursedRecords(Set<Id> applicationIds) {
