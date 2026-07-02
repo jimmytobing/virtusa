@@ -56,9 +56,9 @@
             <conditionLogic>and</conditionLogic>
             <conditions>
                 <leftValueReference>$Record.Requested_Amount__c</leftValueReference>
-                <operator>GreaterThan</operator>
+                <operator>GreaterThanOrEqualTo</operator>
                 <rightValue>
-                    <numberValue>3000.0</numberValue>
+                    <elementReference>get_config.Income_Threshold__c</elementReference>
                 </rightValue>
             </conditions>
             <connector>
@@ -67,6 +67,7 @@
             <label>High Amount</label>
         </rules>
     </decisions>
+    <description>add Grant_Configuration__mdt</description>
     <environments>Default</environments>
     <interviewLabel>Grant Application - Set Lifecycle Fields {!$Flow.CurrentDateTime}</interviewLabel>
     <label>Grant Application - Set Lifecycle Fields</label>
@@ -89,11 +90,34 @@
         </value>
     </processMetadataValues>
     <processType>AutoLaunchedFlow</processType>
+    <recordLookups>
+        <name>get_config</name>
+        <label>get config</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Approval_Routing_Needed</targetReference>
+        </connector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Active__c</field>
+            <operator>EqualTo</operator>
+            <value>
+                <booleanValue>true</booleanValue>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Grant_Configuration__mdt</object>
+        <sortField>Priority__c</sortField>
+        <sortOrder>Asc</sortOrder>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
     <start>
         <locationX>0</locationX>
         <locationY>0</locationY>
         <connector>
-            <targetReference>Approval_Routing_Needed</targetReference>
+            <targetReference>get_config</targetReference>
         </connector>
         <filterLogic>and</filterLogic>
         <filters>
