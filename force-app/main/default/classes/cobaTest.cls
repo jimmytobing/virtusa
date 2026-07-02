@@ -12,6 +12,15 @@ private class cobaTest {
         }
     }
 
+    private class FailedAccountPayloadCalloutMock implements HttpCalloutMock {
+        public HttpResponse respond(HttpRequest request) {
+            HttpResponse response = new HttpResponse();
+            response.setStatusCode(500);
+            response.setBody('{"message":"Server error"}');
+            return response;
+        }
+    }
+
     @IsTest
     static void getAccountsWithActiveOpportunitiesReturnsOnlyMatchingAccounts() {
         Account activeAccount = new Account(Name = 'Active Opportunity Account');
@@ -59,6 +68,18 @@ private class cobaTest {
     }
 
     @IsTest
+    static void parseAccountPayloadAllowsMissingId() {
+        coba.SampleAccountPayload payload = coba.parseAccountPayload(
+            '{"name":"No Id","username":"missing","email":"missing@example.com"}'
+        );
+
+        System.assertEquals(null, payload.id);
+        System.assertEquals('No Id', payload.name);
+        System.assertEquals('missing', payload.username);
+        System.assertEquals('missing@example.com', payload.email);
+    }
+
+    @IsTest
     static void getAccountPayloadFromRestReturnsDeserializedResponse() {
         Test.setMock(HttpCalloutMock.class, new AccountPayloadCalloutMock());
 
@@ -70,6 +91,35 @@ private class cobaTest {
         System.assertEquals('Leanne Graham', payload.name);
         System.assertEquals('Bret', payload.username);
         System.assertEquals('Sincere@april.biz', payload.email);
+    }
+
+    @IsTest
+    static void getAccountPayloadFromRestRejectsUnsuccessfulResponse() {
+        Test.setMock(
+            HttpCalloutMock.class,
+            new FailedAccountPayloadCalloutMock()
+        );
+
+        Boolean exceptionThrown = false;
+
+        Test.startTest();
+        try {
+            coba.getAccountPayloadFromRest(
+                'https://jsonplaceholder.typicode.com/users/1'
+            );
+        } catch (coba.RestCalloutException exceptionRecord) {
+            exceptionThrown = true;
+            System.assert(
+                exceptionRecord.getMessage().contains('status 500'),
+                'REST failures should include the response status.'
+            );
+        }
+        Test.stopTest();
+
+        System.assert(
+            exceptionThrown,
+            'Unsuccessful REST responses should throw a custom exception.'
+        );
     }
 
     @IsTest

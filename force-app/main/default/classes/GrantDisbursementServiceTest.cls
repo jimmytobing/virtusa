@@ -99,6 +99,123 @@ private class GrantDisbursementServiceTest {
         }
     }
 
+    @IsTest
+    static void recalculateFromFlowIgnoresEmptyRequests() {
+        Test.startTest();
+        GrantDisbursementService.recalculateDisbursementsFromFlow(null);
+        GrantDisbursementService.recalculateDisbursementsFromFlow(
+            new List<GrantDisbursementService.FlowRequest>()
+        );
+        GrantDisbursementService.recalculateDisbursementsFromFlow(
+            new List<GrantDisbursementService.FlowRequest>{
+                null,
+                new GrantDisbursementService.FlowRequest()
+            }
+        );
+        Test.stopTest();
+
+        System.assertEquals(
+            0,
+            [SELECT COUNT() FROM Grant_Disbursement__c],
+            'Empty flow requests should not create disbursements.'
+        );
+    }
+
+    @IsTest
+    static void recalculateFromFlowFallsBackToApplicationGrantType() {
+        User adminUser = createSystemAdminUser('fallback');
+
+        System.runAs(adminUser) {
+            recalculateFromFlowFallsBackToApplicationGrantTypeAsAdmin();
+        }
+    }
+
+    private static void recalculateFromFlowFallsBackToApplicationGrantTypeAsAdmin() {
+        Contact applicant = new Contact(
+            LastName = 'Applicant',
+            Phone = '65 6812 3472'
+        );
+        insert applicant;
+
+        Grant_Application__c application = createApplication(
+            applicant.Id,
+            'Option_One',
+            0
+        );
+
+        Test.startTest();
+        GrantDisbursementService.recalculateDisbursementsFromFlow(
+            new List<GrantDisbursementService.FlowRequest>{
+                createFlowRequest(application.Id)
+            }
+        );
+        Test.stopTest();
+
+        Grant_Application__c updatedApplication = [
+            SELECT Grant_Type__c, Requested_Amount__c
+            FROM Grant_Application__c
+            WHERE Id = :application.Id
+        ];
+
+        System.assertEquals('Option One', updatedApplication.Grant_Type__c);
+        System.assertEquals(1500, updatedApplication.Requested_Amount__c);
+        System.assertEquals(
+            3,
+            [
+                SELECT COUNT()
+                FROM Grant_Disbursement__c
+                WHERE Grant_Applicantion__c = :application.Id
+            ]
+        );
+    }
+
+    @IsTest
+    static void recalculateFromFlowRejectsRemainingAmountWithoutMonths() {
+        User adminUser = createSystemAdminUser('nomonths');
+
+        System.runAs(adminUser) {
+            recalculateFromFlowRejectsRemainingAmountWithoutMonthsAsAdmin();
+        }
+    }
+
+    private static void recalculateFromFlowRejectsRemainingAmountWithoutMonthsAsAdmin() {
+        Contact applicant = createApplicant('Option_One');
+        Grant_Application__c application = createApplication(
+            applicant.Id,
+            'Option One',
+            1500
+        );
+
+        insert new List<Grant_Disbursement__c>{
+            createDisbursement(application.Id, 100, Date.today().addMonths(-3), true, 1),
+            createDisbursement(application.Id, 100, Date.today().addMonths(-2), true, 2),
+            createDisbursement(application.Id, 100, Date.today().addMonths(-1), true, 3)
+        };
+
+        Boolean exceptionThrown = false;
+
+        Test.startTest();
+        try {
+            GrantDisbursementService.recalculateDisbursementsFromFlow(
+                new List<GrantDisbursementService.FlowRequest>{
+                    createFlowRequest(application.Id)
+                }
+            );
+        } catch (GrantException exceptionRecord) {
+            exceptionThrown = true;
+            System.assert(
+                exceptionRecord.getMessage().contains('no remaining months'),
+                'Invalid recalculation should explain the remaining month problem.'
+            );
+        }
+        Test.stopTest();
+
+        System.assert(
+            exceptionThrown,
+            'Recalculation should fail when amount remains but all months are consumed.'
+        );
+    }
+
     private static void recalculateFromFlowRejectsLowerOptionThanReceivedAmountAsAdmin() {
         Contact applicant = createApplicant('Option_One');
         Grant_Application__c application = createApplication(

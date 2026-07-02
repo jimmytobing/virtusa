@@ -361,6 +361,50 @@ private class ContactMatchingServiceTest {
     }
 
     @IsTest
+    static void insertingDuplicatePhonesInSameBatchMarksBothAsHandled() {
+        Contact firstApplicant = new Contact(
+            FirstName = 'First',
+            LastName = 'Applicant',
+            Phone = '65 6812 3466',
+            MailingPostalCode = '123456',
+            Monthly_Income__c = 500,
+            Support_Option__c = 'Option One'
+        );
+        Contact secondApplicant = new Contact(
+            FirstName = 'Second',
+            LastName = 'Applicant',
+            Phone = '65 6812 3466',
+            MailingPostalCode = '654321',
+            Monthly_Income__c = 750,
+            Support_Option__c = 'Option Two'
+        );
+
+        Test.startTest();
+        insert new List<Contact>{ firstApplicant, secondApplicant };
+        Test.stopTest();
+
+        List<Contact> applicants = [
+            SELECT
+                Id,
+                FirstName,
+                MailingPostalCode,
+                Monthly_Income__c,
+                Annual_Income__c,
+                Support_Option__c
+            FROM Contact
+            WHERE Phone = '65 6812 3466'
+        ];
+
+        System.assertEquals(1, applicants.size());
+        System.assertEquals(firstApplicant.Id, applicants[0].Id);
+        System.assertEquals('Second', applicants[0].FirstName);
+        System.assertEquals('654321', applicants[0].MailingPostalCode);
+        System.assertEquals(750, applicants[0].Monthly_Income__c);
+        System.assertEquals(9000, applicants[0].Annual_Income__c);
+        System.assertEquals('Option Two', applicants[0].Support_Option__c);
+    }
+
+    @IsTest
     static void supportOptionRequiresMonthlyIncome() {
         Contact applicant = new Contact(
             LastName = 'Applicant',
