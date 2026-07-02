@@ -215,6 +215,30 @@ private class GrantApplicationServiceTest {
     }
 
     @IsTest
+    static void smallBranchesCoverGuardClausesAndDtoDefaults() {
+        Grant_Application__c application = new Grant_Application__c();
+        new GrantApplicationTriggerHandler().beforeInsert(
+            new List<Grant_Application__c>{ application }
+        );
+
+        GrantSupportOptionDTO option = new GrantSupportOptionDTO(
+            new Grant_Support_Option__mdt(
+                DeveloperName = 'Test_Option',
+                MasterLabel = 'Test Option',
+                Monthly_Amount__c = 25
+            )
+        );
+
+        Test.startTest();
+        System.enqueueJob(new GrantApplicationApplicantLinkJob(null, null));
+        Test.stopTest();
+
+        System.assertEquals('Submitted', application.Current_Stage__c);
+        System.assertEquals(0, option.durationMonths);
+        System.assertEquals(0, option.totalAmount);
+    }
+
+    @IsTest
     static void grantDtoPropertiesCanBeRoundTripped() {
         Account accountRecord = new Account(Name = 'DTO Applicant Account');
         insert accountRecord;

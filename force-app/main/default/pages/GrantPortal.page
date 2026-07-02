@@ -1,0 +1,110 @@
+<apex:page
+    controller="GrantPortalController"
+    showHeader="false"
+    sidebar="false"
+    standardStylesheets="true"
+    docType="html-5.0">
+    <apex:slds />
+
+    <style>
+        body {
+            background: #f4f6f9;
+            color: #1f2933;
+            font-family: Arial, sans-serif;
+        }
+
+        .portal-shell {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 32px 16px;
+        }
+
+        .portal-title {
+            margin-bottom: 4px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .portal-subtitle {
+            margin-bottom: 24px;
+            color: #52616f;
+            font-size: 15px;
+        }
+
+        .portal-panel {
+            border: 1px solid #d8dde6;
+            border-radius: 8px;
+            background: #ffffff;
+            padding: 24px;
+        }
+
+        .field-row {
+            margin-bottom: 16px;
+        }
+
+        .field-row label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .field-row input,
+        .field-row select,
+        .field-row textarea {
+            width: 100%;
+        }
+    </style>
+
+    <div class="portal-shell">
+        <h1 class="portal-title">Grant Portal</h1>
+        <p class="portal-subtitle">Submit a grant application as a guest.</p>
+
+        <div class="portal-panel">
+            <apex:form>
+                <apex:pageMessages />
+
+                <div class="field-row">
+                    <label for="firstName">First Name</label>
+                    <apex:inputText id="firstName" value="{!firstName}" required="true" styleClass="slds-input" />
+                </div>
+
+                <div class="field-row">
+                    <label for="lastName">Last Name</label>
+                    <apex:inputText id="lastName" value="{!lastName}" required="true" styleClass="slds-input" />
+                </div>
+
+                <div class="field-row">
+                    <label for="phone">Phone</label>
+                    <apex:inputText id="phone" value="{!phone}" required="true" styleClass="slds-input" html-placeholder="65 6812 3456" />
+                </div>
+
+                <div class="field-row">
+                    <label for="postalCode">Mailing Postal Code</label>
+                    <apex:inputText id="postalCode" value="{!mailingPostalCode}" required="true" styleClass="slds-input" html-placeholder="123456" />
+                </div>
+
+                <div class="field-row">
+                    <label for="monthlyIncome">Monthly Income</label>
+                    <apex:inputText id="monthlyIncome" value="{!monthlyIncome}" required="true" styleClass="slds-input" />
+                </div>
+
+                <div class="field-row">
+                    <label for="supportOption">Support Option</label>
+                    <apex:selectList id="supportOption" value="{!supportOption}" size="1" styleClass="slds-select">
+                        <apex:selectOptions value="{!supportOptions}" />
+                    </apex:selectList>
+                </div>
+
+                <div class="field-row">
+                    <label for="reason">Reason</label>
+                    <apex:inputTextarea id="reason" value="{!reason}" rows="4" styleClass="slds-textarea" />
+                </div>
+
+                <apex:commandButton
+                    value="Submit Application"
+                    action="{!submit}"
+                    styleClass="slds-button slds-button_brand" />
+            </apex:form>
+        </div>
+    </div>
+</apex:page>
