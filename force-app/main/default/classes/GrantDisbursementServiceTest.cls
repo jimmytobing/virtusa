@@ -1,15 +1,15 @@
 @IsTest
 private class GrantDisbursementServiceTest {
   @IsTest
-  static void recalculateFromFlowUsesApplicantSupportOption() {
+  static void recalculateFromFlowUsesApplicationGrantType() {
     User adminUser = createSystemAdminUser('validswitch');
 
     System.runAs(adminUser) {
-      recalculateFromFlowUsesApplicantSupportOptionAsAdmin();
+      recalculateFromFlowUsesApplicationGrantTypeAsAdmin();
     }
   }
 
-  private static void recalculateFromFlowUsesApplicantSupportOptionAsAdmin() {
+  private static void recalculateFromFlowUsesApplicationGrantTypeAsAdmin() {
     Contact applicant = createApplicant('Option_Two');
     Grant_Application__c application = createApplication(
       applicant.Id,
@@ -70,14 +70,14 @@ private class GrantDisbursementServiceTest {
     ];
 
     System.assertEquals(
-      'Option Two',
+      'Option One',
       updatedApplication.Grant_Type__c,
-      'Application should follow the applicant support option selected for recalculation.'
+      'Application grant type should drive recalculation instead of the applicant support option.'
     );
     System.assertEquals(
-      1800,
+      1500,
       updatedApplication.Requested_Amount__c,
-      'Requested amount should be updated to the new support option total.'
+      'Requested amount should stay aligned to the application grant type total.'
     );
 
     List<Grant_Disbursement__c> futureDisbursements = [
@@ -95,9 +95,9 @@ private class GrantDisbursementServiceTest {
     ];
 
     System.assertEquals(
-      3,
+      0,
       futureDisbursements.size(),
-      'Remaining 300 should be split across the 3 remaining months of Option Two.'
+      'No future unpaid disbursements should remain when the paid total already equals Option One.'
     );
 
     for (Grant_Disbursement__c disbursement : futureDisbursements) {
@@ -123,9 +123,9 @@ private class GrantDisbursementServiceTest {
     ];
 
     System.assertEquals(
-      3,
+      0,
       unpaidRecords,
-      'Only Grant_is_disbursed__c=true should be treated as already paid, regardless of Disbursed_Date__c.'
+      'Unpaid disbursements should be removed when the application grant type has no remaining amount.'
     );
     System.assertEquals(
       1,
@@ -166,15 +166,15 @@ private class GrantDisbursementServiceTest {
   }
 
   @IsTest
-  static void recalculateFromFlowFallsBackToApplicationGrantType() {
-    User adminUser = createSystemAdminUser('fallback');
+  static void recalculateFromFlowNormalizesApplicationGrantTypeDeveloperName() {
+    User adminUser = createSystemAdminUser('normalizes');
 
     System.runAs(adminUser) {
-      recalculateFromFlowFallsBackToApplicationGrantTypeAsAdmin();
+      recalculateFromFlowNormalizesApplicationGrantTypeDeveloperNameAsAdmin();
     }
   }
 
-  private static void recalculateFromFlowFallsBackToApplicationGrantTypeAsAdmin() {
+  private static void recalculateFromFlowNormalizesApplicationGrantTypeDeveloperNameAsAdmin() {
     Contact applicant = new Contact(
       LastName = 'Applicant',
       Phone = '65 6812 3472'
@@ -336,11 +336,11 @@ private class GrantDisbursementServiceTest {
   }
 
   private static void recalculateFromFlowRejectsLowerOptionThanReceivedAmountAsAdmin() {
-    Contact applicant = createApplicant('Option_One');
+    Contact applicant = createApplicant('Option_Three');
     Grant_Application__c application = createApplication(
       applicant.Id,
-      'Option Three',
-      2400
+      'Option One',
+      1500
     );
     List<Grant_Disbursement__c> receivedDisbursements = new List<Grant_Disbursement__c>();
 
@@ -404,7 +404,6 @@ private class GrantDisbursementServiceTest {
       Applicant__c = applicantId,
       Grant_Type__c = grantType,
       Requested_Amount__c = requestedAmount,
-      Status__c = GrantConstants.STATUS_PENDING,
       Application_Date__c = Datetime.now(),
       Submitted_Date__c = Datetime.now()
     );

@@ -80,6 +80,12 @@ public without sharing class GrantApplicationService {
       );
     }
 
+    if (!isGuestUser()) {
+      GrantDisbursementService.recalculateForApplicationIds(
+        new Set<Id>{ applicationId }
+      );
+    }
+
     return applicationId;
   }
 

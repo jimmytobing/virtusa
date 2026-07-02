@@ -1,4 +1,4 @@
-public with sharing class GrantDisbursementService {
+public without sharing class GrantDisbursementService {
   @InvocableMethod(
     label='Recalculate Grant Disbursements'
     description='Creates or recalculates Grant Disbursement records for Grant Applications.'
@@ -21,7 +21,7 @@ public with sharing class GrantDisbursementService {
     recalculateForApplicationIds(applicationIds);
   }
 
-  private static void recalculateForApplicationIds(Set<Id> applicationIds) {
+  public static void recalculateForApplicationIds(Set<Id> applicationIds) {
     if (applicationIds == null || applicationIds.isEmpty()) {
       return;
     }
@@ -31,20 +31,11 @@ public with sharing class GrantDisbursementService {
     List<Grant_Application__c> applicationsToUpdate = new List<Grant_Application__c>();
 
     for (Grant_Application__c application : [
-      SELECT
-        Id,
-        Grant_Type__c,
-        Requested_Amount__c,
-        Applicant__r.Support_Option__c
+      SELECT Id, Grant_Type__c, Requested_Amount__c
       FROM Grant_Application__c
       WHERE Id IN :applicationIds
     ]) {
-      String applicantSupportOption = application.Applicant__r == null
-        ? null
-        : application.Applicant__r.Support_Option__c;
-      String optionName = !String.isBlank(applicantSupportOption)
-        ? applicantSupportOption
-        : application.Grant_Type__c;
+      String optionName = application.Grant_Type__c;
 
       if (String.isBlank(optionName)) {
         continue;

@@ -46,5 +46,9 @@ public without sharing class GrantApplicationGuestUpdateJob implements Queueable
         Grant_Application__c = applicationId
       );
     }
+
+    GrantDisbursementService.recalculateForApplicationIds(
+      new Set<Id>{ applicationId }
+    );
   }
 }

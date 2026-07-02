@@ -18,5 +18,9 @@ public without sharing class GrantApplicationApplicantLinkJob implements Queueab
     );
 
     update new Contact(Id = applicantId, Grant_Application__c = applicationId);
+
+    GrantDisbursementService.recalculateForApplicationIds(
+      new Set<Id>{ applicationId }
+    );
   }
 }
