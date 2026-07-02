@@ -60,6 +60,7 @@ public without sharing class ContactRepository {
       'Annual_Income__c',
       'Monthly_Income__c',
       'Support_Option__c',
+      'Grant_Application__c',
       'Employment_Status__c',
       'Citizenship_Status__c',
       'National_ID__c'
@@ -80,7 +81,8 @@ public without sharing class ContactRepository {
       'MailingPostalCode',
       'Annual_Income__c',
       'Monthly_Income__c',
-      'Support_Option__c'
+      'Support_Option__c',
+      'Grant_Application__c'
     };
 
     addAccountIdFieldForSupportedUsers(fields);

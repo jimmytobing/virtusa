@@ -168,6 +168,290 @@ private class GrantApplicationServiceTest {
   }
 
   @IsTest
+  static void applicationRepositoryUpdatesExistingApplication() {
+    Grant_Application__c application = new Grant_Application__c(
+      Grant_Type__c = 'Option One',
+      Requested_Amount__c = 1500,
+      Status__c = GrantConstants.STATUS_PENDING,
+      Application_Date__c = Date.today(),
+      Submitted_Date__c = Datetime.now()
+    );
+    insert application;
+
+    application.Requested_Amount__c = 1800;
+
+    Test.startTest();
+    Id applicationId = GrantApplicationRepository.save(application);
+    Test.stopTest();
+
+    Grant_Application__c savedApplication = [
+      SELECT Requested_Amount__c
+      FROM Grant_Application__c
+      WHERE Id = :application.Id
+    ];
+
+    System.assertEquals(application.Id, applicationId);
+    System.assertEquals(1800, savedApplication.Requested_Amount__c);
+  }
+
+  @IsTest
+  static void contactRepositoryReturnsApplicantFields() {
+    Contact applicant = new Contact(
+      FirstName = 'Repository',
+      LastName = 'Applicant',
+      Phone = '65 6812 3477',
+      Email = 'repository.applicant@example.com',
+      MailingPostalCode = '123456',
+      Monthly_Income__c = 1000,
+      Annual_Income__c = 12000,
+      Support_Option__c = 'Option_One'
+    );
+    insert applicant;
+
+    Grant_Application__c application = new Grant_Application__c(
+      Applicant__c = applicant.Id,
+      Grant_Type__c = 'Option One',
+      Requested_Amount__c = 1500,
+      Status__c = GrantConstants.STATUS_PENDING,
+      Application_Date__c = Date.today(),
+      Submitted_Date__c = Datetime.now()
+    );
+    insert application;
+
+    update new Contact(
+      Id = applicant.Id,
+      Grant_Application__c = application.Id
+    );
+
+    Test.startTest();
+    Contact contactById = ContactRepository.getById(applicant.Id);
+    Contact contactByPhone = ContactRepository.getByPhone('65 6812 3477');
+    Contact missingById = ContactRepository.getById(null);
+    Contact missingByPhone = ContactRepository.getByPhone(' ');
+    Test.stopTest();
+
+    System.assertEquals(applicant.Id, contactById.Id);
+    System.assertEquals('Repository Applicant', contactById.Name);
+    System.assertEquals(application.Id, contactById.Grant_Application__c);
+    System.assertEquals(applicant.Id, contactByPhone.Id);
+    System.assertEquals(application.Id, contactByPhone.Grant_Application__c);
+    System.assertEquals(null, missingById);
+    System.assertEquals(null, missingByPhone);
+  }
+
+  @IsTest
+  static void submitApplicationReusesContactGrantApplication() {
+    Contact applicant = new Contact(
+      LastName = 'Existing Applicant',
+      Phone = '65 6812 3475',
+      Email = 'existing.applicant@example.com',
+      MailingPostalCode = '123456',
+      Monthly_Income__c = 1000,
+      Support_Option__c = 'Option_One'
+    );
+    insert applicant;
+
+    Grant_Application__c application = new Grant_Application__c(
+      Applicant__c = applicant.Id,
+      Grant_Type__c = 'Option One',
+      Requested_Amount__c = 1500,
+      Status__c = GrantConstants.STATUS_PENDING,
+      Application_Date__c = Date.today(),
+      Submitted_Date__c = Datetime.now()
+    );
+    insert application;
+
+    update new Contact(
+      Id = applicant.Id,
+      Grant_Application__c = application.Id
+    );
+
+    GrantDTO request = createGrantRequest('65 6812 3475');
+    request.reason = 'Updated reason.';
+
+    Test.startTest();
+    Id applicationId = GrantApplicationService.submitApplication(request);
+    Test.stopTest();
+
+    System.assertEquals(application.Id, applicationId);
+    System.assertEquals(
+      1,
+      [
+        SELECT COUNT()
+        FROM Grant_Application__c
+        WHERE Applicant__c = :applicant.Id
+      ],
+      'Existing active application should be updated instead of creating another record.'
+    );
+
+    Contact savedApplicant = [
+      SELECT Grant_Application__c
+      FROM Contact
+      WHERE Id = :applicant.Id
+    ];
+
+    System.assertEquals(application.Id, savedApplicant.Grant_Application__c);
+  }
+
+  @IsTest
+  static void submitApplicationReusesApplicantApplicationWhenContactLookupIsNull() {
+    Contact applicant = new Contact(
+      LastName = 'Guest Linked Applicant',
+      Phone = '65 6812 3478',
+      Email = 'guest.linked@example.com',
+      MailingPostalCode = '123456',
+      Monthly_Income__c = 1000,
+      Support_Option__c = 'Option_One'
+    );
+    insert applicant;
+
+    Grant_Application__c application = new Grant_Application__c(
+      Applicant__c = applicant.Id,
+      Grant_Type__c = 'Option One',
+      Requested_Amount__c = 1500,
+      Status__c = GrantConstants.STATUS_PENDING,
+      Application_Date__c = Date.today(),
+      Submitted_Date__c = Datetime.now()
+    );
+    insert application;
+
+    GrantDTO request = createGrantRequest('65 6812 3478');
+    request.reason = 'Guest retry should update active application.';
+
+    Test.startTest();
+    Id applicationId = GrantApplicationService.submitApplication(request);
+    Test.stopTest();
+
+    System.assertEquals(
+      application.Id,
+      applicationId,
+      'Application linked by Applicant__c should be reused when Contact.Grant_Application__c is null.'
+    );
+    System.assertEquals(
+      1,
+      [
+        SELECT COUNT()
+        FROM Grant_Application__c
+        WHERE Applicant__c = :applicant.Id
+      ]
+    );
+  }
+
+  @IsTest
+  static void guestSubmitReusesActiveApplicationWithQueueableUpdate() {
+    Contact applicant = new Contact(
+      LastName = 'Guest Reuse Applicant',
+      Phone = '65 6812 3480',
+      Email = 'guest.reuse@example.com',
+      MailingPostalCode = '123456',
+      Monthly_Income__c = 1000,
+      Support_Option__c = 'Option_One'
+    );
+    insert applicant;
+
+    Grant_Application__c application = new Grant_Application__c(
+      Applicant__c = applicant.Id,
+      Grant_Type__c = 'Option One',
+      Requested_Amount__c = 1500,
+      Reason__c = 'Original reason.',
+      Status__c = GrantConstants.STATUS_PENDING,
+      Application_Date__c = Date.today(),
+      Submitted_Date__c = Datetime.now()
+    );
+    insert application;
+
+    GrantDTO request = createGrantRequest('65 6812 3480');
+    request.reason = 'Guest queueable should update active application.';
+
+    GrantApplicationService.guestUserOverride = true;
+
+    try {
+      Test.startTest();
+      Id applicationId = GrantApplicationService.submitApplication(request);
+      Test.stopTest();
+
+      Grant_Application__c savedApplication = [
+        SELECT
+          Applicant__c,
+          Grant_Type__c,
+          Requested_Amount__c,
+          Reason__c,
+          Status__c
+        FROM Grant_Application__c
+        WHERE Id = :application.Id
+      ];
+
+      System.assertEquals(application.Id, applicationId);
+      System.assertEquals(applicant.Id, savedApplication.Applicant__c);
+      System.assertEquals('Option One', savedApplication.Grant_Type__c);
+      System.assertEquals(1500, savedApplication.Requested_Amount__c);
+      System.assertEquals(
+        'Guest queueable should update active application.',
+        savedApplication.Reason__c,
+        'Guest reuse should update the existing application through the queueable job.'
+      );
+      System.assertEquals(
+        GrantConstants.STATUS_PENDING,
+        savedApplication.Status__c
+      );
+    } finally {
+      GrantApplicationService.guestUserOverride = null;
+    }
+  }
+
+  @IsTest
+  static void submitApplicationDoesNotReuseCompletedApplicantApplication() {
+    Contact applicant = new Contact(
+      LastName = 'Completed Applicant',
+      Phone = '65 6812 3479',
+      Email = 'completed.applicant@example.com',
+      MailingPostalCode = '123456',
+      Monthly_Income__c = 1000,
+      Support_Option__c = 'Option_One'
+    );
+    insert applicant;
+
+    Grant_Application__c completedApplication = new Grant_Application__c(
+      Applicant__c = applicant.Id,
+      Grant_Type__c = 'Option One',
+      Requested_Amount__c = 1500,
+      Status__c = GrantConstants.STATUS_PENDING,
+      Application_Date__c = Date.today(),
+      Submitted_Date__c = Datetime.now().addDays(-1)
+    );
+    insert completedApplication;
+
+    insert new Grant_Disbursement__c(
+      Grant_Applicantion__c = completedApplication.Id,
+      Amount_to_be_disbursed__c = 1500,
+      Grant_is_disbursed__c = true,
+      Disbursed_Date__c = Date.today(),
+      Support_Option__c = 'Option One',
+      Sequence_Number__c = 1
+    );
+
+    GrantDTO request = createGrantRequest('65 6812 3479');
+
+    Test.startTest();
+    Id applicationId = GrantApplicationService.submitApplication(request);
+    Test.stopTest();
+
+    System.assertNotEquals(
+      completedApplication.Id,
+      applicationId,
+      'Completed applications should not be reused after every disbursement is marked paid.'
+    );
+    System.assertEquals(
+      2,
+      [
+        SELECT COUNT()
+        FROM Grant_Application__c
+        WHERE Applicant__c = :applicant.Id
+      ]
+    );
+  }
+
+  @IsTest
   static void triggerAndHandlerMaintainApplicationStage() {
     Grant_Application__c application = new Grant_Application__c(
       Grant_Type__c = 'Option One',
@@ -240,6 +524,44 @@ private class GrantApplicationServiceTest {
     System.assertEquals('Submitted', application.Current_Stage__c);
     System.assertEquals(0, option.durationMonths);
     System.assertEquals(0, option.totalAmount);
+  }
+
+  @IsTest
+  static void applicantLinkJobLinksApplicationAndContact() {
+    Contact applicant = new Contact(
+      LastName = 'Queued Applicant',
+      Phone = '65 6812 3476'
+    );
+    insert applicant;
+
+    Grant_Application__c application = new Grant_Application__c(
+      Grant_Type__c = 'Option One',
+      Requested_Amount__c = 1500,
+      Status__c = GrantConstants.STATUS_PENDING,
+      Application_Date__c = Date.today(),
+      Submitted_Date__c = Datetime.now()
+    );
+    insert application;
+
+    Test.startTest();
+    System.enqueueJob(
+      new GrantApplicationApplicantLinkJob(application.Id, applicant.Id)
+    );
+    Test.stopTest();
+
+    Grant_Application__c savedApplication = [
+      SELECT Applicant__c
+      FROM Grant_Application__c
+      WHERE Id = :application.Id
+    ];
+    Contact savedApplicant = [
+      SELECT Grant_Application__c
+      FROM Contact
+      WHERE Id = :applicant.Id
+    ];
+
+    System.assertEquals(applicant.Id, savedApplication.Applicant__c);
+    System.assertEquals(application.Id, savedApplicant.Grant_Application__c);
   }
 
   @IsTest

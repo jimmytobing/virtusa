@@ -1,4 +1,4 @@
-public with sharing class GrantApplicationService {
+public without sharing class GrantApplicationService {
   private static final Pattern SINGAPORE_PHONE_PATTERN = Pattern.compile(
     '^65 [0-9]{4} [0-9]{4}$'
   );
@@ -10,6 +10,8 @@ public with sharing class GrantApplicationService {
   private static final Pattern EMAIL_PATTERN = Pattern.compile(
     '(?i)^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$'
   );
+  @TestVisible
+  private static Boolean guestUserOverride;
 
   public static Id submitApplication(GrantDTO request) {
     if (request == null) {
@@ -23,8 +25,35 @@ public with sharing class GrantApplicationService {
     );
 
     Contact applicant = upsertApplicant(request);
+    System.debug('===== Contact ' + applicant.Id);
+    System.debug(JSON.serializePretty(applicant));
+    System.debug('===== Active Grant ' + applicant.Grant_Application__c);
+    Id activeApplicationId = getActiveApplicationId(applicant);
 
-    Grant_Application__c application = new Grant_Application__c();
+    if (isGuestUser() && activeApplicationId != null) {
+      System.enqueueJob(
+        new GrantApplicationGuestUpdateJob(
+          activeApplicationId,
+          applicant.Id,
+          supportOption.MasterLabel,
+          supportOption.Monthly_Amount__c * supportOption.Duration_Months__c,
+          request.reason
+        )
+      );
+
+      return activeApplicationId;
+    }
+
+    // Jika applicant sudah punya Grant Application, gunakan record tersebut.
+    // Jika belum, buat baru.
+    Grant_Application__c application;
+
+    if (activeApplicationId != null) {
+      application = new Grant_Application__c(Id = activeApplicationId);
+    } else {
+      application = new Grant_Application__c();
+    }
+    //Grant_Application__c application = new Grant_Application__c();
 
     if (!isGuestUser()) {
       application.Applicant__c = applicant.Id;
@@ -44,6 +73,11 @@ public with sharing class GrantApplicationService {
       System.enqueueJob(
         new GrantApplicationApplicantLinkJob(applicationId, applicant.Id)
       );
+    } else if (activeApplicationId != applicationId) {
+      update new Contact(
+        Id = applicant.Id,
+        Grant_Application__c = applicationId
+      );
     }
 
     return applicationId;
@@ -53,7 +87,68 @@ public with sharing class GrantApplicationService {
     return ContactMatchingService.upsertApplicantByPhone(request);
   }
 
+  private static Id getActiveApplicationId(Contact applicant) {
+    if (applicant == null || applicant.Id == null) {
+      return null;
+    }
+
+    if (applicant.Grant_Application__c != null) {
+      return applicant.Grant_Application__c;
+    }
+
+    List<Grant_Application__c> applicantApplications = [
+      SELECT Id
+      FROM Grant_Application__c
+      WHERE Applicant__c = :applicant.Id
+      ORDER BY Submitted_Date__c DESC NULLS LAST, CreatedDate DESC
+      LIMIT 10
+    ];
+
+    if (applicantApplications.isEmpty()) {
+      return null;
+    }
+
+    Set<Id> applicationIds = new Set<Id>();
+
+    for (Grant_Application__c application : applicantApplications) {
+      applicationIds.add(application.Id);
+    }
+
+    Set<Id> applicationsWithDisbursements = new Set<Id>();
+    Set<Id> incompleteApplicationIds = new Set<Id>();
+
+    for (Grant_Disbursement__c disbursement : [
+      SELECT Grant_Applicantion__c, Grant_is_disbursed__c
+      FROM Grant_Disbursement__c
+      WHERE Grant_Applicantion__c IN :applicationIds
+    ]) {
+      applicationsWithDisbursements.add(disbursement.Grant_Applicantion__c);
+
+      if (disbursement.Grant_is_disbursed__c != true) {
+        incompleteApplicationIds.add(disbursement.Grant_Applicantion__c);
+      }
+    }
+
+    for (Grant_Application__c application : applicantApplications) {
+      Boolean hasDisbursements = applicationsWithDisbursements.contains(
+        application.Id
+      );
+
+      if (
+        !hasDisbursements || incompleteApplicationIds.contains(application.Id)
+      ) {
+        return application.Id;
+      }
+    }
+
+    return null;
+  }
+
   private static Boolean isGuestUser() {
+    if (guestUserOverride != null) {
+      return guestUserOverride;
+    }
+
     return UserInfo.getUserType() == 'Guest';
   }
 

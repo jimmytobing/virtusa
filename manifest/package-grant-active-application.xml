@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <members>ContactRepository</members>
+        <members>GrantApplicationApplicantLinkJob</members>
+        <members>GrantApplicationGuestUpdateJob</members>
+        <members>GrantApplicationRepository</members>
+        <members>GrantApplicationService</members>
+        <members>GrantApplicationServiceTest</members>
+        <members>GrantDisbursementService</members>
+        <members>GrantDisbursementServiceTest</members>
+        <name>ApexClass</name>
+    </types>
+    <types>
+        <members>GrantDisbursementTrigger</members>
+        <name>ApexTrigger</name>
+    </types>
+    <types>
+        <members>Contact.Grant_Application__c</members>
+        <name>CustomField</name>
+    </types>
+    <types>
+        <members>Grant_Disbursement_Access</members>
+        <name>PermissionSet</name>
+    </types>
+    <version>67.0</version>
+</Package>

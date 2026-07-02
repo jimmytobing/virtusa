@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
         <members>ContactMatchingService</members>
@@ -7,6 +7,7 @@
         <members>ContactTriggerHandler</members>
         <members>ExperienceCloudTemplateCoverageTest</members>
         <members>GrantApplicationApplicantLinkJob</members>
+        <members>GrantApplicationGuestUpdateJob</members>
         <members>GrantApplicationController</members>
         <members>GrantApplicationRepository</members>
         <members>GrantApplicationService</members>
@@ -38,6 +39,7 @@
     <types>
         <members>ContactTrigger</members>
         <members>GrantApplicationTrigger</members>
+        <members>GrantDisbursementTrigger</members>
         <name>ApexTrigger</name>
     </types>
     <types>
@@ -74,6 +76,7 @@
         <members>Contact.Employment_Status__c</members>
         <members>Contact.Fax</members>
         <members>Contact.GenderIdentity</members>
+        <members>Contact.Grant_Application__c</members>
         <members>Contact.HasOptedOutOfEmail</members>
         <members>Contact.HasOptedOutOfFax</members>
         <members>Contact.HomePhone</members>

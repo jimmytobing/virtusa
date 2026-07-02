@@ -1,238 +1,288 @@
 public with sharing class GrantDisbursementService {
-
-    @InvocableMethod(
-        label='Recalculate Grant Disbursements'
-        description='Creates or recalculates Grant Disbursement records for Grant Applications.'
-    )
-    public static void recalculateDisbursementsFromFlow(
-        List<FlowRequest> requests
-    ) {
-        if (requests == null || requests.isEmpty()) {
-            return;
-        }
-
-        Set<Id> applicationIds = new Set<Id>();
-
-        for (FlowRequest request : requests) {
-            if (request != null && request.grantApplicationId != null) {
-                applicationIds.add(request.grantApplicationId);
-            }
-        }
-
-        recalculateForApplicationIds(applicationIds);
+  @InvocableMethod(
+    label='Recalculate Grant Disbursements'
+    description='Creates or recalculates Grant Disbursement records for Grant Applications.'
+  )
+  public static void recalculateDisbursementsFromFlow(
+    List<FlowRequest> requests
+  ) {
+    if (requests == null || requests.isEmpty()) {
+      return;
     }
 
-    private static void recalculateForApplicationIds(Set<Id> applicationIds) {
-        if (applicationIds == null || applicationIds.isEmpty()) {
-            return;
-        }
+    Set<Id> applicationIds = new Set<Id>();
 
-        Map<String, Grant_Support_Option__mdt> optionsByDeveloperName =
-            getActiveOptionsByDeveloperName();
-        Map<Id, Grant_Support_Option__mdt> optionsByApplicationId =
-            new Map<Id, Grant_Support_Option__mdt>();
-        List<Grant_Application__c> applicationsToUpdate =
-            new List<Grant_Application__c>();
-
-        for (Grant_Application__c application : [
-            SELECT
-                Id,
-                Grant_Type__c,
-                Requested_Amount__c,
-                Applicant__r.Support_Option__c
-            FROM Grant_Application__c
-            WHERE Id IN :applicationIds
-        ]) {
-            String applicantSupportOption = application.Applicant__r == null
-                ? null
-                : application.Applicant__r.Support_Option__c;
-            String optionName = !String.isBlank(applicantSupportOption)
-                ? applicantSupportOption
-                : application.Grant_Type__c;
-
-            if (String.isBlank(optionName)) {
-                continue;
-            }
-
-            Grant_Support_Option__mdt option =
-                optionsByDeveloperName.get(optionName);
-
-            if (option != null) {
-                optionsByApplicationId.put(application.Id, option);
-
-                Decimal optionTotal =
-                    option.Monthly_Amount__c * option.Duration_Months__c;
-
-                if (
-                    application.Grant_Type__c != option.MasterLabel ||
-                    application.Requested_Amount__c != optionTotal
-                ) {
-                    applicationsToUpdate.add(new Grant_Application__c(
-                        Id = application.Id,
-                        Grant_Type__c = option.MasterLabel,
-                        Requested_Amount__c = optionTotal
-                    ));
-                }
-            }
-        }
-
-        recalculateForApplications(optionsByApplicationId);
-
-        if (!applicationsToUpdate.isEmpty()) {
-            update applicationsToUpdate;
-        }
+    for (FlowRequest request : requests) {
+      if (request != null && request.grantApplicationId != null) {
+        applicationIds.add(request.grantApplicationId);
+      }
     }
 
-    private static void recalculateForApplications(
-        Map<Id, Grant_Support_Option__mdt> optionsByApplicationId
-    ) {
+    recalculateForApplicationIds(applicationIds);
+  }
+
+  private static void recalculateForApplicationIds(Set<Id> applicationIds) {
+    if (applicationIds == null || applicationIds.isEmpty()) {
+      return;
+    }
+
+    Map<String, Grant_Support_Option__mdt> optionsByDeveloperName = getActiveOptionsByDeveloperName();
+    Map<Id, Grant_Support_Option__mdt> optionsByApplicationId = new Map<Id, Grant_Support_Option__mdt>();
+    List<Grant_Application__c> applicationsToUpdate = new List<Grant_Application__c>();
+
+    for (Grant_Application__c application : [
+      SELECT
+        Id,
+        Grant_Type__c,
+        Requested_Amount__c,
+        Applicant__r.Support_Option__c
+      FROM Grant_Application__c
+      WHERE Id IN :applicationIds
+    ]) {
+      String applicantSupportOption = application.Applicant__r == null
+        ? null
+        : application.Applicant__r.Support_Option__c;
+      String optionName = !String.isBlank(applicantSupportOption)
+        ? applicantSupportOption
+        : application.Grant_Type__c;
+
+      if (String.isBlank(optionName)) {
+        continue;
+      }
+
+      Grant_Support_Option__mdt option = optionsByDeveloperName.get(optionName);
+
+      if (option != null) {
+        optionsByApplicationId.put(application.Id, option);
+
+        Decimal optionTotal =
+          option.Monthly_Amount__c * option.Duration_Months__c;
+
         if (
-            optionsByApplicationId == null ||
-            optionsByApplicationId.isEmpty()
+          application.Grant_Type__c != option.MasterLabel ||
+          application.Requested_Amount__c != optionTotal
         ) {
-            return;
+          applicationsToUpdate.add(
+            new Grant_Application__c(
+              Id = application.Id,
+              Grant_Type__c = option.MasterLabel,
+              Requested_Amount__c = optionTotal
+            )
+          );
         }
-
-        Map<Id, List<Grant_Disbursement__c>> disbursementsByApplicationId =
-            new Map<Id, List<Grant_Disbursement__c>>();
-
-        for (Grant_Disbursement__c disbursement : [
-            SELECT
-                Id,
-                Grant_Applicantion__c,
-                Amount_to_be_disbursed__c,
-                Grant_is_disbursed__c,
-                Disbursed_Date__c
-            FROM Grant_Disbursement__c
-            WHERE Grant_Applicantion__c IN :optionsByApplicationId.keySet()
-            ORDER BY Disbursed_Date__c
-        ]) {
-            if (!disbursementsByApplicationId.containsKey(disbursement.Grant_Applicantion__c)) {
-                disbursementsByApplicationId.put(
-                    disbursement.Grant_Applicantion__c,
-                    new List<Grant_Disbursement__c>()
-                );
-            }
-
-            disbursementsByApplicationId.get(
-                disbursement.Grant_Applicantion__c
-            ).add(disbursement);
-        }
-
-        List<Grant_Disbursement__c> disbursementsToDelete =
-            new List<Grant_Disbursement__c>();
-        List<Grant_Disbursement__c> disbursementsToInsert =
-            new List<Grant_Disbursement__c>();
-        Date today = Date.today();
-
-        for (Id applicationId : optionsByApplicationId.keySet()) {
-            Grant_Support_Option__mdt option =
-                optionsByApplicationId.get(applicationId);
-            List<Grant_Disbursement__c> existingDisbursements =
-                disbursementsByApplicationId.containsKey(applicationId)
-                    ? disbursementsByApplicationId.get(applicationId)
-                    : new List<Grant_Disbursement__c>();
-
-            Decimal totalReceived = 0;
-            Integer receivedMonths = 0;
-
-            for (Grant_Disbursement__c disbursement : existingDisbursements) {
-                Boolean hasBeenDisbursed =
-                    disbursement.Grant_is_disbursed__c == true &&
-                    disbursement.Disbursed_Date__c <= today;
-
-                if (hasBeenDisbursed) {
-                    totalReceived += disbursement.Amount_to_be_disbursed__c;
-                    receivedMonths++;
-                } else {
-                    disbursementsToDelete.add(disbursement);
-                }
-            }
-
-            Decimal newTotalAmount =
-                option.Monthly_Amount__c * option.Duration_Months__c;
-
-            if (totalReceived > newTotalAmount) {
-                throw new GrantException(
-                    'Support Option cannot be changed because the total disbursed amount is greater than the new option total.'
-                );
-            }
-
-            Integer durationMonths = option.Duration_Months__c.intValue();
-            Integer remainingMonths = durationMonths - receivedMonths;
-            Decimal remainingAmount = newTotalAmount - totalReceived;
-
-            if (remainingAmount > 0 && remainingMonths <= 0) {
-                throw new GrantException(
-                    'Support Option cannot be changed because there are no remaining months available.'
-                );
-            }
-
-            if (remainingAmount <= 0) {
-                continue;
-            }
-
-            Decimal monthlyAmount = remainingAmount / remainingMonths;
-            Date disbursementDate = firstDayOfNextMonth(today);
-
-            for (Integer monthNumber = 1; monthNumber <= remainingMonths; monthNumber++) {
-                disbursementsToInsert.add(new Grant_Disbursement__c(
-                    Grant_Applicantion__c = applicationId,
-                    Amount_to_be_disbursed__c = monthlyAmount,
-                    Grant_is_disbursed__c = false,
-                    Disbursed_Date__c = disbursementDate.addMonths(monthNumber - 1),
-                    Support_Option__c = option.MasterLabel,
-                    Sequence_Number__c = receivedMonths + monthNumber
-                ));
-            }
-        }
-
-        if (!disbursementsToDelete.isEmpty()) {
-            delete disbursementsToDelete;
-        }
-
-        if (!disbursementsToInsert.isEmpty()) {
-            insert disbursementsToInsert;
-        }
+      }
     }
 
-    private static Map<String, Grant_Support_Option__mdt>
-        getActiveOptionsByDeveloperName()
-    {
-        Map<String, Grant_Support_Option__mdt> optionsByDeveloperName =
-            new Map<String, Grant_Support_Option__mdt>();
+    recalculateForApplications(optionsByApplicationId);
 
-        for (Grant_Support_Option__mdt option : [
-            SELECT
-                DeveloperName,
-                MasterLabel,
-                Monthly_Amount__c,
-                Duration_Months__c,
-                Active__c
-            FROM Grant_Support_Option__mdt
-            WHERE Active__c = TRUE
-        ]) {
-            optionsByDeveloperName.put(option.DeveloperName, option);
-            optionsByDeveloperName.put(option.MasterLabel, option);
-        }
+    if (!applicationsToUpdate.isEmpty()) {
+      update applicationsToUpdate;
+    }
+  }
 
-        return optionsByDeveloperName;
+  public static void clearCompletedApplicationReferences(
+    Set<Id> applicationIds
+  ) {
+    if (applicationIds == null || applicationIds.isEmpty()) {
+      return;
     }
 
-    private static Date firstDayOfNextMonth(Date sourceDate) {
-        return Date.newInstance(
-            sourceDate.year(),
-            sourceDate.month(),
-            1
-        ).addMonths(1);
+    Set<Id> referencedApplicationIds = new Set<Id>();
+
+    for (Contact applicant : [
+      SELECT Grant_Application__c
+      FROM Contact
+      WHERE Grant_Application__c IN :applicationIds
+    ]) {
+      referencedApplicationIds.add(applicant.Grant_Application__c);
     }
 
-    public class FlowRequest {
-        @InvocableVariable(
-            label='Grant Application Id'
-            description='The Grant Application record to create or recalculate disbursements for.'
-            required=true
+    if (referencedApplicationIds.isEmpty()) {
+      return;
+    }
+
+    Set<Id> applicationsWithDisbursements = new Set<Id>();
+    Set<Id> incompleteApplicationIds = new Set<Id>();
+
+    for (Grant_Disbursement__c disbursement : [
+      SELECT Grant_Applicantion__c, Grant_is_disbursed__c
+      FROM Grant_Disbursement__c
+      WHERE Grant_Applicantion__c IN :referencedApplicationIds
+    ]) {
+      applicationsWithDisbursements.add(disbursement.Grant_Applicantion__c);
+
+      if (disbursement.Grant_is_disbursed__c != true) {
+        incompleteApplicationIds.add(disbursement.Grant_Applicantion__c);
+      }
+    }
+
+    List<Contact> applicantsToClear = new List<Contact>();
+
+    for (Contact applicant : [
+      SELECT Id, Grant_Application__c
+      FROM Contact
+      WHERE Grant_Application__c IN :referencedApplicationIds
+    ]) {
+      if (
+        applicationsWithDisbursements.contains(
+          applicant.Grant_Application__c
+        ) && !incompleteApplicationIds.contains(applicant.Grant_Application__c)
+      ) {
+        applicantsToClear.add(
+          new Contact(Id = applicant.Id, Grant_Application__c = null)
+        );
+      }
+    }
+
+    if (!applicantsToClear.isEmpty()) {
+      update applicantsToClear;
+    }
+  }
+
+  private static void recalculateForApplications(
+    Map<Id, Grant_Support_Option__mdt> optionsByApplicationId
+  ) {
+    if (optionsByApplicationId == null || optionsByApplicationId.isEmpty()) {
+      return;
+    }
+
+    Map<Id, List<Grant_Disbursement__c>> disbursementsByApplicationId = new Map<Id, List<Grant_Disbursement__c>>();
+
+    for (Grant_Disbursement__c disbursement : [
+      SELECT
+        Id,
+        Grant_Applicantion__c,
+        Amount_to_be_disbursed__c,
+        Grant_is_disbursed__c,
+        Disbursed_Date__c
+      FROM Grant_Disbursement__c
+      WHERE Grant_Applicantion__c IN :optionsByApplicationId.keySet()
+      ORDER BY Disbursed_Date__c
+    ]) {
+      if (
+        !disbursementsByApplicationId.containsKey(
+          disbursement.Grant_Applicantion__c
         )
-        public Id grantApplicationId;
+      ) {
+        disbursementsByApplicationId.put(
+          disbursement.Grant_Applicantion__c,
+          new List<Grant_Disbursement__c>()
+        );
+      }
+
+      disbursementsByApplicationId.get(disbursement.Grant_Applicantion__c)
+        .add(disbursement);
     }
+
+    List<Grant_Disbursement__c> disbursementsToDelete = new List<Grant_Disbursement__c>();
+    List<Grant_Disbursement__c> disbursementsToInsert = new List<Grant_Disbursement__c>();
+    for (Id applicationId : optionsByApplicationId.keySet()) {
+      Grant_Support_Option__mdt option = optionsByApplicationId.get(
+        applicationId
+      );
+      List<Grant_Disbursement__c> existingDisbursements = disbursementsByApplicationId.containsKey(
+          applicationId
+        )
+        ? disbursementsByApplicationId.get(applicationId)
+        : new List<Grant_Disbursement__c>();
+
+      Decimal totalReceived = 0;
+      Integer receivedMonths = 0;
+
+      for (Grant_Disbursement__c disbursement : existingDisbursements) {
+        Boolean hasBeenDisbursed = disbursement.Grant_is_disbursed__c == true;
+
+        if (hasBeenDisbursed) {
+          totalReceived += disbursement.Amount_to_be_disbursed__c;
+          receivedMonths++;
+        } else {
+          disbursementsToDelete.add(disbursement);
+        }
+      }
+
+      Decimal newTotalAmount =
+        option.Monthly_Amount__c * option.Duration_Months__c;
+
+      if (totalReceived > newTotalAmount) {
+        throw new GrantException(
+          'Support Option cannot be changed because the total disbursed amount is greater than the new option total.'
+        );
+      }
+
+      Integer durationMonths = option.Duration_Months__c.intValue();
+      Integer remainingMonths = durationMonths - receivedMonths;
+      Decimal remainingAmount = newTotalAmount - totalReceived;
+
+      if (remainingAmount > 0 && remainingMonths <= 0) {
+        throw new GrantException(
+          'Support Option cannot be changed because there are no remaining months available.'
+        );
+      }
+
+      if (remainingAmount <= 0) {
+        continue;
+      }
+
+      Decimal monthlyAmount = remainingAmount / remainingMonths;
+      Date today = Date.today();
+      Date disbursementDate = firstDayOfNextMonth(today);
+
+      for (
+        Integer monthNumber = 1; monthNumber <= remainingMonths; monthNumber++
+      ) {
+        disbursementsToInsert.add(
+          new Grant_Disbursement__c(
+            Grant_Applicantion__c = applicationId,
+            Amount_to_be_disbursed__c = monthlyAmount,
+            Grant_is_disbursed__c = false,
+            Disbursed_Date__c = disbursementDate.addMonths(monthNumber - 1),
+            Support_Option__c = option.MasterLabel,
+            Sequence_Number__c = receivedMonths + monthNumber
+          )
+        );
+      }
+    }
+
+    if (!disbursementsToDelete.isEmpty()) {
+      delete disbursementsToDelete;
+    }
+
+    if (!disbursementsToInsert.isEmpty()) {
+      insert disbursementsToInsert;
+    }
+  }
+
+  private static Map<String, Grant_Support_Option__mdt> getActiveOptionsByDeveloperName() {
+    Map<String, Grant_Support_Option__mdt> optionsByDeveloperName = new Map<String, Grant_Support_Option__mdt>();
+
+    for (Grant_Support_Option__mdt option : [
+      SELECT
+        DeveloperName,
+        MasterLabel,
+        Monthly_Amount__c,
+        Duration_Months__c,
+        Active__c
+      FROM Grant_Support_Option__mdt
+      WHERE Active__c = TRUE
+    ]) {
+      optionsByDeveloperName.put(option.DeveloperName, option);
+      optionsByDeveloperName.put(option.MasterLabel, option);
+    }
+
+    return optionsByDeveloperName;
+  }
+
+  private static Date firstDayOfNextMonth(Date sourceDate) {
+    return Date.newInstance(sourceDate.year(), sourceDate.month(), 1)
+      .addMonths(1);
+  }
+
+  public class FlowRequest {
+    @InvocableVariable(
+      label='Grant Application Id'
+      description='The Grant Application record to create or recalculate disbursements for.'
+      required=true
+    )
+    public Id grantApplicationId;
+  }
 }
