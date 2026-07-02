@@ -30,8 +30,15 @@ public without sharing class GrantDisbursementService {
     Map<Id, Grant_Support_Option__mdt> optionsByApplicationId = new Map<Id, Grant_Support_Option__mdt>();
     List<Grant_Application__c> applicationsToUpdate = new List<Grant_Application__c>();
 
+    Decimal incomeThreshold = getActiveIncomeThreshold();
+    Set<Id> ineligibleApplicationIds = new Set<Id>();
+
     for (Grant_Application__c application : [
-      SELECT Id, Grant_Type__c, Requested_Amount__c
+      SELECT
+        Id,
+        Grant_Type__c,
+        Requested_Amount__c,
+        Applicant__r.Monthly_Income__c
       FROM Grant_Application__c
       WHERE Id IN :applicationIds
     ]) {
@@ -44,8 +51,6 @@ public without sharing class GrantDisbursementService {
       Grant_Support_Option__mdt option = optionsByDeveloperName.get(optionName);
 
       if (option != null) {
-        optionsByApplicationId.put(application.Id, option);
-
         Decimal optionTotal =
           option.Monthly_Amount__c * option.Duration_Months__c;
 
@@ -61,13 +66,66 @@ public without sharing class GrantDisbursementService {
             )
           );
         }
+
+        if (!isApplicantIncomeEligible(application, incomeThreshold)) {
+          ineligibleApplicationIds.add(application.Id);
+          continue;
+        }
+
+        optionsByApplicationId.put(application.Id, option);
       }
     }
 
+    clearUndisbursedRecords(ineligibleApplicationIds);
     recalculateForApplications(optionsByApplicationId);
 
     if (!applicationsToUpdate.isEmpty()) {
       update applicationsToUpdate;
+    }
+  }
+
+  private static Boolean isApplicantIncomeEligible(
+    Grant_Application__c application,
+    Decimal incomeThreshold
+  ) {
+    if (incomeThreshold == null) {
+      return true;
+    }
+
+    Decimal monthlyIncome = application.Applicant__r == null
+      ? null
+      : application.Applicant__r.Monthly_Income__c;
+
+    return monthlyIncome == null || monthlyIncome <= incomeThreshold;
+  }
+
+  private static Decimal getActiveIncomeThreshold() {
+    for (
+      Grant_Configuration__mdt configuration : GrantConfigurationRepository.getActiveConfigurations()
+    ) {
+      if (configuration.Income_Threshold__c != null) {
+        return configuration.Income_Threshold__c;
+      }
+    }
+
+    return null;
+  }
+
+  private static void clearUndisbursedRecords(Set<Id> applicationIds) {
+    if (applicationIds == null || applicationIds.isEmpty()) {
+      return;
+    }
+
+    List<Grant_Disbursement__c> disbursementsToDelete = [
+      SELECT Id
+      FROM Grant_Disbursement__c
+      WHERE
+        Grant_Applicantion__c IN :applicationIds
+        AND Grant_is_disbursed__c = FALSE
+    ];
+
+    if (!disbursementsToDelete.isEmpty()) {
+      delete disbursementsToDelete;
     }
   }
 
