@@ -172,17 +172,21 @@ This design aligns with enterprise CRM modeling practices.
 
 [2.5 Object Relationships.puml](<./2.5 Object Relationships.puml>)
 
-## 2.6 Application Lifecycle
+## 2.6 Class Diagram
+
+[3.10 Apex Class Diagram.puml](<./3.10 Apex Class Diagram.puml>)
+
+## 2.7 Application Lifecycle
 
 [2.6 Application Lifecycle.puml](<./2.6 Application Lifecycle.puml>)
 
-## 2.7 Grant Disbursement Lifecycle
+## 2.8 Grant Disbursement Lifecycle
 
 [2.7 Grant Disbursement Lifecycle.puml](<./2.7 Grant Disbursement Lifecycle.puml>)
 
 ##
 
-## 2.8 Data Validation Strategy
+## 2.9 Data Validation Strategy
 
 Data validation is implemented using multiple validation layers.
 
@@ -196,7 +200,7 @@ Data validation is implemented using multiple validation layers.
 
 The layered validation approach prevents invalid data from entering the system while providing immediate feedback to end users.
 
-## 2.9 Configurable Business Rules
+## 2.10 Configurable Business Rules
 
 The solution avoids hardcoded business logic by externalizing configurable values into Custom Metadata Types.
 
@@ -205,7 +209,7 @@ Administrators can introduce new grant schemes or modify existing configurations
 
 ##
 
-## 2.10 Future Scalability
+## 2.11 Future Scalability
 
 The proposed data model supports future enhancements including:
 
@@ -259,7 +263,11 @@ This architecture minimizes technical debt while improving maintainability and l
 
 [3.4 Application Flow.puml](<./3.4 Application Flow.puml>)
 
-## 3.5 Flow vs Apex Decision Matrix
+## 3.5 Contact Matching Flow
+
+[3.9 Contact Matching Flow.puml](<./3.9 Contact Matching Flow.puml>)
+
+## 3.6 Flow vs Apex Decision Matrix
 
 One of the key architectural decisions is determining whether a requirement should be implemented using Salesforce Flow or Apex.
 
@@ -275,7 +283,7 @@ One of the key architectural decisions is determining whether a requirement shou
 | Complex Validation             | Apex                    | Cross-object validation                                                      |
 | Support Option Retrieval       | Custom Metadata \+ Apex | Configuration-driven solution                                                |
 
-## 3.6 Why Apex Is Used Only When Necessary
+## 3.7 Why Apex Is Used Only When Necessary
 
 The solution intentionally minimizes custom code.
 
@@ -291,11 +299,11 @@ Apex is implemented only when one or more of the following conditions are met:
 
 All other business automation is implemented using Salesforce Flow to reduce maintenance costs and improve administrator productivity. This approach follows Salesforce's recommendation to favor declarative capabilities before introducing custom code.
 
-## 3.7 Service Interaction Diagram
+## 3.8 Service Interaction Diagram
 
 [3.7 Service Interaction Diagram.puml](<./3.7 Service Interaction Diagram.puml>)
 
-## 3.8 Error Handling Strategy
+## 3.9 Error Handling Strategy
 
 The application adopts a centralized error handling strategy.
 
@@ -315,9 +323,154 @@ The project also includes `Integration_Error__c` for operational tracking when i
 
 This approach simplifies operational monitoring, troubleshooting, and future retry processing.
 
-# 4\. Architectural Decision Records (ADR)
+## 3.10 Retry Strategy
 
-## 4.1 Purpose
+When external integration is enabled, failures should be classified into retryable and non-retryable errors.
+
+[Retry Strategy Diagram](<./7.4 Retry Strategy.puml>)
+
+Retry attempts should be limited to prevent infinite processing loops. Each retry updates the retry counter and processing status to provide complete operational visibility.
+
+## 3.11 Operational Monitoring
+
+The solution includes centralized operational monitoring.
+
+Production incidents for integration/retry scenarios can be captured using the `Integration_Error__c` object.
+
+Captured information includes:
+
+- Transaction Identifier
+- Error Category
+- Exception Message
+- Stack Trace
+- Request Payload
+- Response Payload
+- Retry Count
+- Processing Status
+
+Operational dashboards can be built using Salesforce Reports and Dashboards to monitor failed transactions and retry status.
+
+## 3.12 Disaster Recovery Considerations
+
+The proposed solution relies on Salesforce Platform resilience and disaster recovery capabilities.
+
+Additional operational recommendations include:
+
+- Scheduled data exports
+- Version-controlled source code repository
+- Automated deployment pipeline
+- Backup strategy for metadata
+- Monitoring of integration endpoints
+- Production alerting for failed integrations
+
+# 4\. Non-Functional Requirements
+
+## 4.1 Overview
+
+In addition to satisfying the functional requirements, the proposed solution is designed to meet key non-functional requirements related to performance, scalability, security, maintainability, reliability, and operational excellence.
+
+These architectural considerations ensure that the solution remains sustainable throughout its lifecycle while supporting future business growth.
+
+## 4.2 Performance
+
+The application is designed to minimize server processing time and optimize the use of Salesforce platform resources.
+
+### Design Considerations
+
+- Client-side validation is implemented using Lightning Web Components to reduce unnecessary server round trips.
+- Business logic is bulkified to efficiently process multiple records within Salesforce governor limits.
+- SOQL and DML operations are optimized to prevent excessive database operations.
+- Collections (List, Set, and Map) are used to eliminate nested loops and reduce processing time.
+- Guest-user linking is handled asynchronously using Queueable Apex where required.
+- External REST integrations are isolated behind dedicated service classes and should be executed only when required.
+
+## 4.3 Scalability
+
+The architecture supports future business growth without requiring major structural changes.
+
+### Design Considerations
+
+- Separation between master data and transactional data.
+- Configuration-driven business rules using Custom Metadata Types.
+- Reusable Apex service classes.
+- Layered application architecture.
+- Bulk-safe trigger processing for imported applications.
+- Support for additional grant programs without changing application logic.
+
+The proposed design allows new grant schemes, eligibility rules, and business configurations to be introduced through metadata rather than source code modifications.
+
+## 4.4 Security
+
+Security follows Salesforce's defense-in-depth approach.
+
+### Security Controls
+
+- Organization-Wide Defaults
+- Role Hierarchy
+- Sharing Rules
+- Permission Sets
+- Field-Level Security
+- Experience Cloud Profiles
+- Named Credentials
+- Secure REST authentication
+- Platform Encryption (Future Enhancement)
+
+Sensitive information is protected using Salesforce security mechanisms while external credentials remain outside application code.
+
+## 4.5 Availability
+
+The solution is designed for high availability by leveraging Salesforce Platform services.
+
+External dependencies are isolated through REST integration layers.
+
+Temporary failures from external systems do not impact overall platform availability and are handled through centralized exception management and retry mechanisms.
+
+## 4.6 Reliability
+
+The application incorporates several reliability mechanisms.
+
+- Centralized exception handling
+- Retry service placeholder for future integration failures
+- Transaction rollback
+- Validation before persistence
+- Integration error tracking object
+- Bulk-safe import processing
+
+These mechanisms improve operational stability and simplify production support.
+
+## 4.7 Maintainability
+
+Maintainability is achieved through clear separation of responsibilities.
+
+Presentation, orchestration, business logic, persistence, and integration are implemented independently.
+
+Configuration is externalized into Custom Metadata whenever possible.
+
+Simple automation uses Flow while complex reusable logic is implemented in Apex.
+
+This minimizes technical debt while improving long-term maintainability.
+
+## 4.8 Extensibility
+
+The architecture is intentionally designed to support future enhancements.
+
+Examples include:
+
+- Additional grant schemes
+- New eligibility rules
+- Multiple payment providers
+- Additional external integrations
+- Mobile applications
+- AI-assisted citizen support
+- Government reporting platforms
+
+These enhancements can be introduced with minimal impact on the existing architecture.
+
+#
+
+# 5\. Architectural Decision Records (ADR)
+
+## 5.1 Purpose
 
 Architectural Decision Records (ADR) document the significant architectural decisions made throughout the solution design process.
 
@@ -666,114 +819,9 @@ Trade-off:
 
 - Slightly more complex data model compared to legacy attachments
 
-## 4.2 ADR Summary
+## 5.2 ADR Summary
 
 The proposed architecture intentionally prioritizes maintainability, scalability, configurability, and operational excellence over short-term implementation simplicity. Each architectural decision has been evaluated based on long-term business value, Salesforce platform best practices, and enterprise application design principles. The result is a solution that not only satisfies the current assessment requirements but is also prepared to support future enhancements with minimal architectural rework.
-
-# 5\. Non-Functional Requirements
-
-## 5.1 Overview
-
-In addition to satisfying the functional requirements, the proposed solution is designed to meet key non-functional requirements related to performance, scalability, security, maintainability, reliability, and operational excellence.
-
-These architectural considerations ensure that the solution remains sustainable throughout its lifecycle while supporting future business growth.
-
-## 5.2 Performance
-
-The application is designed to minimize server processing time and optimize the use of Salesforce platform resources.
-
-### Design Considerations
-
-- Client-side validation is implemented using Lightning Web Components to reduce unnecessary server round trips.
-- Business logic is bulkified to efficiently process multiple records within Salesforce governor limits.
-- SOQL and DML operations are optimized to prevent excessive database operations.
-- Collections (List, Set, and Map) are used to eliminate nested loops and reduce processing time.
-- Guest-user linking is handled asynchronously using Queueable Apex where required.
-- External REST integrations are isolated behind dedicated service classes and should be executed only when required.
-
-## 5.3 Scalability
-
-The architecture supports future business growth without requiring major structural changes.
-
-### Design Considerations
-
-- Separation between master data and transactional data.
-- Configuration-driven business rules using Custom Metadata Types.
-- Reusable Apex service classes.
-- Layered application architecture.
-- Bulk-safe trigger processing for imported applications.
-- Support for additional grant programs without changing application logic.
-
-The proposed design allows new grant schemes, eligibility rules, and business configurations to be introduced through metadata rather than source code modifications.
-
-## 5.4 Security
-
-Security follows Salesforce's defense-in-depth approach.
-
-### Security Controls
-
-- Organization-Wide Defaults
-- Role Hierarchy
-- Sharing Rules
-- Permission Sets
-- Field-Level Security
-- Experience Cloud Profiles
-- Named Credentials
-- Secure REST authentication
-- Platform Encryption (Future Enhancement)
-
-Sensitive information is protected using Salesforce security mechanisms while external credentials remain outside application code.
-
-## 5.5 Availability
-
-The solution is designed for high availability by leveraging Salesforce Platform services.
-
-External dependencies are isolated through REST integration layers.
-
-Temporary failures from external systems do not impact overall platform availability and are handled through centralized exception management and retry mechanisms.
-
-## 5.6 Reliability
-
-The application incorporates several reliability mechanisms.
-
-- Centralized exception handling
-- Retry service placeholder for future integration failures
-- Transaction rollback
-- Validation before persistence
-- Integration error tracking object
-- Bulk-safe import processing
-
-These mechanisms improve operational stability and simplify production support.
-
-## 5.7 Maintainability
-
-Maintainability is achieved through clear separation of responsibilities.
-
-Presentation, orchestration, business logic, persistence, and integration are implemented independently.
-
-Configuration is externalized into Custom Metadata whenever possible.
-
-Simple automation uses Flow while complex reusable logic is implemented in Apex.
-
-This minimizes technical debt while improving long-term maintainability.
-
-## 5.8 Extensibility
-
-The architecture is intentionally designed to support future enhancements.
-
-Examples include:
-
-- Additional grant schemes
-- New eligibility rules
-- Multiple payment providers
-- Additional external integrations
-- Mobile applications
-- AI-assisted citizen support
-- Government reporting platforms
-
-These enhancements can be introduced with minimal impact on the existing architecture.
-
-#
 
 # 6\. Assumptions and Constraints
 
@@ -847,43 +895,3 @@ The proposed architecture includes mitigation strategies to reduce both the like
 | R-08    | Unexpected Apex exception                              | Transaction rollback                | Centralized exception framework                                          |
 | R-09    | Unauthorized data access                               | Security breach                     | Salesforce security model, least privilege principle                     |
 | R-10    | Future grant scheme changes                            | High maintenance effort             | Metadata-driven architecture                                             |
-
-## 7.3 Operational Monitoring
-
-The solution includes centralized operational monitoring.
-
-Production incidents for integration/retry scenarios can be captured using the `Integration_Error__c` object.
-
-Captured information includes:
-
-- Transaction Identifier
-- Error Category
-- Exception Message
-- Stack Trace
-- Request Payload
-- Response Payload
-- Retry Count
-- Processing Status
-
-Operational dashboards can be built using Salesforce Reports and Dashboards to monitor failed transactions and retry status.
-
-## 7.4 Retry Strategy
-
-When external integration is enabled, failures should be classified into retryable and non-retryable errors.
-
-[7.4 Retry Strategy.puml](<./7.4 Retry Strategy.puml>)
-
-Retry attempts should be limited to prevent infinite processing loops. Each retry updates the retry counter and processing status to provide complete operational visibility.
-
-## 7.5 Disaster Recovery Considerations
-
-The proposed solution relies on Salesforce Platform resilience and disaster recovery capabilities.
-
-Additional operational recommendations include:
-
-- Scheduled data exports
-- Version-controlled source code repository
-- Automated deployment pipeline
-- Backup strategy for metadata
-- Monitoring of integration endpoints
-- Production alerting for failed integrations
