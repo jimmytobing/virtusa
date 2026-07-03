@@ -1,4 +1,6 @@
 @startuml
+left to right direction
+
 skinparam object {
     BackgroundColor<<future>> #FFF4E6
     BorderColor<<future>> #C47F36
