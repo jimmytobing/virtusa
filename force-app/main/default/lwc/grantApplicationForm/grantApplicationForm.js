@@ -92,7 +92,7 @@ export default class GrantApplicationForm extends LightningElement {
         new ShowToastEvent({
           title: "Success",
 
-          message: "Application submitted. Id: " + applicationId,
+          message: "Application requested [ Id: " + applicationId + " ]",
 
           variant: "success"
         })

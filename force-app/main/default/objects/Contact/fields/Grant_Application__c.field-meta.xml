@@ -7,7 +7,6 @@
     <relationshipLabel>Active Grant Applicants</relationshipLabel>
     <relationshipName>Active_Grant_Applicants</relationshipName>
     <required>false</required>
-    <trackHistory>false</trackHistory>
-    <trackTrending>false</trackTrending>
+    <trackFeedHistory>false</trackFeedHistory>
     <type>Lookup</type>
 </CustomField>

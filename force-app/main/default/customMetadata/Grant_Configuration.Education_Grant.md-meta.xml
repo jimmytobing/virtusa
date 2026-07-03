@@ -11,6 +11,10 @@
         <value xsi:type="xsd:boolean">true</value>
     </values>
     <values>
+        <field>Duration_Months__c</field>
+        <value xsi:nil="true" />
+    </values>
+    <values>
         <field>Grant_Type__c</field>
         <value xsi:type="xsd:string">Education Grant</value>
     </values>
@@ -31,7 +35,15 @@
         <value xsi:type="xsd:double">18.0</value>
     </values>
     <values>
+        <field>Monthly_Amount__c</field>
+        <value xsi:nil="true" />
+    </values>
+    <values>
         <field>Priority__c</field>
         <value xsi:type="xsd:double">1.0</value>
+    </values>
+    <values>
+        <field>Sort_Order__c</field>
+        <value xsi:nil="true" />
     </values>
 </CustomMetadata>
