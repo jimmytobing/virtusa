@@ -1,0 +1,36 @@
+@startuml
+
+actor "Branch Admin" as BranchAdmin
+actor Supervisor
+actor Agent
+actor Citizen
+
+package "Salesforce Security Model" {
+  rectangle "Role Hierarchy" as RoleHierarchy
+  rectangle "Permission Sets" as PermissionSets
+  rectangle "Sharing Rules" as SharingRules
+  rectangle "Queue Membership" as QueueMembership
+  rectangle "Field-Level Security" as FLS
+}
+
+database "Case Records" as Case
+database "Feedback Records" as Feedback
+database "Reports & Dashboards" as Reports
+
+Citizen --> Case : Own submitted cases
+Agent --> QueueMembership
+Agent --> Case : Assigned cases only
+Supervisor --> Case : Team cases
+Supervisor --> Feedback : Team feedback
+BranchAdmin --> Reports : Division overview
+BranchAdmin --> Case : Read-only division visibility
+
+RoleHierarchy --> SharingRules
+PermissionSets --> FLS
+SharingRules --> Case
+SharingRules --> Feedback
+QueueMembership --> Case
+Case --> Reports
+Feedback --> Reports
+
+@enduml

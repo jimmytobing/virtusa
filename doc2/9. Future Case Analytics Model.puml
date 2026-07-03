@@ -1,0 +1,38 @@
+@startuml
+left to right direction
+
+database "Case" as Case
+database "Contact" as Contact
+database "User" as User
+database "Feedback" as Feedback
+database "Case Milestone" as Milestone
+
+package "Analytics Dataset" {
+  [Case Volume Metrics]
+  [Agent Productivity Metrics]
+  [SLA Metrics]
+  [Feedback Sentiment Metrics]
+  [Channel Effectiveness Metrics]
+}
+
+package "Dashboards" {
+  [Branch Admin Dashboard]
+  [Supervisor Dashboard]
+  [Agent Dashboard]
+}
+
+Case --> [Case Volume Metrics]
+Case --> [Channel Effectiveness Metrics]
+User --> [Agent Productivity Metrics]
+Milestone --> [SLA Metrics]
+Feedback --> [Feedback Sentiment Metrics]
+Contact --> [Case Volume Metrics]
+
+[Case Volume Metrics] --> [Branch Admin Dashboard]
+[Channel Effectiveness Metrics] --> [Branch Admin Dashboard]
+[Agent Productivity Metrics] --> [Supervisor Dashboard]
+[SLA Metrics] --> [Supervisor Dashboard]
+[Feedback Sentiment Metrics] --> [Branch Admin Dashboard]
+[Case Volume Metrics] --> [Agent Dashboard]
+
+@enduml

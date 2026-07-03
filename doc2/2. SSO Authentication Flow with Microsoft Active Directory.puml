@@ -1,0 +1,16 @@
+@startuml
+actor "Internal User" as User
+participant "Salesforce Login" as SFLogin
+participant "SAML Identity Provider" as IdP
+participant "Microsoft Active Directory / Azure AD" as AD
+participant "Salesforce Service Cloud" as SF
+
+User -> SFLogin : Access Salesforce
+SFLogin -> IdP : Redirect SSO request
+IdP -> AD : Authenticate user
+AD --> IdP : Authentication success
+IdP --> SFLogin : SAML assertion
+SFLogin -> SF : Create user session
+SF --> User : Access granted based on profile and permission set
+
+@enduml

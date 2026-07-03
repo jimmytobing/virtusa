@@ -1,0 +1,25 @@
+@startuml
+start
+
+:Agent searches Knowledge Base;
+
+if (Existing article found?) then (Yes)
+  :Attach Knowledge Article to Case;
+  :Provide solution to citizen;
+else (No)
+  :Agent drafts new solution;
+  :Create draft Knowledge Article;
+  :Submit article for review;
+  :Supervisor reviews article;
+
+  if (Approved?) then (Yes)
+    :Publish Knowledge Article;
+  else (No)
+    :Return to Agent for revision;
+  endif
+endif
+
+:Use knowledge article for future cases;
+
+stop
+@enduml

@@ -1,0 +1,39 @@
+@startuml
+skinparam componentStyle rectangle
+
+database "Legacy Case Data\n6 Million Records" as LegacyCases
+database "Legacy Files\n100GB" as LegacyFiles
+
+package "Migration Layer" {
+  [Data Profiling]
+  [Data Cleansing]
+  [Deduplication]
+  [Staging Database]
+  [Bulk API 2.0 Loader]
+  [File Migration Utility]
+}
+
+package "Salesforce Platform" {
+  database "Case Object" as CaseObj
+  database "Contact Object" as ContactObj
+  database "Salesforce Files" as Files
+  [Indexes / External IDs]
+  [Archiving Strategy]
+}
+
+LegacyCases --> [Data Profiling]
+LegacyFiles --> [File Migration Utility]
+
+[Data Profiling] --> [Data Cleansing]
+[Data Cleansing] --> [Deduplication]
+[Deduplication] --> [Staging Database]
+[Staging Database] --> [Bulk API 2.0 Loader]
+
+[Bulk API 2.0 Loader] --> ContactObj
+[Bulk API 2.0 Loader] --> CaseObj
+[File Migration Utility] --> Files
+
+CaseObj --> [Indexes / External IDs]
+CaseObj --> [Archiving Strategy]
+
+@enduml

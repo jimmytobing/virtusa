@@ -1,0 +1,27 @@
+@startuml
+actor Agent
+participant "Salesforce Service Console" as Console
+participant "Citizen Verification Service" as Apex
+participant "Named Credential" as NC
+participant "API Gateway" as Gateway
+participant "External MDM System" as MDM
+database "Contact" as Contact
+
+Agent -> Console : Enter phone or email
+Console -> Apex : Verify citizen request
+Apex -> NC : Secure callout
+NC -> Gateway : REST request
+Gateway -> MDM : Verify citizen profile
+MDM --> Gateway : Verification result
+Gateway --> NC : Response
+NC --> Apex : Citizen profile data
+
+alt Citizen matched
+  Apex -> Contact : Update existing Contact
+else Citizen not found
+  Apex -> Contact : Create provisional Contact
+end
+
+Apex --> Console : Verification status
+
+@enduml

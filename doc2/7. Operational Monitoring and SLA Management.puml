@@ -1,0 +1,36 @@
+@startuml
+left to right direction
+
+package "Salesforce Case Operations" {
+  [Case Created]
+  [Case Assigned]
+  [Case In Progress]
+  [Case Escalated]
+  [Case Closed]
+}
+
+package "SLA Monitoring" {
+  [Entitlement Process]
+  [Milestones]
+  [SLA Breach Alerts]
+  [Escalation Rules]
+}
+
+package "Management Dashboards" {
+  [Agent Performance Dashboard]
+  [Channel Volume Dashboard]
+  [SLA Compliance Dashboard]
+  [Citizen Satisfaction Dashboard]
+}
+
+[Case Created] --> [Entitlement Process]
+[Case Assigned] --> [Milestones]
+[Milestones] --> [SLA Breach Alerts]
+[SLA Breach Alerts] --> [Escalation Rules]
+
+[Case Created] --> [Channel Volume Dashboard]
+[Case Closed] --> [Agent Performance Dashboard]
+[Milestones] --> [SLA Compliance Dashboard]
+[Case Closed] --> [Citizen Satisfaction Dashboard]
+
+@enduml

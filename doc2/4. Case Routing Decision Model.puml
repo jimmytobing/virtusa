@@ -1,0 +1,29 @@
+@startuml
+start
+
+:Case created from any channel;
+:Identify case type;
+:Identify citizen preferred language;
+:Identify required skill;
+:Determine priority;
+:Check agent availability;
+:Check agent workload;
+
+if (Suitable agent available?) then (Yes)
+  :Assign case to best matched agent;
+else (No)
+  :Route case to queue;
+endif
+
+if (Priority is High or SLA risk?) then (Yes)
+  :Notify Supervisor;
+endif
+
+if (Complex case?) then (Yes)
+  :Escalate to Supervisor queue;
+endif
+
+:Agent starts case handling;
+
+stop
+@enduml

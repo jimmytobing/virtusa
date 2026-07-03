@@ -1,0 +1,41 @@
+@startuml
+skinparam componentStyle rectangle
+
+actor Citizen
+
+package "Citizen Contact Channels" {
+  [Agency Website]
+  [Mobile App]
+  [Email]
+  [Phone Call]
+  [Live Chat]
+}
+
+package "Salesforce Service Cloud" {
+  [Experience Cloud]
+  [Email-to-Case]
+  [Service Console]
+  [Digital Engagement]
+  [Voice / CTI Integration]
+  [Case Management]
+}
+
+Citizen --> [Agency Website]
+Citizen --> [Mobile App]
+Citizen --> [Email]
+Citizen --> [Phone Call]
+Citizen --> [Live Chat]
+
+[Agency Website] --> [Experience Cloud]
+[Mobile App] --> [Experience Cloud]
+[Email] --> [Email-to-Case]
+[Phone Call] --> [Voice / CTI Integration]
+[Live Chat] --> [Digital Engagement]
+
+[Experience Cloud] --> [Case Management]
+[Email-to-Case] --> [Case Management]
+[Voice / CTI Integration] --> [Case Management]
+[Digital Engagement] --> [Case Management]
+[Case Management] --> [Service Console]
+
+@enduml
