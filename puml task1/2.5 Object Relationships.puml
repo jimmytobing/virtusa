@@ -1,70 +1,31 @@
 @startuml
 left to right direction
 
-skinparam object {
-    BackgroundColor<<future>> #FFF4E6
-    BorderColor<<future>> #C47F36
-    BorderStyle<<future>> dashed
-}
-
 object Account
-
 object Contact
-
-object Grant_Application__c
-
-object Grant_Disbursement__c
-
-object Grant_Support_Option__mdt
-
-object Grant_Configuration__mdt
-
-object Case <<future>>
-
-object Knowledge__kav <<future>>
-
-object ContentDocumentLink <<future>>
-
-object User <<future>>
-
-object Group_Queue <<future>>
-
-object Service_Division__c <<future>>
-
-object CaseRoutingRule__mdt <<future>>
-
-object Migration_Batch__c <<future>>
+object Case
+object Service_Division__c
+object User
+object Group_Queue
+object Knowledge__kav
+object ContentVersion
+object ContentDocumentLink
+object CaseMilestone
+object Integration_Error__c
+object Migration_Batch__c
+object Case_Routing_Rule__mdt
 
 Account "1" --> "*" Contact
+Contact "1" --> "*" Case
+Service_Division__c "1" --> "*" Case
+User "1" --> "*" Case : agent ownership
+Group_Queue "1" --> "*" Case : queue ownership
+Case "1" --> "*" ContentDocumentLink
+ContentVersion "1" --> "*" ContentDocumentLink
+Case "1" --> "*" CaseMilestone
+Knowledge__kav "*" .. "*" Case : article usage
+Integration_Error__c "*" --> "0..1" Case
+Migration_Batch__c "1" .. "*" Case : migrated records
+Case_Routing_Rule__mdt ..> Case : assignment attributes
 
-Contact "1" --> "*" Grant_Application__c
-
-Grant_Application__c "1" --> "*" Grant_Disbursement__c
-
-Grant_Support_Option__mdt ..> Grant_Application__c
-
-Grant_Configuration__mdt ..> Grant_Application__c
-
-Contact <-- Grant_Application__c : active application lookup
-
-Contact "1" --> "*" Case : future citizen cases
-
-Service_Division__c "1" --> "*" Case : future branch/division scope
-
-User "1" --> "*" Case : future agent ownership
-
-Group_Queue "1" --> "*" Case : future queue ownership
-
-Case "1" --> "*" ContentDocumentLink : future photos/files
-
-Knowledge__kav ..> Case : future known solution
-
-CaseRoutingRule__mdt ..> Case : future routing criteria
-
-Migration_Batch__c ..> Case : future historical load
-
-legend right
-  |= Style |= Meaning |
-  |<#FFF4E6> Dashed border | Future case-management extension / not active in current implementation |
-endlegend
 @enduml

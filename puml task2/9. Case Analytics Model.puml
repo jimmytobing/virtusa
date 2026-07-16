@@ -4,15 +4,17 @@ left to right direction
 database "Case" as Case
 database "Contact" as Contact
 database "User" as User
-database "Feedback" as Feedback
 database "Case Milestone" as Milestone
+database "Knowledge Article Usage" as KnowledgeUsage
 
 package "Analytics Dataset" {
   [Case Volume Metrics]
   [Agent Productivity Metrics]
   [SLA Metrics]
-  [Feedback Sentiment Metrics]
+  [Feedback Satisfaction Metrics]
   [Channel Effectiveness Metrics]
+  [Knowledge Reuse Metrics]
+  [Backlog Aging Metrics]
 }
 
 package "Dashboards" {
@@ -25,14 +27,18 @@ Case --> [Case Volume Metrics]
 Case --> [Channel Effectiveness Metrics]
 User --> [Agent Productivity Metrics]
 Milestone --> [SLA Metrics]
-Feedback --> [Feedback Sentiment Metrics]
+Case --> [Feedback Satisfaction Metrics]
 Contact --> [Case Volume Metrics]
+KnowledgeUsage --> [Knowledge Reuse Metrics]
+Case --> [Backlog Aging Metrics]
 
 [Case Volume Metrics] --> [Branch Admin Dashboard]
 [Channel Effectiveness Metrics] --> [Branch Admin Dashboard]
+[Backlog Aging Metrics] --> [Branch Admin Dashboard]
 [Agent Productivity Metrics] --> [Supervisor Dashboard]
 [SLA Metrics] --> [Supervisor Dashboard]
-[Feedback Sentiment Metrics] --> [Branch Admin Dashboard]
+[Feedback Satisfaction Metrics] --> [Branch Admin Dashboard]
+[Knowledge Reuse Metrics] --> [Supervisor Dashboard]
 [Case Volume Metrics] --> [Agent Dashboard]
 
 @enduml

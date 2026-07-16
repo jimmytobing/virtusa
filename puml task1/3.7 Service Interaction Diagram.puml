@@ -1,45 +1,27 @@
 @startuml
 
 participant Citizen
-
-participant LWC
-
-participant Flow
-
-participant GrantApplicationService
-
-participant ContactMatchingService
-
-participant GrantSupportOptionService
-
-participant GrantDisbursementService
-
+participant "Channel Adapter" as Channel
+participant CaseIntakeService
+participant CitizenVerificationService
+participant "External MDM" as MDM
+participant CaseRoutingService
+participant "Omni-Channel" as Omni
+participant Agent
 database Salesforce
 
-Citizen -> LWC : Submit Application
-
-LWC -> GrantApplicationService : submitApplication
-
-GrantApplicationService -> GrantSupportOptionService : Get active option
-
-GrantSupportOptionService --> GrantApplicationService
-
-GrantApplicationService -> ContactMatchingService : Upsert applicant by phone
-
-ContactMatchingService --> GrantApplicationService
-
-GrantApplicationService --> Salesforce : Save Grant Application
-
-GrantApplicationService -> GrantDisbursementService : Recalculate schedule
-
-GrantDisbursementService --> Salesforce : Save Disbursements
-
-Flow -> Salesforce : Set lifecycle fields / create tasks
-
-GrantDisbursementService --> GrantApplicationService
-
-GrantApplicationService --> LWC
-
-LWC --> Citizen : Success
+Citizen -> Channel : Submit enquiry or feedback
+Channel -> CaseIntakeService : Normalized intake request
+CaseIntakeService -> CitizenVerificationService : Verify phone/email
+CitizenVerificationService -> MDM : Lookup citizen
+MDM --> CitizenVerificationService : Match result
+CitizenVerificationService --> CaseIntakeService : Verification result
+CaseIntakeService -> Salesforce : Upsert Contact and create Case
+CaseIntakeService -> CaseRoutingService : Prepare assignment context
+CaseRoutingService -> Omni : Route by skill, language, workload, availability
+Omni --> Agent : Assign Case
+Agent -> Salesforce : Work Case, files, Knowledge, activities
+Salesforce --> Channel : Acknowledgement / status update
+Channel --> Citizen : Confirmation
 
 @enduml

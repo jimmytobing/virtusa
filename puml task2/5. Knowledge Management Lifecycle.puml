@@ -19,7 +19,7 @@ else (No)
   endif
 endif
 
-:Use knowledge article for future cases;
+:Reuse knowledge article for similar enquiry cases;
 
 stop
 @enduml

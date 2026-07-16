@@ -11,14 +11,17 @@ package "Migration Layer" {
   [Staging Database]
   [Bulk API 2.0 Loader]
   [File Migration Utility]
+  [Migration Reconciliation]
 }
 
 package "Salesforce Platform" {
   database "Case Object" as CaseObj
   database "Contact Object" as ContactObj
   database "Salesforce Files" as Files
+  database "Migration_Batch__c" as MigrationBatch
   [Indexes / External IDs]
   [Archiving Strategy]
+  [Storage Forecast]
 }
 
 LegacyCases --> [Data Profiling]
@@ -32,8 +35,13 @@ LegacyFiles --> [File Migration Utility]
 [Bulk API 2.0 Loader] --> ContactObj
 [Bulk API 2.0 Loader] --> CaseObj
 [File Migration Utility] --> Files
+[Bulk API 2.0 Loader] --> MigrationBatch
+[File Migration Utility] --> [Migration Reconciliation]
+[Migration Reconciliation] --> MigrationBatch
 
 CaseObj --> [Indexes / External IDs]
 CaseObj --> [Archiving Strategy]
+Files --> [Storage Forecast]
+Files --> [Archiving Strategy]
 
 @enduml

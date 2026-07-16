@@ -1,74 +1,32 @@
 @startuml
-
-title Applicant Contact Matching and Application Linking Flow
+title Citizen Verification and Contact Matching Flow
 
 start
 
-partition "Grant Application Service\n(without sharing)" {
-    :Receive submitted application data;
-}
+:Receive phone/email from Case intake or Agent action;
+:Search Salesforce Contact by MDM ID, phone, and email;
 
-partition "Contact Matching Service\n(without sharing)" {
-    :System searches for an existing Contact\nusing the submitted phone number;
+if (Salesforce Contact found?) then (Yes)
+  :Use existing Contact candidate;
+else (No)
+  :Create provisional Contact candidate;
+endif
 
-    if (Is a matching Contact found?) then (Yes)
-        :Use the existing Contact;
-    else (No)
-        :Create a new Contact record;
-    endif
+:Call external MDM using Named Credential;
 
-    :Update applicant information on the Contact;
-    note right
-        First name
-        Last name
-        Phone
-        Mailing postal code
-        Monthly income
-        Annual income
-        Support option
-    end note
-}
+if (MDM matched citizen?) then (Yes)
+  :Update Contact with MDM citizen ID and verified attributes;
+  :Set Case verification status to Verified;
+  :Link Case to verified Contact;
+else (No)
+  :Set Case verification status to Manual Review;
+  :Keep supplied phone/email on Case;
+endif
 
-partition "Grant Application Repository\n(without sharing)" {
-    :Create the Grant Application record;
-}
-
-partition "Contact Matching Service\n(without sharing)" {
-    if (Is this a new Contact?) then (Yes)
-        :Save the new Contact\nto get the Contact Id;
-    else (No)
-        :Keep Contact changes ready\nfor final save;
-    endif
-}
-
-partition "Grant Application Service\n(without sharing)" {
-    if (Is the applicant a Guest user?) then (Yes)
-        :Queue a background job;
-    else (No)
-        :Link the Contact to the Grant Application immediately;
-    endif
-}
-
-partition "Contact Matching Service\n(without sharing)" {
-    if (Was this an existing Contact?) then (Yes)
-        :Save the updated Contact;
-    else (No)
-        :New Contact is already saved;
-    endif
-}
-
-partition "Background Job\n(without sharing)" {
-    if (Was a background job queued?) then (Yes)
-        :Link the Contact to the Grant Application;
-    else (No)
-        :No background update needed;
-    endif
-}
-
-partition "Grant Application Service\n(without sharing)" {
-    :Show the application submission success message;
-}
+if (MDM call failed transiently?) then (Yes)
+  :Log Integration_Error__c;
+  :Schedule retry or supervisor review;
+endif
 
 stop
-
 @enduml

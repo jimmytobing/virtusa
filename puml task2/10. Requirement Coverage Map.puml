@@ -1,0 +1,50 @@
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+
+package "Assessment Requirements" {
+  [Citizen Enquiry]
+  [Citizen Feedback]
+  [Website Channel]
+  [Phone Channel]
+  [Real-Time Assistance]
+  [Email Channel]
+  [MDM Verification]
+  [SSO with Microsoft AD]
+  [Historical Migration]
+  [Daily Case and File Volume]
+  [Agent Performance Evaluation]
+}
+
+package "Salesforce Solution" {
+  [Service Cloud Case]
+  [Experience Cloud]
+  [CTI / Voice]
+  [Digital Engagement]
+  [Email-to-Case]
+  [Citizen Verification Service]
+  [Salesforce SSO]
+  [Bulk API / ETL Migration]
+  [Salesforce Files]
+  [Reports and Dashboards]
+  [Omni-Channel]
+  [Knowledge]
+}
+
+[Citizen Enquiry] --> [Service Cloud Case]
+[Citizen Enquiry] --> [Knowledge]
+[Citizen Feedback] --> [Service Cloud Case]
+[Citizen Feedback] --> [Reports and Dashboards]
+[Website Channel] --> [Experience Cloud]
+[Phone Channel] --> [CTI / Voice]
+[Real-Time Assistance] --> [Digital Engagement]
+[Email Channel] --> [Email-to-Case]
+[MDM Verification] --> [Citizen Verification Service]
+[SSO with Microsoft AD] --> [Salesforce SSO]
+[Historical Migration] --> [Bulk API / ETL Migration]
+[Daily Case and File Volume] --> [Salesforce Files]
+[Daily Case and File Volume] --> [Service Cloud Case]
+[Agent Performance Evaluation] --> [Reports and Dashboards]
+[Agent Performance Evaluation] --> [Omni-Channel]
+
+@enduml

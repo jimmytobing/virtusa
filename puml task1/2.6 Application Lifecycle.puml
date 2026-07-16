@@ -1,22 +1,30 @@
 @startuml
 left to right direction
 
-state "Pending Approval" as PendingApproval
+state "New" as NewCase
+state "Verification Pending" as VerificationPending
+state "Manual Verification" as ManualVerification
+state "Assigned" as Assigned
+state "In Progress" as InProgress
+state "Pending Citizen" as PendingCitizen
+state "Escalated" as Escalated
+state "Resolved" as Resolved
+state "Reopened" as Reopened
+state "Closed" as Closed
 
-[*] --> Submitted
-
-Submitted --> PendingApproval
-
-PendingApproval --> Approved
-
-PendingApproval --> Rejected
-
-Approved --> Active
-
-Active --> Completed
-
-Completed --> Closed
-
-Rejected --> Closed
+[*] --> NewCase
+NewCase --> VerificationPending
+VerificationPending --> Assigned
+VerificationPending --> ManualVerification
+ManualVerification --> Assigned
+Assigned --> InProgress
+InProgress --> PendingCitizen
+PendingCitizen --> InProgress
+InProgress --> Escalated
+Escalated --> InProgress
+InProgress --> Resolved
+Resolved --> Closed
+Resolved --> Reopened
+Reopened --> InProgress
 
 @enduml

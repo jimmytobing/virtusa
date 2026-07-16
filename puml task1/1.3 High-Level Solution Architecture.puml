@@ -1,150 +1,100 @@
 @startuml
-
 skinparam componentStyle rectangle
-skinparam component {
-    BackgroundColor<<future>> #FFF4E6
-    BorderColor<<future>> #C47F36
-    BorderStyle<<future>> dashed
-}
-skinparam cloud {
-    BackgroundColor<<future>> #FFF4E6
-    BorderColor<<future>> #C47F36
-    BorderStyle<<future>> dashed
-}
 
 actor Citizen
 actor "Branch Admin" as BranchAdmin
 actor Supervisor
 actor Agent
 
-cloud "Microsoft Azure AD\n(Future Internal SSO)" as AAD <<future>>
+cloud "Microsoft AD / Entra ID" as AAD
+cloud "External MDM System" as MDM
+cloud "API Gateway / Middleware" as Gateway
+
+package "Citizen Contact Channels" {
+  [Agency Website]
+  [Mobile App]
+  [Email]
+  [Phone]
+  [Live Chat / Messaging]
+}
 
 package "Salesforce Experience Cloud" {
-
-    [Experience Site]
-
-    [Lightning Web Components]
-
+  [Citizen Portal]
+  [Case Submission LWC]
 }
 
-package "Salesforce Service Channels\n(Future Case Intake)" <<future>> {
-
-    component "Web Case Intake" as WebCaseFuture <<future>>
-
-    component "Phone Case Intake" as PhoneCaseFuture <<future>>
-
-    component "Chat / Mobile Case Intake" as ChatMobileCaseFuture <<future>>
-
-    component "Email Case Intake" as EmailCaseFuture <<future>>
-
-    component "Omni-Channel Routing" as OmniChannelFuture <<future>>
-
+package "Salesforce Service Cloud" {
+  [Service Console]
+  [Case Management]
+  [Omni-Channel Routing]
+  [Email-to-Case]
+  [Digital Engagement]
+  [CTI / Voice Adapter]
+  [Salesforce Knowledge]
+  [Entitlements and Milestones]
+  [Reports and Dashboards]
 }
 
-package "Salesforce Service Operations\n(Future Internal Users)" <<future>> {
-
-    component "Service Console" as ServiceConsoleFuture <<future>>
-
-    component "Reports and Dashboards" as ReportsFuture <<future>>
-
-}
-
-package "Salesforce Platform" {
-
-    [Flow]
-
-    [Apex Service Layer]
-
-    [Trigger Framework]
-
-    [Custom Metadata]
-
+package "Salesforce Platform Services" {
+  [Flow Automation]
+  [Apex Integration Services]
+  [Named Credentials]
+  [Custom Metadata]
 }
 
 database "Salesforce Data" {
-
-    [Contact]
-
-    [Grant Application]
-
-    [Grant Disbursement]
-
-    [Integration Error]
-
-    component "Case" as CaseFuture <<future>>
-
-    component "Knowledge" as KnowledgeFuture <<future>>
-
-    component "Files" as FilesFuture <<future>>
-
-    component "Service Division" as ServiceDivisionFuture <<future>>
-
+  [Contact]
+  [Case]
+  [Service Division]
+  [Knowledge Article]
+  [Salesforce Files]
+  [Case Milestone]
+  [Integration Error]
+  [Migration Batch]
 }
 
-cloud "API Gateway" as ApiGateway <<future>> {
+Citizen --> [Agency Website]
+Citizen --> [Mobile App]
+Citizen --> [Email]
+Citizen --> [Phone]
+Citizen --> [Live Chat / Messaging]
 
-}
+[Agency Website] --> [Citizen Portal]
+[Mobile App] --> [Citizen Portal]
+[Citizen Portal] --> [Case Submission LWC]
+[Case Submission LWC] --> [Case Management]
+[Email] --> [Email-to-Case]
+[Phone] --> [CTI / Voice Adapter]
+[Live Chat / Messaging] --> [Digital Engagement]
+[Email-to-Case] --> [Case Management]
+[CTI / Voice Adapter] --> [Case Management]
+[Digital Engagement] --> [Case Management]
 
-cloud "Master Data Management" as MDM <<future>> {
+[Case Management] --> [Omni-Channel Routing]
+[Omni-Channel Routing] --> [Service Console]
+Agent --> [Service Console]
+Supervisor --> [Service Console]
+BranchAdmin --> [Reports and Dashboards]
 
-}
+[Service Console] --> [Salesforce Knowledge]
+[Case Management] --> [Entitlements and Milestones]
+[Case Management] --> [Flow Automation]
+[Flow Automation] --> [Apex Integration Services]
+[Apex Integration Services] --> [Named Credentials]
+[Named Credentials] --> Gateway
+Gateway --> MDM
 
-Citizen --> [Experience Site]
+[Case Management] --> [Case]
+[Case Management] --> [Contact]
+[Case Management] --> [Salesforce Files]
+[Case Management] --> [Service Division]
+[Salesforce Knowledge] --> [Knowledge Article]
+[Entitlements and Milestones] --> [Case Milestone]
+[Apex Integration Services] --> [Integration Error]
+[Reports and Dashboards] --> [Case]
+[Reports and Dashboards] --> [Case Milestone]
 
-Citizen ..> WebCaseFuture : future web enquiry / feedback
-Citizen ..> PhoneCaseFuture : future call
-Citizen ..> ChatMobileCaseFuture : future real-time assistance
-Citizen ..> EmailCaseFuture : future email
-
-BranchAdmin ..> ReportsFuture : future oversight
-Supervisor ..> ServiceConsoleFuture : future supervision
-Agent ..> ServiceConsoleFuture : future case handling
-
-[Experience Site] --> [Lightning Web Components]
-
-[Lightning Web Components] --> [Flow]
-
-WebCaseFuture ..> OmniChannelFuture : future assignment
-PhoneCaseFuture ..> OmniChannelFuture : future assignment
-ChatMobileCaseFuture ..> OmniChannelFuture : future assignment
-EmailCaseFuture ..> OmniChannelFuture : future assignment
-OmniChannelFuture ..> ServiceConsoleFuture
-ServiceConsoleFuture ..> CaseFuture
-ServiceConsoleFuture ..> KnowledgeFuture
-ServiceConsoleFuture ..> FilesFuture
-ReportsFuture ..> CaseFuture
-
-[Flow] --> [Apex Service Layer]
-
-[Apex Service Layer] --> [Trigger Framework]
-
-[Apex Service Layer] --> [Custom Metadata]
-
-[Apex Service Layer] --> [Contact]
-
-[Apex Service Layer] --> [Grant Application]
-
-[Apex Service Layer] --> [Grant Disbursement]
-
-[Apex Service Layer] --> [Integration Error]
-
-[Apex Service Layer] ..> CaseFuture : future support case
-
-[Apex Service Layer] ..> KnowledgeFuture : future support content
-
-[Apex Service Layer] ..> FilesFuture : future document upload
-
-[Apex Service Layer] ..> ServiceDivisionFuture : future division security
-
-[Apex Service Layer] ..> ApiGateway : future integration
-
-ApiGateway ..> MDM
-
-AAD ..> ServiceConsoleFuture : future internal SSO
-
-legend right
-  |= Style |= Meaning |
-  |<#FFF4E6> Dashed border | Future enhancement / not active in current implementation |
-endlegend
+AAD --> [Service Console] : SSO for internal users
+AAD --> [Citizen Portal] : optional citizen authentication
 
 @enduml

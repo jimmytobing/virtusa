@@ -18,6 +18,15 @@ package "Salesforce Service Cloud" {
   [Digital Engagement]
   [Voice / CTI Integration]
   [Case Management]
+  [Salesforce Files]
+  [Omni-Channel]
+  [Knowledge]
+  [Entitlements and Milestones]
+}
+
+package "External Systems" {
+  [External MDM]
+  [Microsoft AD / Entra ID]
 }
 
 Citizen --> [Agency Website]
@@ -36,6 +45,12 @@ Citizen --> [Live Chat]
 [Email-to-Case] --> [Case Management]
 [Voice / CTI Integration] --> [Case Management]
 [Digital Engagement] --> [Case Management]
-[Case Management] --> [Service Console]
+[Case Management] --> [Salesforce Files]
+[Case Management] --> [Omni-Channel]
+[Case Management] --> [Entitlements and Milestones]
+[Omni-Channel] --> [Service Console]
+[Service Console] --> [Knowledge]
+[Case Management] --> [External MDM] : citizen verification
+[Microsoft AD / Entra ID] --> [Service Console] : internal SSO
 
 @enduml

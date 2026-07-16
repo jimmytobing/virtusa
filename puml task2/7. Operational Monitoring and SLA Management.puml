@@ -6,6 +6,7 @@ package "Salesforce Case Operations" {
   [Case Assigned]
   [Case In Progress]
   [Case Escalated]
+  [Case Pending Citizen]
   [Case Closed]
 }
 
@@ -21,10 +22,19 @@ package "Management Dashboards" {
   [Channel Volume Dashboard]
   [SLA Compliance Dashboard]
   [Citizen Satisfaction Dashboard]
+  [Backlog and Aging Dashboard]
+  [Integration Error Dashboard]
+}
+
+package "Integration Monitoring" {
+  [MDM Verification Errors]
+  [Channel Intake Errors]
+  [Retry Queue]
 }
 
 [Case Created] --> [Entitlement Process]
 [Case Assigned] --> [Milestones]
+[Case Pending Citizen] --> [Milestones]
 [Milestones] --> [SLA Breach Alerts]
 [SLA Breach Alerts] --> [Escalation Rules]
 
@@ -32,5 +42,10 @@ package "Management Dashboards" {
 [Case Closed] --> [Agent Performance Dashboard]
 [Milestones] --> [SLA Compliance Dashboard]
 [Case Closed] --> [Citizen Satisfaction Dashboard]
+[Case Assigned] --> [Backlog and Aging Dashboard]
+[Case Escalated] --> [Backlog and Aging Dashboard]
+[MDM Verification Errors] --> [Retry Queue]
+[Channel Intake Errors] --> [Retry Queue]
+[Retry Queue] --> [Integration Error Dashboard]
 
 @enduml

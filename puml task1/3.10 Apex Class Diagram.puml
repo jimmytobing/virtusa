@@ -1,102 +1,76 @@
 @startuml
-
-title Apex Class Diagram
+title Service Cloud Extension Class Diagram
 
 left to right direction
-skinparam linetype ortho
-skinparam RoundCorner 25
-skinparam packageStyle rectangle
 skinparam classAttributeIconSize 0
-skinparam shadowing false
-skinparam class {
-    BackgroundColor<<future>> #FFF4E6
-    BorderColor<<future>> #C47F36
-    BorderStyle<<future>> dashed
-}
 hide empty members
 
 package "Presentation" {
-    class GrantApplicationController <<Aura Controller>>
+  class CaseIntakeController <<AuraEnabled>>
+  class ServiceConsoleActionController <<AuraEnabled>>
 }
 
 package "Application Services" {
-    class GrantApplicationService <<Application Service>>
-    class ContactMatchingService <<Domain Service>>
-    class GrantDisbursementService <<Domain Service>>
-    class GrantConfigurationService <<Configuration Service>>
-    class GrantSupportOptionService <<Configuration Service>>
-    class GrantApplicationBulkUploadService <<Import Service>>
+  class CaseIntakeService
+  class CitizenVerificationService
+  class CaseRoutingService
+  class CaseLifecycleService
+  class FeedbackAnalysisService
+  class KnowledgeSuggestionService
+  class IntegrationErrorService
+  class MigrationReconciliationService
 }
 
 package "Data Access" {
-    class ContactRepository <<Repository>>
-    class GrantApplicationRepository <<Repository>>
-    class GrantConfigurationRepository <<Repository>>
+  class ContactRepository
+  class CaseRepository
+  class KnowledgeRepository
+  class IntegrationErrorRepository
 }
 
 package "Automation" {
-    class ContactTriggerHandler <<Trigger Handler>>
-    class GrantApplicationTriggerHandler <<Trigger Handler>>
-    class GrantDisbursementTrigger <<Trigger>>
-    class GrantApplicationApplicantLinkJob <<Queueable>>
-    class GrantApplicationGuestUpdateJob <<Queueable>>
-    class "GrantDisbursementService.FlowRequest" as FlowRequest <<Invocable Request>>
+  class CaseTriggerHandler
+  class CaseMilestoneFlow
+  class CaseAssignmentFlow
+  class MDMVerificationQueueable
+  class IntegrationRetryBatch
 }
 
 package "DTOs and Shared" {
-    class GrantDTO <<DTO>>
-    class GrantSupportOptionDTO <<DTO>>
-    class GrantConstants <<Constants>>
-    class GrantUtility <<Utility>>
-    class GrantException <<Exception>>
-}
-
-package "Integration / Retry Stubs" {
-    class GrantIntegrationService <<future>>
-    class GrantRetryService <<future>>
-    class GrantExceptionService <<Service>>
-    class Integration_Error__c <<Custom Object>>
-    class Grant_Error_Message__mdt <<Custom Metadata>>
+  class CaseIntakeDTO
+  class VerificationResultDTO
+  class RoutingContextDTO
+  class ServiceConstants
+  class ServiceException
 }
 
 package "Salesforce Data Model" {
-    class Contact <<SObject>>
-    class Account <<SObject>>
-    class Grant_Application__c <<Custom Object>>
-    class Grant_Disbursement__c <<Custom Object>>
-    class Grant_Configuration__mdt <<Custom Metadata>>
-    class Grant_Support_Option__mdt <<Custom Metadata>>
+  class Contact <<SObject>>
+  class Case <<SObject>>
+  class Knowledge__kav <<SObject>>
+  class ContentDocumentLink <<SObject>>
+  class Integration_Error__c <<Custom Object>>
+  class Migration_Batch__c <<Custom Object>>
+  class Case_Routing_Rule__mdt <<Custom Metadata>>
 }
 
-GrantApplicationController --> GrantApplicationService
-GrantApplicationController --> GrantConfigurationService
-GrantApplicationController --> GrantSupportOptionService
-
-GrantApplicationService --> ContactMatchingService
-GrantApplicationService --> GrantApplicationRepository
-GrantApplicationService --> GrantApplicationApplicantLinkJob
-GrantApplicationService --> GrantApplicationGuestUpdateJob
-GrantApplicationService --> GrantDisbursementService
-GrantApplicationService --> GrantExceptionService
-
-ContactMatchingService --> ContactRepository
-ContactMatchingService ..> GrantDisbursementService : bypass trigger
-
-GrantConfigurationService --> GrantConfigurationRepository
-GrantSupportOptionService --> GrantSupportOptionDTO
-
-ContactTriggerHandler --> GrantDisbursementService
-GrantApplicationTriggerHandler --> GrantApplicationBulkUploadService
-GrantDisbursementTrigger --> GrantDisbursementService
-GrantDisbursementService --> GrantConfigurationRepository
-GrantDisbursementService --> GrantExceptionService
-GrantApplicationApplicantLinkJob --> Grant_Application__c
-GrantApplicationGuestUpdateJob --> Grant_Application__c
-GrantExceptionService --> Grant_Error_Message__mdt
-
-legend right
-  |= Style |= Meaning |
-  |<#FFF4E6> Dashed border | Future enhancement / stub only in current implementation |
-endlegend
+CaseIntakeController --> CaseIntakeService
+ServiceConsoleActionController --> CitizenVerificationService
+CaseIntakeService --> ContactRepository
+CaseIntakeService --> CaseRepository
+CaseIntakeService --> CitizenVerificationService
+CaseIntakeService --> CaseRoutingService
+CaseIntakeService --> CaseLifecycleService
+CitizenVerificationService --> MDMVerificationQueueable
+CitizenVerificationService --> IntegrationErrorService
+CaseRoutingService --> Case_Routing_Rule__mdt
+CaseLifecycleService --> CaseRepository
+FeedbackAnalysisService --> CaseRepository
+KnowledgeSuggestionService --> KnowledgeRepository
+IntegrationErrorService --> IntegrationErrorRepository
+MigrationReconciliationService --> Migration_Batch__c
+CaseTriggerHandler --> CaseLifecycleService
+CaseAssignmentFlow --> CaseRoutingService
+IntegrationRetryBatch --> CitizenVerificationService
 
 @enduml

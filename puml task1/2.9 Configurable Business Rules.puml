@@ -1,49 +1,45 @@
 @startuml
 
-entity Grant_Support_Option__mdt {
-
-DeveloperName
-
-MasterLabel
-
-Monthly_Amount__c
-
-Duration_Months__c
-
-Sort_Order__c
-
-Active__c
-
+entity Case_Routing_Rule__mdt {
+  DeveloperName
+  Record_Type__c
+  Channel__c
+  Division__c
+  Skill__c
+  Language__c
+  Priority__c
+  Active__c
 }
 
-entity Grant_Configuration__mdt {
-
-Grant_Type__c
-
-Maximum_Amount__c
-
-Income_Threshold__c
-
-Minimum_Age__c
-
-Maximum_Age__c
-
-Priority__c
-
-Active__c
-
+entity SLA_Policy__mdt {
+  DeveloperName
+  Record_Type__c
+  Priority__c
+  First_Response_Hours__c
+  Resolution_Hours__c
+  Follow_Up_Hours__c
+  Active__c
 }
 
-entity Grant_Error_Message__mdt {
-
-DeveloperName
-
-Message__c
-
-Category__c
-
-Active__c
-
+entity Feedback_Category__mdt {
+  DeveloperName
+  Service_Category__c
+  Improvement_Area__c
+  Severity__c
+  Active__c
 }
+
+entity Integration_Error_Message__mdt {
+  DeveloperName
+  Service_Name__c
+  Error_Code__c
+  User_Message__c
+  Retryable__c
+  Active__c
+}
+
+Case_Routing_Rule__mdt ..> SLA_Policy__mdt
+Feedback_Category__mdt ..> SLA_Policy__mdt
+Integration_Error_Message__mdt ..> Case_Routing_Rule__mdt
 
 @enduml

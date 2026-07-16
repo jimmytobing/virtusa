@@ -1,246 +1,175 @@
 @startuml
-
 hide methods
 hide circle
 skinparam linetype ortho
-skinparam entity {
-    BackgroundColor<<future>> #FFF4E6
-    BorderColor<<future>> #C47F36
-    BorderStyle<<future>> dashed
-}
 
 entity Account {
-    * Id
-    --
-    Name
-    OwnerId
+  * Id
+  --
+  Name
+  RecordTypeId
+  OwnerId
 }
 
 entity Contact {
-    * Id
-    --
-    AccountId <<Lookup(Account)>>
-    FirstName
-    LastName
-    Phone
-    Email
-    MailingPostalCode
-    Birthdate
-    Monthly_Income__c
-    Annual_Income__c
-    Support_Option__c
-    National_ID__c
-    Employment_Status__c
-    Citizenship_Status__c
-    Grant_Application__c <<Lookup(Grant_Application__c)>>
+  * Id
+  --
+  AccountId
+  FirstName
+  LastName
+  Phone
+  Email
+  MDM_Citizen_Id__c
+  Preferred_Language__c
+  Verification_Status__c
 }
 
-entity Grant_Application__c {
-    * Id
-    --
-    Applicant__c <<Lookup(Contact)>>
-    Applicant_First_Name__c
-    Applicant_Last_Name__c
-    Applicant_Phone__c
-    Mailing_Postal_Code__c
-    Monthly_Income__c
-    Support_Option__c
-    Grant_Type__c
-    Requested_Amount__c
-    Approved_Amount__c
-    Reason__c
-    Status__c
-    Current_Stage__c
-    Eligibility_Score__c
-    Application_Date__c
-    Submitted_Date__c
-    Approval_Date__c
-    Total_Disbursements__c
-    Paid_Disbursements__c
+entity Case {
+  * Id
+  --
+  ContactId
+  OwnerId
+  RecordTypeId
+  CaseNumber
+  Origin
+  Status
+  Priority
+  Subject
+  Description
+  SuppliedPhone
+  SuppliedEmail
+  Service_Division__c
+  Service_Category__c
+  Language__c
+  Citizen_Verification_Status__c
+  MDM_Verification_Id__c
+  Satisfaction_Level__c
+  Improvement_Area__c
+  Resolution_Summary__c
+  Citizen_Confirmed_Closure__c
+  Follow_Up_Date__c
 }
 
-entity Grant_Disbursement__c {
-    * Id
-    --
-    Grant_Applicantion__c <<Lookup(Grant_Application__c)>>
-    Sequence_Number__c
-    Amount_to_be_disbursed__c
-    Disbursed_Date__c
-    Grant_is_disbursed__c
-    Support_Option__c
+entity Service_Division__c {
+  * Id
+  --
+  Name
+  Branch_Code__c
+  Parent_Division__c
+  Active__c
 }
 
-entity Grant_Support_Option__mdt {
-    * DeveloperName
-    --
-    MasterLabel
-    Monthly_Amount__c
-    Duration_Months__c
-    Active__c
-    Sort_Order__c
+entity User {
+  * Id
+  --
+  Name
+  Email
+  ProfileId
+  UserRoleId
+  Division__c
+  LanguageLocaleKey
+  IsActive
 }
 
-entity Grant_Configuration__mdt {
-    * DeveloperName
-    --
-    Grant_Type__c
-    Maximum_Amount__c
-    Income_Threshold__c
-    Minimum_Age__c
-    Maximum_Age__c
-    Priority__c
-    Active__c
+entity Group {
+  * Id
+  --
+  Name
+  Type
+  RelatedId
+}
+
+entity Knowledge__kav {
+  * Id
+  --
+  KnowledgeArticleId
+  Title
+  UrlName
+  Summary
+  PublishStatus
+  Language
+}
+
+entity ContentVersion {
+  * Id
+  --
+  ContentDocumentId
+  Title
+  FileType
+  ContentSize
+  VersionData
+}
+
+entity ContentDocumentLink {
+  * Id
+  --
+  LinkedEntityId
+  ContentDocumentId
+  ShareType
+  Visibility
+}
+
+entity CaseMilestone {
+  * Id
+  --
+  CaseId
+  MilestoneTypeId
+  StartDate
+  TargetDate
+  CompletionDate
+  IsCompleted
+}
+
+entity Case_Routing_Rule__mdt {
+  * DeveloperName
+  --
+  Record_Type__c
+  Channel__c
+  Division__c
+  Skill__c
+  Language__c
+  Priority__c
+  Active__c
 }
 
 entity Integration_Error__c {
-    * Id
-    --
-    Service_Name__c
-    Error_Type__c
-    Error_Message__c
-    Status__c
-    Transaction_Id__c
-    Request_Payload__c
-    Response_Payload__c
-    Stack_Trace__c
-    Retry_Count__c
-    Processed_Date__c
+  * Id
+  --
+  Related_Case__c
+  Service_Name__c
+  Error_Type__c
+  Error_Message__c
+  Status__c
+  Transaction_Id__c
+  Request_Payload__c
+  Response_Payload__c
+  Retry_Count__c
+  Processed_Date__c
 }
 
-entity User <<future>> {
-    * Id
-    --
-    Name
-    Email
-    ProfileId
-    UserRoleId
-    Division__c
-    LanguageLocaleKey
-    IsActive
+entity Migration_Batch__c {
+  * Id
+  --
+  Source_System__c
+  Batch_Number__c
+  Record_Count__c
+  File_Size_MB__c
+  Status__c
+  Started_Date__c
+  Completed_Date__c
 }
 
-entity Group_Queue <<future>> {
-    * Id
-    --
-    Name
-    Type
-    Division__c
-}
-
-entity Service_Division__c <<future>> {
-    * Id
-    --
-    Name
-    Branch_Code__c
-    Parent_Division__c
-    Active__c
-}
-
-entity Case <<future>> {
-    * Id
-    --
-    ContactId <<Lookup(Contact)>>
-    OwnerId <<Lookup(User/Queue)>>
-    RecordTypeId <<Enquiry/Feedback>>
-    CaseNumber
-    Origin
-    Status
-    Priority
-    Subject
-    Description
-    SuppliedPhone
-    SuppliedEmail
-    Service_Division__c <<Lookup(Service_Division__c)>>
-    Service_Category__c
-    Citizen_Verification_Status__c
-    MDM_Verification_Id__c
-    Language__c
-    Satisfaction_Level__c
-    Resolution_Summary__c
-    Citizen_Confirmed_Closure__c
-    Follow_Up_Date__c
-}
-
-entity Knowledge__kav <<future>> {
-    * Id
-    --
-    KnowledgeArticleId
-    Title
-    UrlName
-    ArticleType
-    Summary
-    PublishStatus
-    Language
-}
-
-entity ContentDocumentLink <<future>> {
-    * Id
-    --
-    LinkedEntityId <<Case/Grant_Application__c>>
-    ContentDocumentId
-    ShareType
-    Visibility
-}
-
-entity CaseRoutingRule__mdt <<future>> {
-    * DeveloperName
-    --
-    Record_Type__c
-    Channel__c
-    Division__c
-    Skill__c
-    Language__c
-    Priority__c
-    Active__c
-}
-
-entity Migration_Batch__c <<future>> {
-    * Id
-    --
-    Source_System__c
-    Batch_Number__c
-    Record_Count__c
-    File_Size_MB__c
-    Status__c
-    Started_Date__c
-    Completed_Date__c
-}
-
-Account ||--o{ Contact : owns
-Contact ||--o{ Grant_Application__c : submits
-Grant_Application__c ||--o{ Grant_Disbursement__c : schedules
-
-Grant_Support_Option__mdt ..> Contact : selected option
-Grant_Support_Option__mdt ..> Grant_Application__c : grant option
-Grant_Support_Option__mdt ..> Grant_Disbursement__c : disbursement option
-Grant_Configuration__mdt ..> Grant_Application__c : grant type rules
-
+Account ||--o{ Contact : groups
 Contact ||--o{ Case : raises
-Service_Division__c ||--o{ Case : governs
-User ||--o{ Case : owns as agent
-Group_Queue ||--o{ Case : owns as queue
-Case ||--o{ ContentDocumentLink : attachments
-Knowledge__kav ..> Case : suggested solution
-CaseRoutingRule__mdt ..> Case : future assignment rules
-Migration_Batch__c ..> Case : imports historical cases
-Integration_Error__c ..> Case : verification/integration errors
-
-note right of Grant_Disbursement__c
-  Field name is currently
-  Grant_Applicantion__c in metadata.
-end note
-
-note right of Case
-  Future Service Cloud model:
-  Enquiry and Feedback are implemented
-  as Case record types with channel,
-  verification, assignment, SLA,
-  follow-up, and closure fields.
-end note
-
-legend right
-  |= Style |= Meaning |
-  |<#FFF4E6> Dashed border | Future case-management extension / not active in current implementation |
-endlegend
+Service_Division__c ||--o{ Case : scopes
+User ||--o{ Case : owns
+Group ||--o{ Case : queue owns
+Case ||--o{ ContentDocumentLink : has files
+ContentVersion ||--o{ ContentDocumentLink : links
+Case ||--o{ CaseMilestone : tracks SLA
+Knowledge__kav }o..o{ Case : used by
+Case_Routing_Rule__mdt ..> Case : routing criteria
+Integration_Error__c }o..|| Case : related failure
+Migration_Batch__c ..> Case : migration load
 
 @enduml

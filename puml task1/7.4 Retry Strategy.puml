@@ -1,47 +1,29 @@
 @startuml
-skinparam activity {
-    BackgroundColor<<future>> #FFF4E6
-    BorderColor<<future>> #C47F36
-    BorderStyle<<future>> dashed
-}
-
 start
 
-:Integration, channel ingestion,\nor scheduled retry trigger\n(future); <<#FFF4E6>>
-
-:Execute retryable operation\nsuch as MDM verification,\ncase creation, email ingestion,\nor file link processing\n(future); <<#FFF4E6>>
-
-if (Successful?) then (Yes)
-
-:Continue Processing;
-
-stop
-
-else
-
-:Store or update Integration Error\nand related Case reference\n(future behavior); <<#FFF4E6>>
+:MDM, channel, email, messaging, or file processing operation fails;
+:Create or update Integration_Error__c with transaction ID and Case reference;
+:Classify failure;
 
 if (Retryable?) then (Yes)
-
-:Increment Retry Count\n(future behavior); <<#FFF4E6>>
-
-:Keep status ready for next retry cycle\n(future behavior); <<#FFF4E6>>
-
-stop
-
-else
-
-:Notify Support Team\n(future behavior); <<#FFF4E6>>
-
-stop
-
+  if (Retry count below limit?) then (Yes)
+    :Increment retry count;
+    :Queue retry using scheduled/batch/queueable process;
+    :Keep Case in Verification Pending or Manual Review as needed;
+  else (No)
+    :Mark error as Max Retry Exceeded;
+    :Notify Supervisor or Support Team;
+  endif
+else (No)
+  :Mark error as Non-Retryable;
+  :Notify responsible team;
 endif
 
+if (Retry succeeds?) then (Yes)
+  :Update Case, Contact, and Integration Error status;
+else (No)
+  :Keep operational error visible on dashboard;
 endif
 
-legend right
-  |= Style |= Meaning |
-  |<#FFF4E6> Amber activity | Future retry behavior / not active in current implementation |
-endlegend
-
+stop
 @enduml

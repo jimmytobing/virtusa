@@ -1,96 +1,77 @@
 @startuml
-skinparam component {
-    BackgroundColor<<future>> #FFF4E6
-    BorderColor<<future>> #C47F36
-    BorderStyle<<future>> dashed
-}
-skinparam rectangle {
-    BackgroundColor<<future>> #FFF4E6
-    BorderColor<<future>> #C47F36
-    BorderStyle<<future>> dashed
-}
+skinparam componentStyle rectangle
 
 package "Presentation Layer" {
-
-[Experience Cloud]
-
-[LWC]
-
+  [Experience Cloud]
+  [Service Console]
+  [Mobile / Web Messaging]
 }
 
-package "Application Layer" {
-
-[Flow]
-
+package "Channel Intake Layer" {
+  [Web Case Intake]
+  [Email-to-Case]
+  [CTI / Voice Intake]
+  [Chat / Messaging Intake]
 }
 
-
-
-package "Business Layer" {
-
-[GrantApplicationService]
-
-[ContactMatchingService]
-
-[GrantDisbursementService]
-
-[GrantConfigurationService]
-
-[GrantSupportOptionService]
-
-[GrantExceptionService]
-
+package "Orchestration Layer" {
+  [Flow]
+  [Omni-Channel]
+  [Entitlements and Milestones]
+  [Knowledge Approval]
 }
 
-package "Persistence Layer" {
-
-[Trigger Framework]
-
-[Salesforce Objects]
-
+package "Business Service Layer" {
+  [CaseIntakeService]
+  [CitizenVerificationService]
+  [CaseRoutingService]
+  [CaseLifecycleService]
+  [FeedbackAnalysisService]
+  [IntegrationErrorService]
 }
 
 package "Integration Layer" {
-
-component "REST Client" as RestClient <<future>>
-
-component "Named Credential" as NamedCredential <<future>>
-
+  [Named Credentials]
+  [API Gateway / Middleware]
+  [External MDM]
+  [Microsoft AD / Entra ID]
 }
 
-package "External Systems" {
-
-component "Master Data System" as MasterDataSystem <<future>>
-
+package "Persistence Layer" {
+  [Contact]
+  [Case]
+  [Knowledge]
+  [Salesforce Files]
+  [Case Milestone]
+  [Integration Error]
+  [Migration Batch]
+  [Custom Metadata]
 }
 
-[Experience Cloud] --> [LWC]
+[Experience Cloud] --> [Web Case Intake]
+[Service Console] --> [Flow]
+[Mobile / Web Messaging] --> [Chat / Messaging Intake]
+[Email-to-Case] --> [CaseIntakeService]
+[CTI / Voice Intake] --> [CaseIntakeService]
+[Web Case Intake] --> [CaseIntakeService]
+[Chat / Messaging Intake] --> [CaseIntakeService]
 
-[LWC] --> [Flow]
+[CaseIntakeService] --> [CitizenVerificationService]
+[CaseIntakeService] --> [CaseRoutingService]
+[CaseRoutingService] --> [Omni-Channel]
+[CaseLifecycleService] --> [Entitlements and Milestones]
+[FeedbackAnalysisService] --> [Case]
+[CitizenVerificationService] --> [Named Credentials]
+[Named Credentials] --> [API Gateway / Middleware]
+[API Gateway / Middleware] --> [External MDM]
 
-[Flow] --> [GrantApplicationService]
-
-[GrantApplicationService] --> [ContactMatchingService]
-
-[GrantApplicationService] --> [GrantSupportOptionService]
-
-[GrantApplicationService] --> [GrantDisbursementService]
-
-[GrantDisbursementService] -> [GrantConfigurationService]
-
-[GrantDisbursementService] --> [Trigger Framework]
-
-[Trigger Framework] --> [Salesforce Objects]
-
-[ContactMatchingService] ..> RestClient
-
-RestClient ..> NamedCredential
-
-NamedCredential ..> MasterDataSystem
-
-legend right
-  |= Style |= Meaning |
-  |<#FFF4E6> Dashed border | Future enhancement / not active in current implementation |
-endlegend
+[Flow] --> [CaseLifecycleService]
+[Knowledge Approval] --> [Knowledge]
+[CaseIntakeService] --> [Case]
+[CaseIntakeService] --> [Contact]
+[CaseLifecycleService] --> [Salesforce Files]
+[IntegrationErrorService] --> [Integration Error]
+[Custom Metadata] --> [CaseRoutingService]
+[Microsoft AD / Entra ID] --> [Service Console]
 
 @enduml

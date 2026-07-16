@@ -1,57 +1,27 @@
 @startuml
-
 start
 
-:Citizen opens portal;
+:Receive interaction from supported channel;
+:Normalize payload into Case intake request;
+:Validate required fields and file constraints;
 
-:Load Grant Options;
-
-:Complete Form;
-
-:LWC Validation;
-
-if (Validation Passed?) then (Yes)
-
-:Submit Application;
-
-:GrantApplicationService;
-
-:Find Existing Contact;
-
-if (Contact Exists?) then (Yes)
-
-:Update Contact;
-
-else
-
-:Create Contact;
-
-endif
-
-:Income and support option validation;
-
-if (Eligible?) then (Yes)
-
-:Generate Payment Schedule;
-
-:Create Grant Application;
-
-:Create Grant Disbursement Records;
-
-:Show submission success;
-
-else
-
-:Save application without pending schedule;
-
-endif
-
-else
-
-:Display Validation Errors;
-
+if (Validation passed?) then (Yes)
+  :Create or update Contact candidate;
+  :Verify citizen by phone/email with MDM;
+  if (Verification successful?) then (Yes)
+    :Link verified Contact and MDM reference;
+  else (No)
+    :Set Manual Review verification status;
+    :Log integration or verification exception when applicable;
+  endif
+  :Create Case with Enquiry or Feedback record type;
+  :Attach uploaded files using Salesforce Files;
+  :Apply SLA policy and routing attributes;
+  :Route through Omni-Channel or queue;
+  :Notify citizen and assigned team;
+else (No)
+  :Return validation message to channel;
 endif
 
 stop
-
 @enduml

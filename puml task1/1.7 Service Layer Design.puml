@@ -1,53 +1,50 @@
 @startuml
-skinparam class {
-    BackgroundColor<<future>> #FFF4E6
-    BorderColor<<future>> #C47F36
-    BorderStyle<<future>> dashed
-}
+skinparam classAttributeIconSize 0
+hide empty members
 
 package "Service Layer" {
-
-class GrantApplicationService
-
-class ContactMatchingService
-
-class GrantDisbursementService
-
-class GrantConfigurationService
-
-class GrantSupportOptionService
-
-class GrantApplicationBulkUploadService
-
-class GrantExceptionService
-
-class GrantIntegrationService <<future>>
-
-class GrantRetryService <<future>>
-
+  class CaseIntakeService
+  class CitizenVerificationService
+  class CaseRoutingService
+  class CaseLifecycleService
+  class FeedbackAnalysisService
+  class KnowledgeSuggestionService
+  class IntegrationErrorService
+  class MigrationReconciliationService
 }
 
-GrantApplicationService --> ContactMatchingService
+package "Salesforce Platform" {
+  class Flow
+  class OmniChannel
+  class EntitlementProcess
+  class NamedCredential
+}
 
-GrantApplicationService --> GrantDisbursementService
+package "Data" {
+  class Contact
+  class Case
+  class Knowledge__kav
+  class ContentDocumentLink
+  class Integration_Error__c
+  class Migration_Batch__c
+  class Case_Routing_Rule__mdt
+}
 
-GrantApplicationService --> GrantSupportOptionService
-
-GrantDisbursementService --> GrantConfigurationService
-
-GrantApplicationBulkUploadService --> ContactMatchingService
-
-GrantApplicationBulkUploadService --> GrantDisbursementService
-
-GrantApplicationService --> GrantExceptionService
-
-GrantIntegrationService ..> GrantExceptionService : future integration errors
-
-GrantRetryService ..> GrantIntegrationService : future retry
-
-legend right
-  |= Style |= Meaning |
-  |<#FFF4E6> Dashed border | Future enhancement / stub only in current implementation |
-endlegend
+CaseIntakeService --> CitizenVerificationService
+CaseIntakeService --> CaseRoutingService
+CaseIntakeService --> CaseLifecycleService
+CaseIntakeService --> IntegrationErrorService
+CaseRoutingService --> OmniChannel
+CaseRoutingService --> Case_Routing_Rule__mdt
+CaseLifecycleService --> EntitlementProcess
+FeedbackAnalysisService --> Case
+KnowledgeSuggestionService --> Knowledge__kav
+CitizenVerificationService --> NamedCredential
+IntegrationErrorService --> Integration_Error__c
+MigrationReconciliationService --> Migration_Batch__c
+CaseIntakeService --> Contact
+CaseIntakeService --> Case
+CaseLifecycleService --> ContentDocumentLink
+Flow --> CaseLifecycleService
 
 @enduml

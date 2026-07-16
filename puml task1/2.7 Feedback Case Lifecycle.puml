@@ -1,0 +1,25 @@
+@startuml
+left to right direction
+
+state "Received" as Received
+state "Recorded" as Recorded
+state "Analyzed" as Analyzed
+state "Response Required" as ResponseRequired
+state "No Response Required" as NoResponseRequired
+state "Responded" as Responded
+state "Reported" as Reported
+state "Supervisor Evaluation" as SupervisorEvaluation
+state "Closed" as Closed
+
+[*] --> Received
+Received --> Recorded
+Recorded --> Analyzed
+Analyzed --> ResponseRequired
+Analyzed --> NoResponseRequired
+ResponseRequired --> Responded
+Responded --> Reported
+NoResponseRequired --> Reported
+Reported --> SupervisorEvaluation
+SupervisorEvaluation --> Closed
+
+@enduml

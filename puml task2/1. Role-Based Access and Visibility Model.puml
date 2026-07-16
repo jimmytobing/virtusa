@@ -1,9 +1,11 @@
 @startuml
+left to right direction
 
 actor "Branch Admin" as BranchAdmin
 actor Supervisor
 actor Agent
 actor Citizen
+actor "Integration User" as IntegrationUser
 
 package "Salesforce Security Model" {
   rectangle "Role Hierarchy" as RoleHierarchy
@@ -11,26 +13,38 @@ package "Salesforce Security Model" {
   rectangle "Sharing Rules" as SharingRules
   rectangle "Queue Membership" as QueueMembership
   rectangle "Field-Level Security" as FLS
+  rectangle "Restriction Rules" as RestrictionRules
+  rectangle "Experience Cloud Sharing" as ExperienceSharing
 }
 
-database "Case Records" as Case
-database "Feedback Records" as Feedback
+database "Case Records\nEnquiry and Feedback" as Case
+database "Contact Records" as Contact
+database "Salesforce Files" as Files
+database "Knowledge Articles" as Knowledge
 database "Reports & Dashboards" as Reports
 
 Citizen --> Case : Own submitted cases
+Citizen --> ExperienceSharing
 Agent --> QueueMembership
 Agent --> Case : Assigned cases only
+Agent --> Contact : Required service fields
+Agent --> Files : Linked case files
+Agent --> Knowledge : Read approved articles
 Supervisor --> Case : Team cases
-Supervisor --> Feedback : Team feedback
+Supervisor --> Reports : Team performance
 BranchAdmin --> Reports : Division overview
 BranchAdmin --> Case : Read-only division visibility
+IntegrationUser --> Case : API integration scope
+IntegrationUser --> Contact : MDM verification scope
 
 RoleHierarchy --> SharingRules
 PermissionSets --> FLS
 SharingRules --> Case
-SharingRules --> Feedback
+RestrictionRules --> Case
 QueueMembership --> Case
+ExperienceSharing --> Case
 Case --> Reports
-Feedback --> Reports
+Case --> Files
+Contact --> Case
 
 @enduml

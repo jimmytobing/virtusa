@@ -1,0 +1,41 @@
+@startuml
+start
+
+:Citizen submits enquiry or feedback via website, phone, chat/mobile, or email;
+:Create Case with channel origin, record type, service category, and attachments;
+:Verify citizen by phone or email against external MDM;
+
+if (Citizen verified?) then (Yes)
+  :Link or update Contact;
+else (No)
+  :Flag for manual verification and continue with restricted handling;
+endif
+
+:Route through Omni-Channel using expertise, language, workload, and availability;
+:Agent reviews Case in Service Console;
+
+if (Case type?) then (Enquiry)
+  :Search Knowledge for existing solution;
+  if (Existing solution available?) then (Yes)
+    :Provide approved solution to citizen;
+  else (No)
+    :Develop resolution and submit Knowledge draft;
+  endif
+  if (Complex enquiry?) then (Yes)
+    :Escalate to Supervisor;
+  endif
+  :Perform follow-up until citizen confirms resolution;
+else (Feedback)
+  :Analyze satisfaction level, service category, and improvement area;
+  if (Citizen response required?) then (Yes)
+    :Respond to citizen;
+  endif
+  :Include in internal reporting and trend analysis;
+  :Supervisor evaluates handling outcome and agent performance;
+endif
+
+:Close Case with resolution summary, confirmation, and audit trail;
+:Branch Admin monitors dashboards by division, channel, SLA, and agent;
+
+stop
+@enduml
