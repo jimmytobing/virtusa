@@ -1,0 +1,85 @@
+# Salesforce Technical Assessment v3.2
+
+# Disclaimer
+
+- This assignment is strictly used for official purposes and should not be reproduced in your personal capacity or shared with others.
+
+- Your submission must be wholly your work and completed without any external help from other individuals. Any form of plagiarism will result in your assignment being forfeited, and your application will no longer be under consideration.
+
+# Pre-requisites
+
+1. Sign up or log in to your Salesforce Trailblazer account
+
+2. Create a **new** Trailhead Playground developer edition account for you to implement your build via code
+
+3. You may use Visual Studio Code IDE with Apex PMD extension for your assignment
+
+# task-2\. Scenario-based assessment
+
+You are tasked with architecting a Salesforce solution for a government agency that offers services related to citizen enquiries and feedback.
+
+# Roles and Responsibilities
+
+- **Branch Admin** \- Needs to monitor all incoming requests across various citizen contact channels within their division. They are not directly involved in case resolution but require a comprehensive overview for management and oversight purposes.
+
+- **Supervisor** \- Oversees the agents, ensuring that they effectively address both enquiry and feedback cases, regardless of the communication channel.
+
+- **Agent \-** Directly engages with citizens, addressing day-to-day enquiries and processing feedback received through any of the citizen contact channels.
+
+# Case Management
+
+**Enquiry Cases**: Includes handling citizen questions, concerns, or requests for information about the agency's services.
+
+High level enquiry case process :
+
+1. **Initiation** \- Citizens initiate queries via any of the available channels.
+2. **Verification** \- Agents verify citizen’s details, primarily using the citizen's phone number or email against an external master data management system.
+3. **Case Recording** \- Detailed enquiry information, along with any supporting documents e.g. photos, are recorded in the system.
+4. **Case Assignment** \- The system assigns the case to an agent based on conditions such as expertise, language, workload, and availability.
+5. **Resolution** \- Agents address the enquiry, potentially involving Supervisors for complex cases. For cases with existing solutions, agents to provide the relevant solution. Otherwise, agents are to develop and document down new solutions.
+6. **Follow-Up** \- Regular follow-ups with the citizen are to be conducted until resolved fully.
+7. **Closure** \- Once resolved, the case is closed with citizen’s confirmation.
+
+**Feedback Cases**: Involves processing citizen’s feedback, complaints, or suggestions regarding the agency's services.
+
+High level feedback case process :
+
+1. **Receipt** \- Feedback is received through the designated channels.
+2. **Recording** \- Feedback details are captured in the system, including the specific
+
+   service or product it relates to.
+
+3. **Analysis** \- Agents analyse the feedback to understand citizen’s satisfaction level and areas for improvement.
+4. **Response** \- If necessary, agents respond to citizens.
+5. **Reporting** \- Feedback is compiled for internal review, enabling improvements and strategic plannings.
+6. **Evaluation** \- Supervisors review feedback handling process and outcomes to assess agent’s performance and citizen’s satisfaction level.
+
+# Channels of Contact
+
+- Citizens can submit cases directly through the agency’s website.
+- Citizens can call in to report issues or ask questions.
+- Citizens can get real-time assistance via the agency’s website or mobile app.
+- Citizens can send inquiries or feedback via email.
+
+# High Level Requirements
+
+- The system should be capable of integrating with an external master data management system for citizen verification.
+- Flexibility is required to adapt to changes.
+- Data handling includes migration of 10 years’ data amounting to 6 million records and 100GB of files.
+- Ability to manage 5,000 new cases and 100MB of file uploads daily.
+- Implement Single Sign-On (SSO) using the existing Microsoft Active Directory.
+- The system should enable Branch Admins to evaluate the performance of each agent, considering their effectiveness in handling cases across different channels of contact.
+
+Your challenge is to design a solution that meets above business requirements, we will run through the architecture design solution during the interview, please be prepared to present and justify your design.
+
+The solution should comprehensively address the following aspects, among others:
+
+- Salesforce licensing, editions, features and any third-party tools
+- System landscape diagram
+- Business processes, e.g. user stories
+- Integration considerations
+- Data model considerations, e.g. Entity-Relationship Diagram (ERD), data sharing and security design
+- Data migration plan
+
+| _You may make reasonable assumptions for this section. Remember to state your assumption clearly._ |
+| :------------------------------------------------------------------------------------------------: |
