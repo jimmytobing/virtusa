@@ -10,7 +10,7 @@ This SADD only addresses the Task 2 requirement in `SF Technical Assessment (tas
 
 ## 2. Requirement Coverage
 
-[Requirement Coverage Map](<../puml task2/10. Requirement Coverage Map.puml>)
+[Requirement Coverage Map](<../puml task2/02.01 Requirement Coverage Map.puml>)
 
 | Assessment Requirement                                      | Design Response                                                                                                               |
 | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -97,11 +97,11 @@ This SADD only addresses the Task 2 requirement in `SF Technical Assessment (tas
 
 ## 5. Target Solution Architecture
 
-[High-Level Solution Architecture](<../puml task1/1.3 High-Level Solution Architecture.puml>)
+[High-Level Solution Architecture](<../puml task2/05.01 High-Level Solution Architecture.puml>)
 
-[Layered Architecture](<../puml task1/1.5 Layered Architecture.puml>)
+[Layered Architecture](<../puml task2/05.02 Layered Architecture.puml>)
 
-[Multi-Channel Case Intake Architecture](<../puml task2/3. Multi-Channel Case Intake Architecture.puml>)
+[Multi-Channel Case Intake Architecture](<../puml task2/05.03 Multi-Channel Case Intake Architecture.puml>)
 
 ### 5.1 Architecture Overview
 
@@ -113,13 +113,13 @@ MDM integration verifies citizens by phone or email. Microsoft AD / Entra ID aut
 
 ## 6. Business Process Architecture
 
-[Citizen Case Management Lifecycle](<../puml task1/8.1 Citizen Case Management Lifecycle.puml>)
+[Citizen Case Management Lifecycle](<../puml task2/06.01 Citizen Case Management Lifecycle.puml>)
 
-[Business Flow](<../puml task1/1.8 Business Flow.puml>)
+[Business Flow](<../puml task2/06.02 Business Flow.puml>)
 
-[Case Routing Decision Model](<../puml task2/4. Case Routing Decision Model.puml>)
+[Case Routing Decision Model](<../puml task2/06.03 Case Routing Decision Model.puml>)
 
-[Knowledge Management Lifecycle](<../puml task2/5. Knowledge Management Lifecycle.puml>)
+[Knowledge Management Lifecycle](<../puml task2/06.04 Knowledge Management Lifecycle.puml>)
 
 ### 6.1 Enquiry Case Process
 
@@ -161,17 +161,17 @@ MDM integration verifies citizens by phone or email. Microsoft AD / Entra ID aut
 
 ## 7. Application Architecture
 
-[Application Layer Overview](<../puml task1/3.2 Application Layer Overview.puml>)
+[Application Layer Overview](<../puml task2/07.01 Application Layer Overview.puml>)
 
-[Application Flow](<../puml task1/3.4 Application Flow.puml>)
+[Application Flow](<../puml task2/07.02 Application Flow.puml>)
 
-[Service Layer Design](<../puml task1/1.7 Service Layer Design.puml>)
+[Service Layer Design](<../puml task2/07.03 Service Layer Design.puml>)
 
-[Service Interaction Diagram](<../puml task1/3.7 Service Interaction Diagram.puml>)
+[Service Interaction Diagram](<../puml task2/07.04 Service Interaction Diagram.puml>)
 
-[Error Handling Strategy](<../puml task1/3.8 Error Handling Strategy.puml>)
+[Error Handling Strategy](<../puml task2/07.05 Error Handling Strategy.puml>)
 
-[Configurable Business Rules](<../puml task1/2.9 Configurable Business Rules.puml>)
+[Configurable Business Rules](<../puml task2/07.06 Configurable Business Rules.puml>)
 
 ### 7.1 Declarative-First Approach
 
@@ -201,13 +201,13 @@ MDM integration verifies citizens by phone or email. Microsoft AD / Entra ID aut
 
 ## 8. Data Architecture
 
-[Entity Relationship Diagram](<../puml task1/2.2 Entity Relationship Diagram.puml>)
+[Entity Relationship Diagram](<../puml task2/08.01 Entity Relationship Diagram.puml>)
 
-[Object Relationships](<../puml task1/2.5 Object Relationships.puml>)
+[Object Relationships](<../puml task2/08.02 Object Relationships.puml>)
 
-[Case Lifecycle](<../puml task1/2.6 Application Lifecycle.puml>)
+[Case Lifecycle](<../puml task2/08.03 Case Lifecycle.puml>)
 
-[Feedback Review Lifecycle](<../puml task1/2.7 Feedback Case Lifecycle.puml>)
+[Feedback Review Lifecycle](<../puml task2/08.04 Feedback Case Lifecycle.puml>)
 
 ### 8.1 Core Data Model
 
@@ -248,11 +248,11 @@ MDM integration verifies citizens by phone or email. Microsoft AD / Entra ID aut
 
 ## 9. Integration Architecture
 
-[Citizen Verification Integration Pattern](<../puml task2/8. Citizen Verification Integration Pattern.puml>)
+[Citizen Verification Integration Pattern](<../puml task2/09.01 Citizen Verification Integration Pattern.puml>)
 
-[Citizen Verification Flow](<../puml task1/3.9 Contact Matching Flow.puml>)
+[Citizen Verification Flow](<../puml task2/09.02 Citizen Verification Flow.puml>)
 
-[Retry Strategy](<../puml task1/7.4 Retry Strategy.puml>)
+[Retry Strategy](<../puml task2/09.03 Retry Strategy.puml>)
 
 ### 9.1 MDM Verification
 
@@ -279,9 +279,9 @@ MDM verification is required during intake and case handling. Salesforce sends p
 
 ## 10. Security, Access, and Identity
 
-[Role-Based Access and Visibility Model](<../puml task2/1. Role-Based Access and Visibility Model.puml>)
+[Role-Based Access and Visibility Model](<../puml task2/10.01 Role-Based Access and Visibility Model.puml>)
 
-[SSO Authentication Flow with Microsoft Active Directory](<../puml task2/2. SSO Authentication Flow with Microsoft Active Directory.puml>)
+[SSO Authentication Flow with Microsoft Active Directory](<../puml task2/10.02 SSO Authentication Flow with Microsoft Active Directory.puml>)
 
 ### 10.1 Access Model
 
@@ -311,9 +311,9 @@ MDM verification is required during intake and case handling. Salesforce sends p
 
 ## 11. Data Migration and Large Volume Strategy
 
-[Large Data Volume and File Storage Strategy](<../puml task2/6. Large Data Volume and File Storage Strategy.puml>)
+[Large Data Volume and File Storage Strategy](<../puml task2/11.01 Large Data Volume and File Storage Strategy.puml>)
 
-[Historical Case Data Migration Plan](<../puml task1/8.2 Historical Case Data Migration Plan.puml>)
+[Historical Case Data Migration Plan](<../puml task2/11.02 Historical Case Data Migration Plan.puml>)
 
 The migration scope includes 10 years of historical records, approximately 6 million records, and 100GB of files.
 
@@ -342,11 +342,11 @@ The migration scope includes 10 years of historical records, approximately 6 mil
 
 ## 12. Reporting, SLA, and Performance Evaluation
 
-[Operational Monitoring and SLA Management](<../puml task2/7. Operational Monitoring and SLA Management.puml>)
+[Operational Monitoring and SLA Management](<../puml task2/12.01 Operational Monitoring and SLA Management.puml>)
 
-[Case Analytics Model](<../puml task2/9. Case Analytics Model.puml>)
+[Case Analytics Model](<../puml task2/12.02 Case Analytics Model.puml>)
 
-[Agent Performance Evaluation Model](<../puml task2/11. Agent Performance Evaluation Model.puml>)
+[Agent Performance Evaluation Model](<../puml task2/12.03 Agent Performance Evaluation Model.puml>)
 
 ### 12.1 Branch Admin Dashboard
 
