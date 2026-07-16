@@ -1,44 +1,35 @@
 @startuml
 left to right direction
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 65
 
-database "Case" as Case
-database "Contact" as Contact
-database "User" as User
-database "Case Milestone" as Milestone
-database "Knowledge Article Usage" as KnowledgeUsage
+database "Operational Sources\nCase, Contact, User,\nCase Milestone, Knowledge Usage" as Sources
 
 package "Analytics Dataset" {
-  [Case Volume Metrics]
-  [Agent Productivity Metrics]
-  [SLA Metrics]
-  [Feedback Satisfaction Metrics]
-  [Channel Effectiveness Metrics]
-  [Knowledge Reuse Metrics]
-  [Backlog Aging Metrics]
+  [Case and Channel Metrics] as CaseChannelMetrics
+  [Agent and SLA Metrics] as AgentSlaMetrics
+  [Feedback and Knowledge Metrics] as FeedbackKnowledgeMetrics
+  [Backlog Aging Metrics] as BacklogMetrics
 }
 
 package "Dashboards" {
-  [Branch Admin Dashboard]
-  [Supervisor Dashboard]
-  [Agent Dashboard]
+  [Branch Admin Dashboard] as BranchDashboard
+  [Supervisor Dashboard] as SupervisorDashboard
+  [Agent Dashboard] as AgentDashboard
 }
 
-Case --> [Case Volume Metrics]
-Case --> [Channel Effectiveness Metrics]
-User --> [Agent Productivity Metrics]
-Milestone --> [SLA Metrics]
-Case --> [Feedback Satisfaction Metrics]
-Contact --> [Case Volume Metrics]
-KnowledgeUsage --> [Knowledge Reuse Metrics]
-Case --> [Backlog Aging Metrics]
+Sources --> CaseChannelMetrics
+Sources --> AgentSlaMetrics
+Sources --> FeedbackKnowledgeMetrics
+Sources --> BacklogMetrics
 
-[Case Volume Metrics] --> [Branch Admin Dashboard]
-[Channel Effectiveness Metrics] --> [Branch Admin Dashboard]
-[Backlog Aging Metrics] --> [Branch Admin Dashboard]
-[Agent Productivity Metrics] --> [Supervisor Dashboard]
-[SLA Metrics] --> [Supervisor Dashboard]
-[Feedback Satisfaction Metrics] --> [Branch Admin Dashboard]
-[Knowledge Reuse Metrics] --> [Supervisor Dashboard]
-[Case Volume Metrics] --> [Agent Dashboard]
+CaseChannelMetrics --> BranchDashboard
+FeedbackKnowledgeMetrics --> BranchDashboard
+BacklogMetrics --> BranchDashboard
+AgentSlaMetrics --> SupervisorDashboard
+FeedbackKnowledgeMetrics --> SupervisorDashboard
+CaseChannelMetrics --> AgentDashboard
 
 @enduml

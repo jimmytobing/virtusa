@@ -1,42 +1,43 @@
 @startuml
 start
 
-:Citizen contacts agency through website, phone, chat/mobile, or email;
-:Create Case with origin, record type, service category, language, and files;
-:Verify citizen by phone or email against MDM;
+:Citizen contacts agency;
+:Create Case\nwith key details;
+:Verify citizen\nagainst MDM;
 
 if (Citizen matched?) then (Yes)
-  :Link Case to existing Contact;
+  :Link existing Contact;
 else (No)
-  :Create provisional Contact and mark Case for manual verification;
+  :Create provisional Contact;
+  :Flag manual verification;
 endif
 
-:Determine case type, priority, division, required skill, and language;
-:Route through Omni-Channel by skill, workload, availability, and queue;
-:Agent handles Case in Service Console;
+:Set type, priority,\ndivision, skill;
+:Route through\nOmni-Channel;
+:Agent handles Case;
 
 if (Case type?) then (Enquiry)
-  :Search Knowledge for approved solution;
+  :Search Knowledge;
   if (Solution exists?) then (Yes)
-    :Provide approved solution to citizen;
+    :Provide solution;
   else (No)
-    :Document resolution and create Knowledge draft;
+    :Draft resolution\nand article;
   endif
-  :Follow up until citizen confirms resolution;
+  :Follow up\nuntil confirmed;
 else (Feedback)
-  :Analyze satisfaction level, root cause, and improvement area;
+  :Analyze feedback;
   if (Citizen response required?) then (Yes)
-    :Respond and record communication;
+    :Respond and log;
   endif
-  :Include feedback in reporting and supervisor evaluation;
+  :Update reporting;
 endif
 
 if (Complex or SLA risk?) then (Yes)
   :Escalate to Supervisor;
 endif
 
-:Close Case with resolution summary and audit trail;
-:Branch Admin monitors dashboards by division, channel, and agent;
+:Close Case\nwith audit trail;
+:Branch Admin\nmonitors dashboards;
 
 stop
 @enduml

@@ -1,51 +1,32 @@
 @startuml
 left to right direction
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 65
 
-package "Salesforce Case Operations" {
-  [Case Created]
-  [Case Assigned]
-  [Case In Progress]
-  [Case Escalated]
-  [Case Pending Citizen]
-  [Case Closed]
+package "Case Operations" {
+  [Case Lifecycle Events\nCreated, Assigned, Pending,\nEscalated, Closed] as CaseEvents
 }
 
 package "SLA Monitoring" {
-  [Entitlement Process]
-  [Milestones]
-  [SLA Breach Alerts]
-  [Escalation Rules]
-}
-
-package "Management Dashboards" {
-  [Agent Performance Dashboard]
-  [Channel Volume Dashboard]
-  [SLA Compliance Dashboard]
-  [Citizen Satisfaction Dashboard]
-  [Backlog and Aging Dashboard]
-  [Integration Error Dashboard]
+  [Entitlements and Milestones] as Milestones
+  [SLA Alerts and Escalations] as SlaAlerts
 }
 
 package "Integration Monitoring" {
-  [MDM Verification Errors]
-  [Channel Intake Errors]
-  [Retry Queue]
+  [Integration Errors\nMDM, Channel Intake, Retry Queue] as IntegrationErrors
 }
 
-[Case Created] --> [Entitlement Process]
-[Case Assigned] --> [Milestones]
-[Case Pending Citizen] --> [Milestones]
-[Milestones] --> [SLA Breach Alerts]
-[SLA Breach Alerts] --> [Escalation Rules]
+package "Management Dashboards" {
+  [Operational Dashboards\nAgent Performance, Channel Volume,\nSLA Compliance, Satisfaction,\nBacklog, Integration Errors] as Dashboards
+}
 
-[Case Created] --> [Channel Volume Dashboard]
-[Case Closed] --> [Agent Performance Dashboard]
-[Milestones] --> [SLA Compliance Dashboard]
-[Case Closed] --> [Citizen Satisfaction Dashboard]
-[Case Assigned] --> [Backlog and Aging Dashboard]
-[Case Escalated] --> [Backlog and Aging Dashboard]
-[MDM Verification Errors] --> [Retry Queue]
-[Channel Intake Errors] --> [Retry Queue]
-[Retry Queue] --> [Integration Error Dashboard]
+CaseEvents --> Milestones
+Milestones --> SlaAlerts
+CaseEvents --> Dashboards
+Milestones --> Dashboards
+SlaAlerts --> Dashboards
+IntegrationErrors --> Dashboards
 
 @enduml

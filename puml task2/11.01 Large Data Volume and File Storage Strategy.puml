@@ -1,47 +1,44 @@
 @startuml
 skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 70
+left to right direction
 
-database "Legacy Case Data\n6 Million Records" as LegacyCases
-database "Legacy Files\n100GB" as LegacyFiles
+database "Legacy Data\n6M Cases, 100GB Files" as LegacyData
 
-package "Migration Layer" {
-  [Data Profiling]
-  [Data Cleansing]
-  [Deduplication]
-  [Staging Database]
-  [Bulk API 2.0 Loader]
-  [File Migration Utility]
-  [Migration Reconciliation]
+package "Migration Pipeline" {
+  [Profile and Cleanse] as ProfileCleanse
+  [Deduplicate] as Deduplicate
+  [Stage Data] as StageData
+  [Bulk Load] as BulkLoad
+  [File Migration] as FileMigration
+  [Reconcile] as Reconcile
 }
 
 package "Salesforce Platform" {
-  database "Case Object" as CaseObj
-  database "Contact Object" as ContactObj
+  database "Core Records\nContact, Case" as CoreRecords
   database "Salesforce Files" as Files
-  database "Migration_Batch__c" as MigrationBatch
-  [Indexes / External IDs]
-  [Archiving Strategy]
-  [Storage Forecast]
+  database "Migration Batch" as MigrationBatch
+  [Indexes and External IDs] as Indexes
+  [Archiving and Storage Plan] as StoragePlan
 }
 
-LegacyCases --> [Data Profiling]
-LegacyFiles --> [File Migration Utility]
+LegacyData --> ProfileCleanse
+ProfileCleanse --> Deduplicate
+Deduplicate --> StageData
+StageData --> BulkLoad
+LegacyData --> FileMigration
 
-[Data Profiling] --> [Data Cleansing]
-[Data Cleansing] --> [Deduplication]
-[Deduplication] --> [Staging Database]
-[Staging Database] --> [Bulk API 2.0 Loader]
+BulkLoad --> CoreRecords
+BulkLoad --> MigrationBatch
+FileMigration --> Files
+FileMigration --> Reconcile
+BulkLoad --> Reconcile
+Reconcile --> MigrationBatch
 
-[Bulk API 2.0 Loader] --> ContactObj
-[Bulk API 2.0 Loader] --> CaseObj
-[File Migration Utility] --> Files
-[Bulk API 2.0 Loader] --> MigrationBatch
-[File Migration Utility] --> [Migration Reconciliation]
-[Migration Reconciliation] --> MigrationBatch
-
-CaseObj --> [Indexes / External IDs]
-CaseObj --> [Archiving Strategy]
-Files --> [Storage Forecast]
-Files --> [Archiving Strategy]
+CoreRecords --> Indexes
+CoreRecords --> StoragePlan
+Files --> StoragePlan
 
 @enduml

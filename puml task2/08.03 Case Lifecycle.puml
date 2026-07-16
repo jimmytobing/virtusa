@@ -1,5 +1,6 @@
 @startuml
 left to right direction
+skinparam linetype ortho
 
 state "New" as NewCase
 state "Verification Pending" as VerificationPending
@@ -15,13 +16,13 @@ state "Closed" as Closed
 [*] --> NewCase
 NewCase --> VerificationPending
 VerificationPending --> Assigned
-VerificationPending --> ManualVerification
+VerificationPending --> ManualVerification : no match
 ManualVerification --> Assigned
 Assigned --> InProgress
 InProgress --> PendingCitizen
 PendingCitizen --> InProgress
-InProgress --> Escalated
-Escalated --> InProgress
+InProgress --> Escalated : complex
+Escalated --> InProgress : returned
 InProgress --> Resolved
 Resolved --> Closed
 Resolved --> Reopened

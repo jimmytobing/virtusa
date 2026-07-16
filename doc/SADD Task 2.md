@@ -2,15 +2,68 @@
 
 ## 1. Executive Summary
 
-This document defines the Salesforce solution architecture for a government agency that manages citizen enquiries and feedback across website, phone, real-time assistance, mobile app, and email channels.
+This document defines the Salesforce solution architecture for a government agency that manages citizen enquiries and feedback across website, phone, real-time assistance through the agency website or mobile app, and email channels.
 
-The recommended solution uses Salesforce Service Cloud as the primary case-management platform, Experience Cloud for citizen-facing digital access, Omni-Channel for work assignment, Salesforce Knowledge for reusable answers, Salesforce Files for supporting photos/documents, Reports and Dashboards for operational oversight, and Microsoft Active Directory / Microsoft Entra ID for internal Single Sign-On.
+The recommended solution uses Salesforce Service Cloud as the primary case-management platform, Experience Cloud for website-based citizen case submission/status, Omni-Channel for work assignment, Digital Engagement for real-time assistance from the website or mobile app, Salesforce Knowledge for reusable answers, Salesforce Files for supporting photos/documents, Reports and Dashboards for operational oversight, and Microsoft Active Directory / Microsoft Entra ID for internal Single Sign-On.
 
-This SADD only addresses the Task 2 requirement in `SF Technical Assessment (task2).md`. Processes outside citizen enquiry and feedback case management are excluded.
+This SADD only addresses the Task 2 requirement in `SF Technical Assessment (task2).md`. All Processes outside citizen enquiry and feedback case management are excluded.
 
 ## 2. Requirement Coverage
 
 [Requirement Coverage Map](<../puml task2/02.01 Requirement Coverage Map.puml>)
+
+```plantuml
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+
+package "Assessment Requirements" {
+  [Citizen Enquiry]
+  [Citizen Feedback]
+  [Website Channel]
+  [Phone Channel]
+  [Real-Time Assistance]
+  [Email Channel]
+  [MDM Verification]
+  [SSO with Microsoft AD]
+  [Historical Migration]
+  [Daily Case and File Volume]
+  [Agent Performance Evaluation]
+}
+
+package "Salesforce Solution" {
+  [Service Cloud Case]
+  [Experience Cloud]
+  [CTI / Voice]
+  [Digital Engagement]
+  [Email-to-Case]
+  [Citizen Verification Service]
+  [Salesforce SSO]
+  [Bulk API / ETL Migration]
+  [Salesforce Files]
+  [Reports and Dashboards]
+  [Omni-Channel]
+  [Knowledge]
+}
+
+[Citizen Enquiry] --> [Service Cloud Case]
+[Citizen Enquiry] --> [Knowledge]
+[Citizen Feedback] --> [Service Cloud Case]
+[Citizen Feedback] --> [Reports and Dashboards]
+[Website Channel] --> [Experience Cloud]
+[Phone Channel] --> [CTI / Voice]
+[Real-Time Assistance] --> [Digital Engagement]
+[Email Channel] --> [Email-to-Case]
+[MDM Verification] --> [Citizen Verification Service]
+[SSO with Microsoft AD] --> [Salesforce SSO]
+[Historical Migration] --> [Bulk API / ETL Migration]
+[Daily Case and File Volume] --> [Salesforce Files]
+[Daily Case and File Volume] --> [Service Cloud Case]
+[Agent Performance Evaluation] --> [Reports and Dashboards]
+[Agent Performance Evaluation] --> [Omni-Channel]
+
+@enduml
+```
 
 | Assessment Requirement                                      | Design Response                                                                                                               |
 | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -35,7 +88,7 @@ This SADD only addresses the Task 2 requirement in `SF Technical Assessment (tas
 | -------------------- | -------------------------------------------------------------------------------------------------------------- |
 | Citizen enquiries    | Capture, verify, assign, resolve, follow up, and close enquiry Cases.                                          |
 | Citizen feedback     | Capture complaints, suggestions, satisfaction level, analysis, response, reporting, and supervisor evaluation. |
-| Channels             | Website, phone, live chat / mobile real-time assistance, and email.                                            |
+| Channels             | Website case submission, phone, real-time assistance through the agency website or mobile app, and email.      |
 | Internal roles       | Branch Admin, Supervisor, and Agent.                                                                           |
 | Citizen verification | Integration design with external Master Data Management (MDM) using phone or email.                            |
 | Assignment           | Routing by expertise, language, workload, availability, priority, channel, and division.                       |
@@ -56,14 +109,15 @@ This SADD only addresses the Task 2 requirement in `SF Technical Assessment (tas
 
 ### 3.3 Assumptions
 
-| ID   | Assumption                                                                                             |
-| ---- | ------------------------------------------------------------------------------------------------------ |
-| A-01 | Internal agency users authenticate through Microsoft AD / Microsoft Entra ID.                          |
-| A-02 | The external MDM exposes secure APIs for citizen lookup by phone and email.                            |
-| A-03 | Enquiry and feedback are implemented as Salesforce Case record types.                                  |
-| A-04 | The agency has divisions or branches that can be mapped to roles, queues, public groups, and reports.  |
-| A-05 | Historical source records contain enough identifiers to support migration reconciliation.              |
-| A-06 | File storage strategy will be validated against Salesforce storage limits before production migration. |
+| ID   | Assumption                                                                                                                                                                           |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| A-01 | Internal agency users authenticate through Microsoft AD / Microsoft Entra ID.                                                                                                        |
+| A-02 | The external MDM exposes secure APIs for citizen lookup by phone and email.                                                                                                          |
+| A-03 | Enquiry and feedback are implemented as Salesforce Case record types.                                                                                                                |
+| A-04 | The agency has divisions or branches that can be mapped to roles, queues, public groups, and reports.                                                                                |
+| A-05 | Historical source records contain enough identifiers to support migration reconciliation.                                                                                            |
+| A-06 | File storage strategy will be validated against Salesforce storage limits before production migration.                                                                               |
+| A-07 | The mobile app is treated as a real-time assistance channel through Digital Engagement or an API/channel adapter; it is not assumed to embed Experience Cloud or use mobile webview. |
 
 ### 3.4 Constraints
 
@@ -77,31 +131,122 @@ This SADD only addresses the Task 2 requirement in `SF Technical Assessment (tas
 
 ## 4. Salesforce Product and Capability Selection
 
-| Requirement Area       | Recommended Capability                                                  | Rationale                                                                                                   |
-| ---------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Internal case handling | Service Cloud Enterprise or higher                                      | Provides Case, Service Console, queues, automation, reporting, and service process foundation.              |
-| Public-sector hosting  | Salesforce Government Cloud or equivalent regulated option, if mandated | Supports public-sector compliance and data residency requirements when required by policy.                  |
-| Citizen web access     | Experience Cloud                                                        | Supports case submission, status visibility, file upload, and authenticated/public citizen access patterns. |
-| Website intake         | Experience Cloud LWC, Web-to-Case, or API-backed form                   | Supports structured submission, validation, attachments, and channel tracking.                              |
-| Phone intake           | Open CTI or Service Cloud Voice-compatible integration                  | Enables screen-pop, call logging, and phone-origin Case creation.                                           |
-| Real-time assistance   | Messaging, Chat, or Digital Engagement                                  | Supports real-time citizen assistance from web or mobile and routes work to agents.                         |
-| Email intake           | Email-to-Case                                                           | Converts emails into Cases and maintains email thread history.                                              |
-| Work assignment        | Omni-Channel                                                            | Routes by queue, skill, language, capacity, workload, and availability.                                     |
-| Reusable answers       | Salesforce Knowledge                                                    | Provides approved solutions for recurring enquiries and supports draft-to-approval lifecycle.               |
-| SLA management         | Entitlements and Milestones                                             | Tracks first response, follow-up, escalation, and resolution commitments.                                   |
-| Reporting              | Reports and Dashboards; CRM Analytics if needed                         | Meets Branch Admin and Supervisor monitoring needs.                                                         |
-| Identity               | Salesforce SSO with Microsoft AD / Entra ID through SAML or OIDC        | Reuses the existing identity provider and centralizes access management.                                    |
-| Integration            | Named Credentials, External Credentials, Apex, API Gateway or MuleSoft  | Secures MDM and channel integrations without hardcoded credentials.                                         |
-| Migration              | Bulk API 2.0, ETL tooling, Data Loader, staging database                | Supports controlled high-volume migration and reconciliation.                                               |
-| Backup/archive         | Salesforce Backup or approved AppExchange backup/archive product        | Reduces risk for long retention, files, and operational recovery.                                           |
+| Requirement Area       | Recommended Capability                                                  | Rationale                                                                                                                 |
+| ---------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Internal case handling | Service Cloud Enterprise or higher                                      | Provides Case, Service Console, queues, automation, reporting, and service process foundation.                            |
+| Public-sector hosting  | Salesforce Government Cloud or equivalent regulated option, if mandated | Supports public-sector compliance and data residency requirements when required by policy.                                |
+| Website citizen access | Experience Cloud                                                        | Supports website-based case submission, status visibility, file upload, and authenticated/public citizen access patterns. |
+| Website intake         | Experience Cloud LWC, Web-to-Case, or API-backed form                   | Supports structured website submission, validation, attachments, and channel tracking.                                    |
+| Phone intake           | Open CTI or Service Cloud Voice-compatible integration                  | Enables screen-pop, call logging, and phone-origin Case creation.                                                         |
+| Real-time assistance   | Messaging, Chat, or Digital Engagement                                  | Supports real-time citizen assistance from the agency website or mobile app and routes work to agents.                    |
+| Email intake           | Email-to-Case                                                           | Converts emails into Cases and maintains email thread history.                                                            |
+| Work assignment        | Omni-Channel                                                            | Routes by queue, skill, language, capacity, workload, and availability.                                                   |
+| Reusable answers       | Salesforce Knowledge                                                    | Provides approved solutions for recurring enquiries and supports draft-to-approval lifecycle.                             |
+| SLA management         | Entitlements and Milestones                                             | Tracks first response, follow-up, escalation, and resolution commitments.                                                 |
+| Reporting              | Reports and Dashboards; CRM Analytics if needed                         | Meets Branch Admin and Supervisor monitoring needs.                                                                       |
+| Identity               | Salesforce SSO with Microsoft AD / Entra ID through SAML or OIDC        | Reuses the existing identity provider and centralizes access management.                                                  |
+| Integration            | Named Credentials, External Credentials, Apex, API Gateway or MuleSoft  | Secures MDM and channel integrations without hardcoded credentials.                                                       |
+| Migration              | Bulk API 2.0, ETL tooling, Data Loader, staging database                | Supports controlled high-volume migration and reconciliation.                                                             |
+| Backup/archive         | Salesforce Backup or approved AppExchange backup/archive product        | Reduces risk for long retention, files, and operational recovery.                                                         |
 
 ## 5. Target Solution Architecture
 
 [High-Level Solution Architecture](<../puml task2/05.01 High-Level Solution Architecture.puml>)
 
-[Layered Architecture](<../puml task2/05.02 Layered Architecture.puml>)
+```plantuml
+@startuml
+skinparam componentStyle rectangle
 
-[Multi-Channel Case Intake Architecture](<../puml task2/05.03 Multi-Channel Case Intake Architecture.puml>)
+actor Citizen
+actor "Branch Admin" as BranchAdmin
+actor Supervisor
+actor Agent
+
+cloud "Microsoft AD / Entra ID" as AAD
+cloud "External MDM System" as MDM
+cloud "API Gateway / Middleware" as Gateway
+
+package "Citizen Contact Channels" {
+  [Agency Website]
+  [Mobile App]
+  [Email]
+  [Phone]
+  [Live Chat / Messaging]
+}
+
+package "Salesforce Experience Cloud" {
+  [Citizen Portal]
+  [Case Submission LWC]
+}
+
+package "Salesforce Service Cloud" {
+  [Service Console]
+  [Case Management]
+  [Omni-Channel Routing]
+  [Email-to-Case]
+  [Digital Engagement]
+  [CTI / Voice Adapter]
+  [Salesforce Knowledge]
+  [Entitlements and Milestones]
+  [Reports and Dashboards]
+}
+
+package "Salesforce Platform Services" {
+  [Flow Automation]
+  [Apex Integration Services]
+  [Named Credentials]
+  [Custom Metadata]
+}
+
+database "Salesforce Data" {
+  [Core Service Data\nContact, Case,\nService Division, Files] as CoreServiceData
+  [Knowledge Data\nKnowledge Article] as KnowledgeData
+  [Operational Tracking Data\nCase Milestone,\nIntegration Error,\nMigration Batch] as OperationalTrackingData
+}
+
+Citizen --> [Agency Website]
+Citizen --> [Mobile App]
+Citizen --> [Email]
+Citizen --> [Phone]
+Citizen --> [Live Chat / Messaging]
+
+[Agency Website] --> [Citizen Portal]
+[Citizen Portal] --> [Case Submission LWC]
+[Case Submission LWC] --> [Case Management]
+[Email] --> [Email-to-Case]
+[Phone] --> [CTI / Voice Adapter]
+[Mobile App] --> [Digital Engagement]
+[Live Chat / Messaging] --> [Digital Engagement]
+[Email-to-Case] --> [Case Management]
+[CTI / Voice Adapter] --> [Case Management]
+[Digital Engagement] --> [Case Management]
+
+[Case Management] --> [Omni-Channel Routing]
+[Omni-Channel Routing] --> [Service Console]
+Agent --> [Service Console]
+Supervisor --> [Service Console]
+BranchAdmin --> [Reports and Dashboards]
+
+[Service Console] --> [Salesforce Knowledge]
+[Case Management] --> [Entitlements and Milestones]
+[Case Management] --> [Flow Automation]
+[Flow Automation] --> [Apex Integration Services]
+[Apex Integration Services] --> [Named Credentials]
+[Named Credentials] --> Gateway
+Gateway --> MDM
+
+[Case Management] --> CoreServiceData
+[Salesforce Knowledge] --> KnowledgeData
+[Entitlements and Milestones] --> OperationalTrackingData
+[Apex Integration Services] --> OperationalTrackingData
+[Reports and Dashboards] --> CoreServiceData
+[Reports and Dashboards] --> OperationalTrackingData
+
+AAD --> [Service Console] : SSO for internal users
+AAD ..> [Citizen Portal] : optional citizen authentication
+
+@enduml
+```
 
 ### 5.1 Architecture Overview
 
@@ -111,21 +256,292 @@ Agents use Service Console to verify citizens, work Cases, review files, search 
 
 MDM integration verifies citizens by phone or email. Microsoft AD / Entra ID authenticates internal users and maps access through profiles, permission sets, roles, groups, queues, and sharing rules.
 
+### 5.2 Layered Architecture
+
+[Layered Architecture](<../puml task2/05.02 Layered Architecture.puml>)
+
+```plantuml
+@startuml
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 70
+skinparam ranksep 80
+
+package "Presentation Layer" as PresentationLayer {
+  [Citizen and Agent UI\nExperience Cloud, Service Console,\nMobile / Web Messaging] as Presentation
+}
+
+package "Channel Intake Layer" as ChannelIntakeLayer {
+  [Unified Intake\nWeb, Email-to-Case,\nCTI / Voice, Chat] as UnifiedIntake
+}
+
+package "Orchestration Layer" as OrchestrationLayer {
+  [Case Work Orchestration\nFlow, Omni-Channel,\nEntitlements and Milestones] as CaseWorkOrchestration
+  [Knowledge Governance\nKnowledge Approval] as KnowledgeGovernance
+}
+
+package "Business Service Layer" as BusinessServiceLayer {
+  [Core Case Services\nCaseIntakeService,\nCaseRoutingService,\nCaseLifecycleService] as CoreCaseServices
+  [Supporting Services\nCitizenVerificationService,\nFeedbackAnalysisService,\nIntegrationErrorService] as SupportingServices
+}
+
+package "Integration Layer" as IntegrationLayer {
+  [External Platform Services\nMicrosoft AD / Entra ID,\nNamed Credentials,\nAPI Gateway, External MDM] as ExternalPlatformServices
+}
+
+package "Persistence Layer" as PersistenceLayer {
+  [Salesforce Data Model\nContact, Case, Knowledge,\nSalesforce Files, Case Milestone,\nIntegration Error, Migration Batch,\nCustom Metadata] as SalesforceDataModel
+}
+
+PresentationLayer -[hidden]right-> ChannelIntakeLayer
+ChannelIntakeLayer -[hidden]right-> OrchestrationLayer
+OrchestrationLayer -[hidden]right-> BusinessServiceLayer
+BusinessServiceLayer -[hidden]right-> IntegrationLayer
+IntegrationLayer -[hidden]right-> PersistenceLayer
+
+Presentation --> UnifiedIntake
+Presentation --> CaseWorkOrchestration
+UnifiedIntake --> CoreCaseServices
+CaseWorkOrchestration --> CoreCaseServices
+KnowledgeGovernance --> SalesforceDataModel
+
+CoreCaseServices --> SupportingServices
+CoreCaseServices --> SalesforceDataModel
+SupportingServices --> ExternalPlatformServices
+SupportingServices --> SalesforceDataModel
+
+@enduml
+```
+
+### 5.3 Multi-Channel Case Intake Architecture
+
+[Multi-Channel Case Intake Architecture](<../puml task2/05.03 Multi-Channel Case Intake Architecture.puml>)
+
+```plantuml
+@startuml
+skinparam componentStyle rectangle
+
+actor Citizen
+
+package "Citizen Contact Channels" {
+  [Agency Website]
+  [Mobile App]
+  [Email]
+  [Phone Call]
+  [Live Chat]
+}
+
+package "Salesforce Service Cloud" {
+  [Experience Cloud]
+  [Email-to-Case]
+  [Service Console]
+  [Digital Engagement]
+  [Voice / CTI Integration]
+  [Case Management]
+  [Salesforce Files]
+  [Omni-Channel]
+  [Knowledge]
+  [Entitlements and Milestones]
+}
+
+package "External Systems" {
+  [External MDM]
+  [Microsoft AD / Entra ID]
+}
+
+Citizen --> [Agency Website]
+Citizen --> [Mobile App]
+Citizen --> [Email]
+Citizen --> [Phone Call]
+Citizen --> [Live Chat]
+
+[Agency Website] --> [Experience Cloud]
+[Email] --> [Email-to-Case]
+[Phone Call] --> [Voice / CTI Integration]
+[Mobile App] --> [Digital Engagement]
+[Live Chat] --> [Digital Engagement]
+
+[Experience Cloud] --> [Case Management]
+[Email-to-Case] --> [Case Management]
+[Voice / CTI Integration] --> [Case Management]
+[Digital Engagement] --> [Case Management]
+[Case Management] --> [Salesforce Files]
+[Case Management] --> [Omni-Channel]
+[Case Management] --> [Entitlements and Milestones]
+[Omni-Channel] --> [Service Console]
+[Service Console] --> [Knowledge]
+[Case Management] --> [External MDM] : citizen verification
+[Microsoft AD / Entra ID] --> [Service Console] : internal SSO
+
+@enduml
+```
+
 ## 6. Business Process Architecture
 
 [Citizen Case Management Lifecycle](<../puml task2/06.01 Citizen Case Management Lifecycle.puml>)
 
+```plantuml
+@startuml
+start
+
+:Citizen submits\nEnquiry / Feedback;
+:Capture channel\nand attachments;
+:Create Case\nwith category;
+:Verify citizen\nwith MDM;
+
+if (Citizen verified?) then (Yes)
+  :Link or update Contact;
+else (No)
+  :Flag Manual Review;
+endif
+
+:Route by skill,\nlanguage, workload;
+:Agent works Case;
+
+if (Case type?) then (Enquiry)
+  :Search Knowledge;
+  if (Existing solution available?) then (Yes)
+    :Provide approved solution;
+  else (No)
+    :Draft resolution\nand article;
+  endif
+  if (Complex enquiry?) then (Yes)
+    :Escalate to Supervisor;
+  endif
+  :Follow up\nuntil confirmed;
+else (Feedback)
+  :Analyze feedback;
+  if (Citizen response required?) then (Yes)
+    :Respond to citizen;
+  endif
+  :Update reports;
+  :Supervisor evaluates;
+endif
+
+:Close Case\nwith audit trail;
+:Branch Admin\nmonitors dashboards;
+
+stop
+@enduml
+```
+
 [Business Flow](<../puml task2/06.02 Business Flow.puml>)
+
+```plantuml
+@startuml
+start
+
+:Citizen contacts agency;
+:Create Case\nwith key details;
+:Verify citizen\nagainst MDM;
+
+if (Citizen matched?) then (Yes)
+  :Link existing Contact;
+else (No)
+  :Create provisional Contact;
+  :Flag manual verification;
+endif
+
+:Set type, priority,\ndivision, skill;
+:Route through\nOmni-Channel;
+:Agent handles Case;
+
+if (Case type?) then (Enquiry)
+  :Search Knowledge;
+  if (Solution exists?) then (Yes)
+    :Provide solution;
+  else (No)
+    :Draft resolution\nand article;
+  endif
+  :Follow up\nuntil confirmed;
+else (Feedback)
+  :Analyze feedback;
+  if (Citizen response required?) then (Yes)
+    :Respond and log;
+  endif
+  :Update reporting;
+endif
+
+if (Complex or SLA risk?) then (Yes)
+  :Escalate to Supervisor;
+endif
+
+:Close Case\nwith audit trail;
+:Branch Admin\nmonitors dashboards;
+
+stop
+@enduml
+```
 
 [Case Routing Decision Model](<../puml task2/06.03 Case Routing Decision Model.puml>)
 
+```plantuml
+@startuml
+start
+
+:Case created from any channel;
+:Identify case type;
+:Identify language;
+:Identify required skill;
+:Determine priority;
+:Check availability;
+:Check workload;
+
+if (Suitable agent available?) then (Yes)
+  :Assign best agent;
+else (No)
+  :Route to queue;
+endif
+
+if (Priority is High or SLA risk?) then (Yes)
+  :Notify Supervisor;
+endif
+
+if (Complex case?) then (Yes)
+  :Escalate to Supervisor queue;
+endif
+
+:Agent starts case handling;
+
+stop
+@enduml
+```
+
 [Knowledge Management Lifecycle](<../puml task2/06.04 Knowledge Management Lifecycle.puml>)
+
+```plantuml
+@startuml
+start
+
+:Search Knowledge;
+
+if (Existing article found?) then (Yes)
+  :Attach article;
+  :Provide solution;
+else (No)
+  :Draft solution;
+  :Create article draft;
+  :Submit for review;
+  :Supervisor reviews;
+
+  if (Approved?) then (Yes)
+    :Publish article;
+  else (No)
+    :Return for revision;
+  endif
+endif
+
+:Reuse for similar cases;
+
+stop
+@enduml
+```
 
 ### 6.1 Enquiry Case Process
 
 | Step               | Salesforce Design                                                                                                        |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| Initiation         | Citizen creates an enquiry through website, phone, chat/mobile, or email.                                                |
+| Initiation         | Citizen creates an enquiry through website, phone, real-time assistance on the agency website/mobile app, or email.      |
 | Verification       | Agent or automated integration verifies phone/email against MDM and links the Case to Contact.                           |
 | Case Recording     | Case captures subject, description, origin, service category, division, priority, language, and supporting files/photos. |
 | Assignment         | Omni-Channel assigns work using expertise, language, workload, availability, priority, channel, and division.            |
@@ -163,15 +579,251 @@ MDM integration verifies citizens by phone or email. Microsoft AD / Entra ID aut
 
 [Application Layer Overview](<../puml task2/07.01 Application Layer Overview.puml>)
 
+```plantuml
+@startuml
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 70
+left to right direction
+
+package "Presentation Layer" {
+  [Citizen and Agent UI\nExperience Cloud, Service Console,\nSupervisor Console, Dashboards] as UI
+}
+
+package "Channel Services" {
+  [Unified Channels\nEmail-to-Case, CTI / Voice,\nDigital Engagement, Web/API Intake] as Channels
+}
+
+package "Application Layer" {
+  [Automation and Routing\nFlow, Omni-Channel,\nEntitlements, Knowledge Approval] as AppControls
+}
+
+package "Business Services" {
+  [Case Services\nCaseIntakeService,\nCaseRoutingService,\nCaseLifecycleService] as CaseServices
+  [Support Services\nCitizenVerificationService,\nFeedbackAnalysisService,\nIntegrationErrorService] as SupportServices
+}
+
+database "Salesforce Data" {
+  [Service Records\nContact, Case, Files,\nMilestones, Knowledge,\nIntegration Error] as ServiceData
+}
+
+UI --> Channels
+UI --> AppControls
+Channels --> CaseServices
+AppControls --> CaseServices
+CaseServices --> SupportServices
+CaseServices --> ServiceData
+SupportServices --> ServiceData
+AppControls --> ServiceData
+
+@enduml
+```
+
 [Application Flow](<../puml task2/07.02 Application Flow.puml>)
+
+```plantuml
+@startuml
+start
+
+:Receive channel interaction;
+:Normalize intake request;
+:Validate fields and files;
+
+if (Validation passed?) then (Yes)
+  :Prepare Contact;
+  :Verify with MDM;
+  if (Verification successful?) then (Yes)
+    :Link verified Contact;
+  else (No)
+    :Set Manual Review;
+    :Log exception if needed;
+  endif
+  :Create Case;
+  :Attach files;
+  :Apply SLA and routing;
+  :Route work item;
+  :Send notifications;
+else (No)
+  :Return validation message;
+endif
+
+stop
+@enduml
+```
 
 [Service Layer Design](<../puml task2/07.03 Service Layer Design.puml>)
 
+```plantuml
+@startuml
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+hide empty members
+
+package "Intake Services" {
+  class CaseIntakeService
+  class CitizenVerificationService
+}
+
+package "Case Operations" {
+  class CaseRoutingService
+  class CaseLifecycleService
+  class FeedbackAnalysisService
+  class KnowledgeSuggestionService
+}
+
+package "Operational Support" {
+  class IntegrationErrorService
+  class MigrationReconciliationService
+}
+
+package "Salesforce Platform" {
+  class Flow
+  class OmniChannel
+  class EntitlementProcess
+  class NamedCredential
+}
+
+package "Data Contracts" {
+  class "Core Case Data\nContact, Case" as CoreCaseData
+  class "Knowledge Data\nKnowledge__kav" as KnowledgeData
+  class "File Data\nContentDocumentLink" as FileData
+  class "Operational Data\nIntegration_Error__c,\nMigration_Batch__c,\nCase_Routing_Rule__mdt" as OperationalData
+}
+
+CaseIntakeService --> CitizenVerificationService
+CaseIntakeService --> CaseRoutingService
+CaseIntakeService --> CaseLifecycleService
+CaseIntakeService --> CoreCaseData
+
+CaseRoutingService --> OmniChannel
+CaseRoutingService --> OperationalData
+CaseLifecycleService --> EntitlementProcess
+CaseLifecycleService --> FileData
+FeedbackAnalysisService --> CoreCaseData
+KnowledgeSuggestionService --> KnowledgeData
+
+CitizenVerificationService --> NamedCredential
+IntegrationErrorService --> OperationalData
+MigrationReconciliationService --> OperationalData
+Flow --> CaseLifecycleService
+
+@enduml
+```
+
 [Service Interaction Diagram](<../puml task2/07.04 Service Interaction Diagram.puml>)
+
+```plantuml
+@startuml
+skinparam sequenceMessageAlign center
+
+participant Citizen
+participant "Channel Adapter" as Channel
+participant CaseIntakeService
+participant CitizenVerificationService
+participant "External MDM" as MDM
+participant CaseRoutingService
+participant "Omni-Channel" as Omni
+participant Agent
+database Salesforce
+
+Citizen -> Channel : Submit enquiry or feedback
+Channel -> CaseIntakeService : Intake request
+CaseIntakeService -> CitizenVerificationService : Verify phone/email
+CitizenVerificationService -> MDM : Lookup citizen
+MDM --> CitizenVerificationService : Match result
+CitizenVerificationService --> CaseIntakeService : Verification result
+CaseIntakeService -> Salesforce : Upsert Contact, create Case
+CaseIntakeService -> CaseRoutingService : Assignment context
+CaseRoutingService -> Omni : Route work item
+Omni --> Agent : Assign Case
+Agent -> Salesforce : Work Case
+Salesforce --> Channel : Status update
+Channel --> Citizen : Confirmation
+
+@enduml
+```
 
 [Error Handling Strategy](<../puml task2/07.05 Error Handling Strategy.puml>)
 
+```plantuml
+@startuml
+start
+
+:Run service operation;
+
+if (Operation successful?) then (Yes)
+  :Commit Salesforce transaction;
+  stop
+else (No)
+  :Classify error;
+  if (Retryable integration error?) then (Yes)
+    :Upsert Integration_Error__c;
+    :Set retry status;
+    :Hold Case for review;
+  else (No)
+    :Show message or alert;
+    :Capture support detail;
+  endif
+  :Rollback unsafe changes;
+  stop
+endif
+
+@enduml
+```
+
 [Configurable Business Rules](<../puml task2/07.06 Configurable Business Rules.puml>)
+
+```plantuml
+@startuml
+left to right direction
+skinparam linetype ortho
+
+entity Case_Routing_Rule__mdt {
+  DeveloperName
+  Record_Type__c
+  Channel__c
+  Division__c
+  Skill__c
+  Language__c
+  Priority__c
+  Active__c
+}
+
+entity SLA_Policy__mdt {
+  DeveloperName
+  Record_Type__c
+  Priority__c
+  First_Response_Hours__c
+  Resolution_Hours__c
+  Follow_Up_Hours__c
+  Active__c
+}
+
+entity Feedback_Category__mdt {
+  DeveloperName
+  Service_Category__c
+  Improvement_Area__c
+  Severity__c
+  Active__c
+}
+
+entity Integration_Error_Message__mdt {
+  DeveloperName
+  Service_Name__c
+  Error_Code__c
+  User_Message__c
+  Retryable__c
+  Active__c
+}
+
+Case_Routing_Rule__mdt ..> SLA_Policy__mdt : applies SLA
+Feedback_Category__mdt ..> SLA_Policy__mdt : informs priority
+Integration_Error_Message__mdt ..> Case_Routing_Rule__mdt : fallback queue
+
+@enduml
+```
 
 ### 7.1 Declarative-First Approach
 
@@ -188,26 +840,307 @@ MDM integration verifies citizens by phone or email. Microsoft AD / Entra ID aut
 
 ### 7.2 Service Responsibilities
 
-| Service                        | Responsibility                                                                  |
-| ------------------------------ | ------------------------------------------------------------------------------- |
-| CaseIntakeService              | Normalize website, phone, chat/mobile, and email submissions into Case records. |
-| CitizenVerificationService     | Verify phone/email against MDM and update Contact/Case verification fields.     |
-| CaseRoutingService             | Prepare routing attributes used by Omni-Channel and queues.                     |
-| CaseLifecycleService           | Enforce lifecycle transitions, closure validations, and follow-up requirements. |
-| FeedbackAnalysisService        | Classify feedback, satisfaction, severity, and improvement area.                |
-| KnowledgeSuggestionService     | Suggest existing articles and create draft article candidates when needed.      |
-| IntegrationErrorService        | Capture MDM/channel/file failures and retry status.                             |
-| MigrationReconciliationService | Track migration batches, counts, file links, and exception summaries.           |
+| Service                        | Responsibility                                                                            |
+| ------------------------------ | ----------------------------------------------------------------------------------------- |
+| CaseIntakeService              | Normalize website, phone, email, and real-time assistance interactions into Case records. |
+| CitizenVerificationService     | Verify phone/email against MDM and update Contact/Case verification fields.               |
+| CaseRoutingService             | Prepare routing attributes used by Omni-Channel and queues.                               |
+| CaseLifecycleService           | Enforce lifecycle transitions, closure validations, and follow-up requirements.           |
+| FeedbackAnalysisService        | Classify feedback, satisfaction, severity, and improvement area.                          |
+| KnowledgeSuggestionService     | Suggest existing articles and create draft article candidates when needed.                |
+| IntegrationErrorService        | Capture MDM/channel/file failures and retry status.                                       |
+| MigrationReconciliationService | Track migration batches, counts, file links, and exception summaries.                     |
 
 ## 8. Data Architecture
 
 [Entity Relationship Diagram](<../puml task2/08.01 Entity Relationship Diagram.puml>)
 
+```plantuml
+@startuml
+hide methods
+hide circle
+skinparam linetype ortho
+skinparam nodesep 50
+skinparam ranksep 60
+left to right direction
+
+entity Account {
+  * Id
+  --
+  Name
+  RecordTypeId
+  OwnerId
+}
+
+entity Contact {
+  * Id
+  --
+  AccountId
+  FirstName
+  LastName
+  Phone
+  Email
+  MDM_Citizen_Id__c
+  Preferred_Language__c
+  Verification_Status__c
+}
+
+entity Case {
+  * Id
+  --
+  ContactId
+  OwnerId
+  RecordTypeId
+  CaseNumber
+  Origin
+  Status
+  Priority
+  Subject
+  Description
+  SuppliedPhone
+  SuppliedEmail
+  Service_Division__c
+  Service_Category__c
+  Language__c
+  Citizen_Verification_Status__c
+  MDM_Verification_Id__c
+  Satisfaction_Level__c
+  Improvement_Area__c
+  Resolution_Summary__c
+  Citizen_Confirmed_Closure__c
+  Follow_Up_Date__c
+}
+
+entity Service_Division__c {
+  * Id
+  --
+  Name
+  Branch_Code__c
+  Parent_Division__c
+  Active__c
+}
+
+entity User {
+  * Id
+  --
+  Name
+  Email
+  ProfileId
+  UserRoleId
+  Division__c
+  LanguageLocaleKey
+  IsActive
+}
+
+entity Group {
+  * Id
+  --
+  Name
+  Type
+  RelatedId
+}
+
+entity Knowledge__kav {
+  * Id
+  --
+  KnowledgeArticleId
+  Title
+  UrlName
+  Summary
+  PublishStatus
+  Language
+}
+
+entity ContentVersion {
+  * Id
+  --
+  ContentDocumentId
+  Title
+  FileType
+  ContentSize
+  VersionData
+}
+
+entity ContentDocumentLink {
+  * Id
+  --
+  LinkedEntityId
+  ContentDocumentId
+  ShareType
+  Visibility
+}
+
+entity CaseMilestone {
+  * Id
+  --
+  CaseId
+  MilestoneTypeId
+  StartDate
+  TargetDate
+  CompletionDate
+  IsCompleted
+}
+
+entity Case_Routing_Rule__mdt {
+  * DeveloperName
+  --
+  Record_Type__c
+  Channel__c
+  Division__c
+  Skill__c
+  Language__c
+  Priority__c
+  Active__c
+}
+
+entity Integration_Error__c {
+  * Id
+  --
+  Related_Case__c
+  Service_Name__c
+  Error_Type__c
+  Error_Message__c
+  Status__c
+  Transaction_Id__c
+  Request_Payload__c
+  Response_Payload__c
+  Retry_Count__c
+  Processed_Date__c
+}
+
+entity Migration_Batch__c {
+  * Id
+  --
+  Source_System__c
+  Batch_Number__c
+  Record_Count__c
+  File_Size_MB__c
+  Status__c
+  Started_Date__c
+  Completed_Date__c
+}
+
+Account ||--o{ Contact : has
+Contact ||--o{ Case : raises
+Service_Division__c ||--o{ Case : scopes
+User ||--o{ Case : owns
+Group ||--o{ Case : owns
+Case ||--o{ ContentDocumentLink : files
+ContentVersion ||--o{ ContentDocumentLink : versions
+Case ||--o{ CaseMilestone : SLA
+Knowledge__kav }o..o{ Case : used
+Case_Routing_Rule__mdt ..> Case : routes
+Integration_Error__c }o..|| Case : logs
+Migration_Batch__c ..> Case : loads
+
+@enduml
+```
+
 [Object Relationships](<../puml task2/08.02 Object Relationships.puml>)
+
+```plantuml
+@startuml
+left to right direction
+skinparam linetype ortho
+skinparam nodesep 50
+skinparam ranksep 55
+
+object Account
+object Contact
+object Case
+object Service_Division__c
+object User
+object Group_Queue
+object Knowledge__kav
+object ContentVersion
+object ContentDocumentLink
+object CaseMilestone
+object Integration_Error__c
+object Migration_Batch__c
+object Case_Routing_Rule__mdt
+
+Account "1" --> "*" Contact
+Contact "1" --> "*" Case
+Service_Division__c "1" --> "*" Case
+User "1" --> "*" Case : agent
+Group_Queue "1" --> "*" Case : queue
+Case "1" --> "*" ContentDocumentLink
+ContentVersion "1" --> "*" ContentDocumentLink
+Case "1" --> "*" CaseMilestone
+Knowledge__kav "*" .. "*" Case : usage
+Integration_Error__c "*" --> "0..1" Case
+Migration_Batch__c "1" .. "*" Case : migrated
+Case_Routing_Rule__mdt ..> Case : routing
+
+@enduml
+```
 
 [Case Lifecycle](<../puml task2/08.03 Case Lifecycle.puml>)
 
+```plantuml
+@startuml
+left to right direction
+skinparam linetype ortho
+
+state "New" as NewCase
+state "Verification Pending" as VerificationPending
+state "Manual Verification" as ManualVerification
+state "Assigned" as Assigned
+state "In Progress" as InProgress
+state "Pending Citizen" as PendingCitizen
+state "Escalated" as Escalated
+state "Resolved" as Resolved
+state "Reopened" as Reopened
+state "Closed" as Closed
+
+[*] --> NewCase
+NewCase --> VerificationPending
+VerificationPending --> Assigned
+VerificationPending --> ManualVerification : no match
+ManualVerification --> Assigned
+Assigned --> InProgress
+InProgress --> PendingCitizen
+PendingCitizen --> InProgress
+InProgress --> Escalated : complex
+Escalated --> InProgress : returned
+InProgress --> Resolved
+Resolved --> Closed
+Resolved --> Reopened
+Reopened --> InProgress
+
+@enduml
+```
+
 [Feedback Review Lifecycle](<../puml task2/08.04 Feedback Case Lifecycle.puml>)
+
+```plantuml
+@startuml
+left to right direction
+skinparam linetype ortho
+
+state "Received" as Received
+state "Recorded" as Recorded
+state "Analyzed" as Analyzed
+state "Response Required" as ResponseRequired
+state "No Response Required" as NoResponseRequired
+state "Responded" as Responded
+state "Reported" as Reported
+state "Supervisor Evaluation" as SupervisorEvaluation
+state "Closed" as Closed
+
+[*] --> Received
+Received --> Recorded
+Recorded --> Analyzed
+Analyzed --> ResponseRequired
+Analyzed --> NoResponseRequired
+ResponseRequired --> Responded
+Responded --> Reported
+NoResponseRequired --> Reported
+Reported --> SupervisorEvaluation
+SupervisorEvaluation --> Closed
+
+@enduml
+```
 
 ### 8.1 Core Data Model
 
@@ -250,9 +1183,107 @@ MDM integration verifies citizens by phone or email. Microsoft AD / Entra ID aut
 
 [Citizen Verification Integration Pattern](<../puml task2/09.01 Citizen Verification Integration Pattern.puml>)
 
+```plantuml
+@startuml
+skinparam sequenceMessageAlign center
+actor Agent
+participant "Salesforce Service Console" as Console
+participant "Citizen Verification Service" as Apex
+participant "Named Credential" as NC
+participant "API Gateway" as Gateway
+participant "External MDM System" as MDM
+database "Contact" as Contact
+
+Agent -> Console : Enter contact detail
+Console -> Apex : Verify citizen
+Apex -> NC : Secure callout
+NC -> Gateway : REST request
+Gateway -> MDM : Verify profile
+MDM --> Gateway : Verification result
+Gateway --> NC : Response
+NC --> Apex : Citizen profile data
+
+alt Citizen matched
+  Apex -> Contact : Update Contact
+else Citizen not found
+  Apex -> Contact : Create provisional
+end
+
+Apex --> Console : Verification status
+
+@enduml
+```
+
 [Citizen Verification Flow](<../puml task2/09.02 Citizen Verification Flow.puml>)
 
+```plantuml
+@startuml
+title Citizen Verification and Contact Matching Flow
+
+start
+
+:Receive phone/email;
+:Search Contact;
+
+if (Salesforce Contact found?) then (Yes)
+  :Use Contact candidate;
+else (No)
+  :Create provisional Contact;
+endif
+
+:Call MDM;
+
+if (MDM matched citizen?) then (Yes)
+  :Update Contact;
+  :Mark Case Verified;
+  :Link verified Contact;
+else (No)
+  :Mark Manual Review;
+  :Keep supplied details;
+endif
+
+if (MDM call failed transiently?) then (Yes)
+  :Log Integration_Error__c;
+  :Schedule retry/review;
+endif
+
+stop
+@enduml
+```
+
 [Retry Strategy](<../puml task2/09.03 Retry Strategy.puml>)
+
+```plantuml
+@startuml
+start
+
+:Operation fails;
+:Upsert Integration_Error__c;
+:Classify failure;
+
+if (Retryable?) then (Yes)
+  if (Retry count below limit?) then (Yes)
+    :Increment retry count;
+    :Queue retry job;
+    :Hold Case if needed;
+  else (No)
+    :Mark Max Retry;
+    :Notify support;
+  endif
+else (No)
+  :Mark error as Non-Retryable;
+  :Notify owner team;
+endif
+
+if (Retry succeeds?) then (Yes)
+  :Update related records;
+else (No)
+  :Keep error on dashboard;
+endif
+
+stop
+@enduml
+```
 
 ### 9.1 MDM Verification
 
@@ -269,30 +1300,87 @@ MDM verification is required during intake and case handling. Salesforce sends p
 
 ### 9.2 Channel Integrations
 
-| Channel     | Design                                                                                             |
-| ----------- | -------------------------------------------------------------------------------------------------- |
-| Website     | Experience Cloud/LWC or API-backed case intake with validation, file controls, and bot protection. |
-| Phone       | CTI or Service Cloud Voice-compatible adapter for screen-pop, call log, and Case creation.         |
-| Chat/Mobile | Messaging, Chat, or Digital Engagement routed through Omni-Channel.                                |
-| Email       | Email-to-Case with routing addresses, thread identifiers, auto-response, and spam controls.        |
-| Files       | Salesforce Files with file type/size validation and malware scanning where required by policy.     |
+| Channel                             | Design                                                                                                                         |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Website                             | Experience Cloud/LWC or API-backed case intake with validation, file controls, and bot protection.                             |
+| Phone                               | CTI or Service Cloud Voice-compatible adapter for screen-pop, call log, and Case creation.                                     |
+| Real-time website/mobile assistance | Messaging, Chat, or Digital Engagement routed through Omni-Channel; mobile app is not assumed to use Experience Cloud webview. |
+| Email                               | Email-to-Case with routing addresses, thread identifiers, auto-response, and spam controls.                                    |
+| Files                               | Salesforce Files with file type/size validation and malware scanning where required by policy.                                 |
 
 ## 10. Security, Access, and Identity
 
 [Role-Based Access and Visibility Model](<../puml task2/10.01 Role-Based Access and Visibility Model.puml>)
 
+```plantuml
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 70
+skinparam ranksep 70
+
+package "Access Personas" {
+  [Internal Users\nBranch Admin, Supervisor, Agent] as InternalUsers
+  [External Users\nCitizen] as ExternalUsers
+  [System User\nIntegration User] as SystemUser
+}
+
+package "Salesforce Security Controls" {
+  [Internal Access Model\nRole Hierarchy, Sharing Rules,\nQueues, Permission Sets, FLS] as InternalAccess
+  [Experience Sharing\nCitizen case visibility] as CitizenAccess
+  [Integration Scope\nAPI permissions and FLS] as IntegrationScope
+}
+
+package "Protected Records" {
+  [Service Data\nCase, Contact, Files] as ServiceData
+  [Knowledge and Reports\nApproved articles, dashboards] as KnowledgeReports
+}
+
+InternalUsers --> InternalAccess
+ExternalUsers --> CitizenAccess
+SystemUser --> IntegrationScope
+
+InternalAccess --> ServiceData
+InternalAccess --> KnowledgeReports
+CitizenAccess --> ServiceData
+IntegrationScope --> ServiceData
+
+@enduml
+```
+
 [SSO Authentication Flow with Microsoft Active Directory](<../puml task2/10.02 SSO Authentication Flow with Microsoft Active Directory.puml>)
+
+```plantuml
+@startuml
+skinparam sequenceMessageAlign center
+actor "Internal User" as User
+participant "Salesforce Login" as SFLogin
+participant "SAML Identity Provider" as IdP
+participant "Microsoft Active Directory / Azure AD" as AD
+participant "Salesforce Service Cloud" as SF
+
+User -> SFLogin : Access Salesforce
+SFLogin -> IdP : Redirect SSO request
+IdP -> AD : Authenticate user
+AD --> IdP : Authentication success
+IdP --> SFLogin : SAML assertion
+SFLogin -> SF : Create user session
+SF --> User : Access granted
+
+@enduml
+```
 
 ### 10.1 Access Model
 
-| Role             | Access Design                                                                                                    |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Branch Admin     | Read-only visibility to Cases, dashboards, and reports for assigned division. No case resolution responsibility. |
-| Supervisor       | Read/write access to team Cases, escalation queues, feedback evaluation, and performance dashboards.             |
-| Agent            | Read/write access to owned Cases, assigned queue Cases, required Contact details, Knowledge, and linked Files.   |
-| Citizen          | Access only to own submitted Cases through Experience Cloud when authenticated access is enabled.                |
-| Integration User | API-only least privilege access for MDM, channel, and migration integrations.                                    |
-| Migration User   | Temporary least privilege access for historical data load and reconciliation.                                    |
+| Role             | Access Design                                                                                                            |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Branch Admin     | Read-only visibility to Cases, dashboards, and reports for assigned division. No case resolution responsibility.         |
+| Supervisor       | Read/write access to team Cases, escalation queues, feedback evaluation, and performance dashboards.                     |
+| Agent            | Read/write access to owned Cases, assigned queue Cases, required Contact details, Knowledge, and linked Files.           |
+| Citizen          | Access only to own website-submitted Cases through Experience Cloud when authenticated citizen portal access is enabled. |
+| Integration User | API-only least privilege access for MDM, channel, and migration integrations.                                            |
+| Migration User   | Temporary least privilege access for historical data load and reconciliation.                                            |
 
 ### 10.2 Security Controls
 
@@ -313,7 +1401,82 @@ MDM verification is required during intake and case handling. Salesforce sends p
 
 [Large Data Volume and File Storage Strategy](<../puml task2/11.01 Large Data Volume and File Storage Strategy.puml>)
 
+```plantuml
+@startuml
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 70
+left to right direction
+
+database "Legacy Data\n6M Cases, 100GB Files" as LegacyData
+
+package "Migration Pipeline" {
+  [Profile and Cleanse] as ProfileCleanse
+  [Deduplicate] as Deduplicate
+  [Stage Data] as StageData
+  [Bulk Load] as BulkLoad
+  [File Migration] as FileMigration
+  [Reconcile] as Reconcile
+}
+
+package "Salesforce Platform" {
+  database "Core Records\nContact, Case" as CoreRecords
+  database "Salesforce Files" as Files
+  database "Migration Batch" as MigrationBatch
+  [Indexes and External IDs] as Indexes
+  [Archiving and Storage Plan] as StoragePlan
+}
+
+LegacyData --> ProfileCleanse
+ProfileCleanse --> Deduplicate
+Deduplicate --> StageData
+StageData --> BulkLoad
+LegacyData --> FileMigration
+
+BulkLoad --> CoreRecords
+BulkLoad --> MigrationBatch
+FileMigration --> Files
+FileMigration --> Reconcile
+BulkLoad --> Reconcile
+Reconcile --> MigrationBatch
+
+CoreRecords --> Indexes
+CoreRecords --> StoragePlan
+Files --> StoragePlan
+
+@enduml
+```
+
 [Historical Case Data Migration Plan](<../puml task2/11.02 Historical Case Data Migration Plan.puml>)
+
+```plantuml
+@startuml
+start
+
+:Extract legacy data;
+:Profile quality and volume;
+:Map target objects;
+:Cleanse and deduplicate;
+:Load reference data;
+:Pilot load sample;
+
+if (Pilot accepted?) then (Yes)
+  :Bulk load Case batches;
+  :Upload or archive files;
+  :Reconcile counts and links;
+  :Run delta migration;
+else (No)
+  :Fix mapping or storage;
+  stop
+endif
+
+:Validate migration;
+:Cut over channels;
+
+stop
+@enduml
+```
 
 The migration scope includes 10 years of historical records, approximately 6 million records, and 100GB of files.
 
@@ -344,9 +1507,123 @@ The migration scope includes 10 years of historical records, approximately 6 mil
 
 [Operational Monitoring and SLA Management](<../puml task2/12.01 Operational Monitoring and SLA Management.puml>)
 
+```plantuml
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 65
+
+package "Case Operations" {
+  [Case Lifecycle Events\nCreated, Assigned, Pending,\nEscalated, Closed] as CaseEvents
+}
+
+package "SLA Monitoring" {
+  [Entitlements and Milestones] as Milestones
+  [SLA Alerts and Escalations] as SlaAlerts
+}
+
+package "Integration Monitoring" {
+  [Integration Errors\nMDM, Channel Intake, Retry Queue] as IntegrationErrors
+}
+
+package "Management Dashboards" {
+  [Operational Dashboards\nAgent Performance, Channel Volume,\nSLA Compliance, Satisfaction,\nBacklog, Integration Errors] as Dashboards
+}
+
+CaseEvents --> Milestones
+Milestones --> SlaAlerts
+CaseEvents --> Dashboards
+Milestones --> Dashboards
+SlaAlerts --> Dashboards
+IntegrationErrors --> Dashboards
+
+@enduml
+```
+
 [Case Analytics Model](<../puml task2/12.02 Case Analytics Model.puml>)
 
+```plantuml
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 65
+
+database "Operational Sources\nCase, Contact, User,\nCase Milestone, Knowledge Usage" as Sources
+
+package "Analytics Dataset" {
+  [Case and Channel Metrics] as CaseChannelMetrics
+  [Agent and SLA Metrics] as AgentSlaMetrics
+  [Feedback and Knowledge Metrics] as FeedbackKnowledgeMetrics
+  [Backlog Aging Metrics] as BacklogMetrics
+}
+
+package "Dashboards" {
+  [Branch Admin Dashboard] as BranchDashboard
+  [Supervisor Dashboard] as SupervisorDashboard
+  [Agent Dashboard] as AgentDashboard
+}
+
+Sources --> CaseChannelMetrics
+Sources --> AgentSlaMetrics
+Sources --> FeedbackKnowledgeMetrics
+Sources --> BacklogMetrics
+
+CaseChannelMetrics --> BranchDashboard
+FeedbackKnowledgeMetrics --> BranchDashboard
+BacklogMetrics --> BranchDashboard
+AgentSlaMetrics --> SupervisorDashboard
+FeedbackKnowledgeMetrics --> SupervisorDashboard
+CaseChannelMetrics --> AgentDashboard
+
+@enduml
+```
+
 [Agent Performance Evaluation Model](<../puml task2/12.03 Agent Performance Evaluation Model.puml>)
+
+```plantuml
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 70
+skinparam ranksep 70
+
+database "Performance Sources\nCase, Case Milestone,\nUser, Knowledge Usage" as Sources
+
+package "Performance Dataset" {
+  [Performance Metrics\nVolume, Backlog, Response Time,\nResolution Time, SLA, Reopen Rate,\nFeedback, Knowledge Use] as Metrics
+  [Performance Scorecard] as Scorecard
+}
+
+package "Evaluation Views" {
+  [Division Dashboard] as DivisionDashboard
+  [Team Dashboard] as TeamDashboard
+  [Agent Worklist] as AgentWorklist
+}
+
+package "Evaluation Consumers" {
+  [Branch Admin] as BranchAdmin
+  [Supervisor] as Supervisor
+  [Agent] as Agent
+}
+
+Sources --> Metrics
+Metrics --> Scorecard
+
+Scorecard --> DivisionDashboard
+Scorecard --> TeamDashboard
+Scorecard --> AgentWorklist
+
+DivisionDashboard --> BranchAdmin
+TeamDashboard --> Supervisor
+AgentWorklist --> Agent
+
+@enduml
+```
 
 ### 12.1 Branch Admin Dashboard
 

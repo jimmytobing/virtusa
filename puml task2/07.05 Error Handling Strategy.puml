@@ -1,22 +1,22 @@
 @startuml
 start
 
-:Execute channel intake, verification, routing, or file operation;
+:Run service operation;
 
 if (Operation successful?) then (Yes)
   :Commit Salesforce transaction;
   stop
 else (No)
-  :Classify error as validation, integration, security, storage, or platform;
+  :Classify error;
   if (Retryable integration error?) then (Yes)
-    :Create or update Integration_Error__c;
-    :Set retry count and status;
-    :Place Case in Manual Review or Verification Pending;
+    :Upsert Integration_Error__c;
+    :Set retry status;
+    :Hold Case for review;
   else (No)
-    :Return user-friendly message or supervisor alert;
-    :Capture exception detail for support;
+    :Show message or alert;
+    :Capture support detail;
   endif
-  :Rollback unsafe partial changes where required;
+  :Rollback unsafe changes;
   stop
 endif
 

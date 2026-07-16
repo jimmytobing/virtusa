@@ -1,26 +1,26 @@
 @startuml
 start
 
-:Receive interaction from supported channel;
-:Normalize payload into Case intake request;
-:Validate required fields and file constraints;
+:Receive channel interaction;
+:Normalize intake request;
+:Validate fields and files;
 
 if (Validation passed?) then (Yes)
-  :Create or update Contact candidate;
-  :Verify citizen by phone/email with MDM;
+  :Prepare Contact;
+  :Verify with MDM;
   if (Verification successful?) then (Yes)
-    :Link verified Contact and MDM reference;
+    :Link verified Contact;
   else (No)
-    :Set Manual Review verification status;
-    :Log integration or verification exception when applicable;
+    :Set Manual Review;
+    :Log exception if needed;
   endif
-  :Create Case with Enquiry or Feedback record type;
-  :Attach uploaded files using Salesforce Files;
-  :Apply SLA policy and routing attributes;
-  :Route through Omni-Channel or queue;
-  :Notify citizen and assigned team;
+  :Create Case;
+  :Attach files;
+  :Apply SLA and routing;
+  :Route work item;
+  :Send notifications;
 else (No)
-  :Return validation message to channel;
+  :Return validation message;
 endif
 
 stop

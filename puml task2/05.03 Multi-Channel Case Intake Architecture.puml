@@ -36,9 +36,9 @@ Citizen --> [Phone Call]
 Citizen --> [Live Chat]
 
 [Agency Website] --> [Experience Cloud]
-[Mobile App] --> [Experience Cloud]
 [Email] --> [Email-to-Case]
 [Phone Call] --> [Voice / CTI Integration]
+[Mobile App] --> [Digital Engagement]
 [Live Chat] --> [Digital Engagement]
 
 [Experience Cloud] --> [Case Management]

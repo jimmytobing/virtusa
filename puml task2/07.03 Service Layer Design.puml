@@ -1,14 +1,22 @@
 @startuml
+left to right direction
 skinparam classAttributeIconSize 0
+skinparam linetype ortho
 hide empty members
 
-package "Service Layer" {
+package "Intake Services" {
   class CaseIntakeService
   class CitizenVerificationService
+}
+
+package "Case Operations" {
   class CaseRoutingService
   class CaseLifecycleService
   class FeedbackAnalysisService
   class KnowledgeSuggestionService
+}
+
+package "Operational Support" {
   class IntegrationErrorService
   class MigrationReconciliationService
 }
@@ -20,31 +28,28 @@ package "Salesforce Platform" {
   class NamedCredential
 }
 
-package "Data" {
-  class Contact
-  class Case
-  class Knowledge__kav
-  class ContentDocumentLink
-  class Integration_Error__c
-  class Migration_Batch__c
-  class Case_Routing_Rule__mdt
+package "Data Contracts" {
+  class "Core Case Data\nContact, Case" as CoreCaseData
+  class "Knowledge Data\nKnowledge__kav" as KnowledgeData
+  class "File Data\nContentDocumentLink" as FileData
+  class "Operational Data\nIntegration_Error__c,\nMigration_Batch__c,\nCase_Routing_Rule__mdt" as OperationalData
 }
 
 CaseIntakeService --> CitizenVerificationService
 CaseIntakeService --> CaseRoutingService
 CaseIntakeService --> CaseLifecycleService
-CaseIntakeService --> IntegrationErrorService
+CaseIntakeService --> CoreCaseData
+
 CaseRoutingService --> OmniChannel
-CaseRoutingService --> Case_Routing_Rule__mdt
+CaseRoutingService --> OperationalData
 CaseLifecycleService --> EntitlementProcess
-FeedbackAnalysisService --> Case
-KnowledgeSuggestionService --> Knowledge__kav
+CaseLifecycleService --> FileData
+FeedbackAnalysisService --> CoreCaseData
+KnowledgeSuggestionService --> KnowledgeData
+
 CitizenVerificationService --> NamedCredential
-IntegrationErrorService --> Integration_Error__c
-MigrationReconciliationService --> Migration_Batch__c
-CaseIntakeService --> Contact
-CaseIntakeService --> Case
-CaseLifecycleService --> ContentDocumentLink
+IntegrationErrorService --> OperationalData
+MigrationReconciliationService --> OperationalData
 Flow --> CaseLifecycleService
 
 @enduml

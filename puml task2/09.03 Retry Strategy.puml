@@ -1,28 +1,28 @@
 @startuml
 start
 
-:MDM, channel, email, messaging, or file processing operation fails;
-:Create or update Integration_Error__c with transaction ID and Case reference;
+:Operation fails;
+:Upsert Integration_Error__c;
 :Classify failure;
 
 if (Retryable?) then (Yes)
   if (Retry count below limit?) then (Yes)
     :Increment retry count;
-    :Queue retry using scheduled/batch/queueable process;
-    :Keep Case in Verification Pending or Manual Review as needed;
+    :Queue retry job;
+    :Hold Case if needed;
   else (No)
-    :Mark error as Max Retry Exceeded;
-    :Notify Supervisor or Support Team;
+    :Mark Max Retry;
+    :Notify support;
   endif
 else (No)
   :Mark error as Non-Retryable;
-  :Notify responsible team;
+  :Notify owner team;
 endif
 
 if (Retry succeeds?) then (Yes)
-  :Update Case, Contact, and Integration Error status;
+  :Update related records;
 else (No)
-  :Keep operational error visible on dashboard;
+  :Keep error on dashboard;
 endif
 
 stop

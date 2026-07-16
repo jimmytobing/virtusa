@@ -1,53 +1,38 @@
 @startuml
 left to right direction
 skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 70
+skinparam ranksep 70
 
-actor "Branch Admin" as BranchAdmin
-actor Supervisor
-actor Agent
+database "Performance Sources\nCase, Case Milestone,\nUser, Knowledge Usage" as Sources
 
-database "Case" as Case
-database "Case Milestone" as Milestone
-database "User" as User
-database "Knowledge Article Usage" as KnowledgeUsage
-
-package "Performance Inputs" {
-  [Case Volume by Channel]
-  [First Response Time]
-  [Resolution Time]
-  [SLA Breach Rate]
-  [Reopened Case Rate]
-  [Feedback Satisfaction]
-  [Knowledge Reuse and Contribution]
+package "Performance Dataset" {
+  [Performance Metrics\nVolume, Backlog, Response Time,\nResolution Time, SLA, Reopen Rate,\nFeedback, Knowledge Use] as Metrics
+  [Performance Scorecard] as Scorecard
 }
 
 package "Evaluation Views" {
-  [Branch Admin Division Dashboard]
-  [Supervisor Team Dashboard]
-  [Agent Personal Worklist]
+  [Division Dashboard] as DivisionDashboard
+  [Team Dashboard] as TeamDashboard
+  [Agent Worklist] as AgentWorklist
 }
 
-Case --> [Case Volume by Channel]
-Case --> [Resolution Time]
-Case --> [Reopened Case Rate]
-Case --> [Feedback Satisfaction]
-Milestone --> [First Response Time]
-Milestone --> [SLA Breach Rate]
-KnowledgeUsage --> [Knowledge Reuse and Contribution]
-User --> [Case Volume by Channel]
+package "Evaluation Consumers" {
+  [Branch Admin] as BranchAdmin
+  [Supervisor] as Supervisor
+  [Agent] as Agent
+}
 
-[Case Volume by Channel] --> [Branch Admin Division Dashboard]
-[First Response Time] --> [Branch Admin Division Dashboard]
-[Resolution Time] --> [Branch Admin Division Dashboard]
-[SLA Breach Rate] --> [Branch Admin Division Dashboard]
-[Feedback Satisfaction] --> [Branch Admin Division Dashboard]
+Sources --> Metrics
+Metrics --> Scorecard
 
-[Case Volume by Channel] --> [Supervisor Team Dashboard]
-[Reopened Case Rate] --> [Supervisor Team Dashboard]
-[Knowledge Reuse and Contribution] --> [Supervisor Team Dashboard]
+Scorecard --> DivisionDashboard
+Scorecard --> TeamDashboard
+Scorecard --> AgentWorklist
 
-[Agent Personal Worklist] --> Agent
-BranchAdmin --> [Branch Admin Division Dashboard]
-Supervisor --> [Supervisor Team Dashboard]
+DivisionDashboard --> BranchAdmin
+TeamDashboard --> Supervisor
+AgentWorklist --> Agent
 
 @enduml

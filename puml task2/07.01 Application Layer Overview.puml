@@ -1,64 +1,38 @@
 @startuml
 skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 70
+left to right direction
 
 package "Presentation Layer" {
-  [Experience Cloud Case Form]
-  [Service Console]
-  [Supervisor Console]
-  [Dashboards]
+  [Citizen and Agent UI\nExperience Cloud, Service Console,\nSupervisor Console, Dashboards] as UI
 }
 
 package "Channel Services" {
-  [Email-to-Case]
-  [CTI / Voice]
-  [Digital Engagement]
-  [Web/API Intake]
+  [Unified Channels\nEmail-to-Case, CTI / Voice,\nDigital Engagement, Web/API Intake] as Channels
 }
 
 package "Application Layer" {
-  [Flow Automation]
-  [Omni-Channel]
-  [Entitlements and Milestones]
-  [Knowledge Approval]
+  [Automation and Routing\nFlow, Omni-Channel,\nEntitlements, Knowledge Approval] as AppControls
 }
 
 package "Business Services" {
-  [CaseIntakeService]
-  [CitizenVerificationService]
-  [CaseRoutingService]
-  [CaseLifecycleService]
-  [FeedbackAnalysisService]
-  [IntegrationErrorService]
+  [Case Services\nCaseIntakeService,\nCaseRoutingService,\nCaseLifecycleService] as CaseServices
+  [Support Services\nCitizenVerificationService,\nFeedbackAnalysisService,\nIntegrationErrorService] as SupportServices
 }
 
 database "Salesforce Data" {
-  [Contact]
-  [Case]
-  [Knowledge]
-  [Files]
-  [Case Milestone]
-  [Integration Error]
+  [Service Records\nContact, Case, Files,\nMilestones, Knowledge,\nIntegration Error] as ServiceData
 }
 
-[Experience Cloud Case Form] --> [Web/API Intake]
-[Service Console] --> [Flow Automation]
-[Supervisor Console] --> [Flow Automation]
-[Email-to-Case] --> [CaseIntakeService]
-[CTI / Voice] --> [CaseIntakeService]
-[Digital Engagement] --> [CaseIntakeService]
-[Web/API Intake] --> [CaseIntakeService]
-[CaseIntakeService] --> [CitizenVerificationService]
-[CaseIntakeService] --> [CaseRoutingService]
-[CaseRoutingService] --> [Omni-Channel]
-[CaseLifecycleService] --> [Entitlements and Milestones]
-[Flow Automation] --> [CaseLifecycleService]
-[FeedbackAnalysisService] --> [Case]
-[IntegrationErrorService] --> [Integration Error]
-[CaseIntakeService] --> [Contact]
-[CaseIntakeService] --> [Case]
-[Service Console] --> [Knowledge]
-[Service Console] --> [Files]
-[Dashboards] --> [Case]
-[Dashboards] --> [Case Milestone]
+UI --> Channels
+UI --> AppControls
+Channels --> CaseServices
+AppControls --> CaseServices
+CaseServices --> SupportServices
+CaseServices --> ServiceData
+SupportServices --> ServiceData
+AppControls --> ServiceData
 
 @enduml

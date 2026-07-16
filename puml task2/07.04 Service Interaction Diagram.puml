@@ -1,4 +1,5 @@
 @startuml
+skinparam sequenceMessageAlign center
 
 participant Citizen
 participant "Channel Adapter" as Channel
@@ -11,17 +12,17 @@ participant Agent
 database Salesforce
 
 Citizen -> Channel : Submit enquiry or feedback
-Channel -> CaseIntakeService : Normalized intake request
+Channel -> CaseIntakeService : Intake request
 CaseIntakeService -> CitizenVerificationService : Verify phone/email
 CitizenVerificationService -> MDM : Lookup citizen
 MDM --> CitizenVerificationService : Match result
 CitizenVerificationService --> CaseIntakeService : Verification result
-CaseIntakeService -> Salesforce : Upsert Contact and create Case
-CaseIntakeService -> CaseRoutingService : Prepare assignment context
-CaseRoutingService -> Omni : Route by skill, language, workload, availability
+CaseIntakeService -> Salesforce : Upsert Contact, create Case
+CaseIntakeService -> CaseRoutingService : Assignment context
+CaseRoutingService -> Omni : Route work item
 Omni --> Agent : Assign Case
-Agent -> Salesforce : Work Case, files, Knowledge, activities
-Salesforce --> Channel : Acknowledgement / status update
+Agent -> Salesforce : Work Case
+Salesforce --> Channel : Status update
 Channel --> Citizen : Confirmation
 
 @enduml

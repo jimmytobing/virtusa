@@ -1,77 +1,50 @@
 @startuml
 skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 70
+skinparam ranksep 80
 
-package "Presentation Layer" {
-  [Experience Cloud]
-  [Service Console]
-  [Mobile / Web Messaging]
+package "Presentation Layer" as PresentationLayer {
+  [Citizen and Agent UI\nExperience Cloud, Service Console,\nMobile / Web Messaging] as Presentation
 }
 
-package "Channel Intake Layer" {
-  [Web Case Intake]
-  [Email-to-Case]
-  [CTI / Voice Intake]
-  [Chat / Messaging Intake]
+package "Channel Intake Layer" as ChannelIntakeLayer {
+  [Unified Intake\nWeb, Email-to-Case,\nCTI / Voice, Chat] as UnifiedIntake
 }
 
-package "Orchestration Layer" {
-  [Flow]
-  [Omni-Channel]
-  [Entitlements and Milestones]
-  [Knowledge Approval]
+package "Orchestration Layer" as OrchestrationLayer {
+  [Case Work Orchestration\nFlow, Omni-Channel,\nEntitlements and Milestones] as CaseWorkOrchestration
+  [Knowledge Governance\nKnowledge Approval] as KnowledgeGovernance
 }
 
-package "Business Service Layer" {
-  [CaseIntakeService]
-  [CitizenVerificationService]
-  [CaseRoutingService]
-  [CaseLifecycleService]
-  [FeedbackAnalysisService]
-  [IntegrationErrorService]
+package "Business Service Layer" as BusinessServiceLayer {
+  [Core Case Services\nCaseIntakeService,\nCaseRoutingService,\nCaseLifecycleService] as CoreCaseServices
+  [Supporting Services\nCitizenVerificationService,\nFeedbackAnalysisService,\nIntegrationErrorService] as SupportingServices
 }
 
-package "Integration Layer" {
-  [Named Credentials]
-  [API Gateway / Middleware]
-  [External MDM]
-  [Microsoft AD / Entra ID]
+package "Integration Layer" as IntegrationLayer {
+  [External Platform Services\nMicrosoft AD / Entra ID,\nNamed Credentials,\nAPI Gateway, External MDM] as ExternalPlatformServices
 }
 
-package "Persistence Layer" {
-  [Contact]
-  [Case]
-  [Knowledge]
-  [Salesforce Files]
-  [Case Milestone]
-  [Integration Error]
-  [Migration Batch]
-  [Custom Metadata]
+package "Persistence Layer" as PersistenceLayer {
+  [Salesforce Data Model\nContact, Case, Knowledge,\nSalesforce Files, Case Milestone,\nIntegration Error, Migration Batch,\nCustom Metadata] as SalesforceDataModel
 }
 
-[Experience Cloud] --> [Web Case Intake]
-[Service Console] --> [Flow]
-[Mobile / Web Messaging] --> [Chat / Messaging Intake]
-[Email-to-Case] --> [CaseIntakeService]
-[CTI / Voice Intake] --> [CaseIntakeService]
-[Web Case Intake] --> [CaseIntakeService]
-[Chat / Messaging Intake] --> [CaseIntakeService]
+PresentationLayer -[hidden]right-> ChannelIntakeLayer
+ChannelIntakeLayer -[hidden]right-> OrchestrationLayer
+OrchestrationLayer -[hidden]right-> BusinessServiceLayer
+BusinessServiceLayer -[hidden]right-> IntegrationLayer
+IntegrationLayer -[hidden]right-> PersistenceLayer
 
-[CaseIntakeService] --> [CitizenVerificationService]
-[CaseIntakeService] --> [CaseRoutingService]
-[CaseRoutingService] --> [Omni-Channel]
-[CaseLifecycleService] --> [Entitlements and Milestones]
-[FeedbackAnalysisService] --> [Case]
-[CitizenVerificationService] --> [Named Credentials]
-[Named Credentials] --> [API Gateway / Middleware]
-[API Gateway / Middleware] --> [External MDM]
+Presentation --> UnifiedIntake
+Presentation --> CaseWorkOrchestration
+UnifiedIntake --> CoreCaseServices
+CaseWorkOrchestration --> CoreCaseServices
+KnowledgeGovernance --> SalesforceDataModel
 
-[Flow] --> [CaseLifecycleService]
-[Knowledge Approval] --> [Knowledge]
-[CaseIntakeService] --> [Case]
-[CaseIntakeService] --> [Contact]
-[CaseLifecycleService] --> [Salesforce Files]
-[IntegrationErrorService] --> [Integration Error]
-[Custom Metadata] --> [CaseRoutingService]
-[Microsoft AD / Entra ID] --> [Service Console]
+CoreCaseServices --> SupportingServices
+CoreCaseServices --> SalesforceDataModel
+SupportingServices --> ExternalPlatformServices
+SupportingServices --> SalesforceDataModel
 
 @enduml

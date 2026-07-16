@@ -1,25 +1,25 @@
 @startuml
 start
 
-:Extract 10 years of legacy enquiry, feedback, citizen, and file data;
-:Profile source data for volume, quality, duplicates, missing channels, and file references;
-:Map records to Contact, Case, ContentVersion, ContentDocumentLink, and Migration_Batch__c;
-:Cleanse and deduplicate citizens using phone, email, and MDM/citizen ID where available;
-:Load reference data, users, roles, queues, divisions, and metadata;
-:Pilot load representative sample and reconcile counts;
+:Extract legacy data;
+:Profile quality and volume;
+:Map target objects;
+:Cleanse and deduplicate;
+:Load reference data;
+:Pilot load sample;
 
 if (Pilot accepted?) then (Yes)
-  :Bulk load 6M historical Case records in controlled batches;
-  :Upload 100GB historical files as Salesforce Files or approved archive links;
-  :Reconcile record counts, file links, ownership, sharing, and audit fields;
-  :Freeze legacy writes and perform delta migration;
+  :Bulk load Case batches;
+  :Upload or archive files;
+  :Reconcile counts and links;
+  :Run delta migration;
 else (No)
-  :Fix mapping, cleansing, or storage approach;
+  :Fix mapping or storage;
   stop
 endif
 
-:Post-migration validation, report certification, and rollback checkpoint;
-:Cut over citizen contact channels to Salesforce;
+:Validate migration;
+:Cut over channels;
 
 stop
 @enduml

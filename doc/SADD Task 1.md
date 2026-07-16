@@ -2,6 +2,12 @@
 
 ## 1.1 Overview
 
+```plantuml
+@startuml
+Bob -> Alice : hello
+@enduml
+```
+
 The proposed solution is designed following Salesforce Well-Architected principles by separating presentation, orchestration, business logic, integration, and data persistence into independent layers.
 
 The solution leverages Salesforce portal capabilities as the citizen-facing channel, Lightning Web Components (LWC) for the primary user interface, Flow for simple record automation, Apex for reusable business logic, and Custom Metadata Types to support configurable business rules.

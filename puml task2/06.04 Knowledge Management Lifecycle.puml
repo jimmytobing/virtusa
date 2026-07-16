@@ -1,25 +1,25 @@
 @startuml
 start
 
-:Agent searches Knowledge Base;
+:Search Knowledge;
 
 if (Existing article found?) then (Yes)
-  :Attach Knowledge Article to Case;
-  :Provide solution to citizen;
+  :Attach article;
+  :Provide solution;
 else (No)
-  :Agent drafts new solution;
-  :Create draft Knowledge Article;
-  :Submit article for review;
-  :Supervisor reviews article;
+  :Draft solution;
+  :Create article draft;
+  :Submit for review;
+  :Supervisor reviews;
 
   if (Approved?) then (Yes)
-    :Publish Knowledge Article;
+    :Publish article;
   else (No)
-    :Return to Agent for revision;
+    :Return for revision;
   endif
 endif
 
-:Reuse knowledge article for similar enquiry cases;
+:Reuse for similar cases;
 
 stop
 @enduml

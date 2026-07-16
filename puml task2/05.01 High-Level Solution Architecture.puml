@@ -43,14 +43,9 @@ package "Salesforce Platform Services" {
 }
 
 database "Salesforce Data" {
-  [Contact]
-  [Case]
-  [Service Division]
-  [Knowledge Article]
-  [Salesforce Files]
-  [Case Milestone]
-  [Integration Error]
-  [Migration Batch]
+  [Core Service Data\nContact, Case,\nService Division, Files] as CoreServiceData
+  [Knowledge Data\nKnowledge Article] as KnowledgeData
+  [Operational Tracking Data\nCase Milestone,\nIntegration Error,\nMigration Batch] as OperationalTrackingData
 }
 
 Citizen --> [Agency Website]
@@ -60,11 +55,11 @@ Citizen --> [Phone]
 Citizen --> [Live Chat / Messaging]
 
 [Agency Website] --> [Citizen Portal]
-[Mobile App] --> [Citizen Portal]
 [Citizen Portal] --> [Case Submission LWC]
 [Case Submission LWC] --> [Case Management]
 [Email] --> [Email-to-Case]
 [Phone] --> [CTI / Voice Adapter]
+[Mobile App] --> [Digital Engagement]
 [Live Chat / Messaging] --> [Digital Engagement]
 [Email-to-Case] --> [Case Management]
 [CTI / Voice Adapter] --> [Case Management]
@@ -84,17 +79,14 @@ BranchAdmin --> [Reports and Dashboards]
 [Named Credentials] --> Gateway
 Gateway --> MDM
 
-[Case Management] --> [Case]
-[Case Management] --> [Contact]
-[Case Management] --> [Salesforce Files]
-[Case Management] --> [Service Division]
-[Salesforce Knowledge] --> [Knowledge Article]
-[Entitlements and Milestones] --> [Case Milestone]
-[Apex Integration Services] --> [Integration Error]
-[Reports and Dashboards] --> [Case]
-[Reports and Dashboards] --> [Case Milestone]
+[Case Management] --> CoreServiceData
+[Salesforce Knowledge] --> KnowledgeData
+[Entitlements and Milestones] --> OperationalTrackingData
+[Apex Integration Services] --> OperationalTrackingData
+[Reports and Dashboards] --> CoreServiceData
+[Reports and Dashboards] --> OperationalTrackingData
 
 AAD --> [Service Console] : SSO for internal users
-AAD --> [Citizen Portal] : optional citizen authentication
+AAD ..> [Citizen Portal] : optional citizen authentication
 
 @enduml

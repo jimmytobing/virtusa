@@ -1,5 +1,8 @@
 @startuml
 left to right direction
+skinparam linetype ortho
+skinparam nodesep 50
+skinparam ranksep 55
 
 object Account
 object Contact
@@ -18,14 +21,14 @@ object Case_Routing_Rule__mdt
 Account "1" --> "*" Contact
 Contact "1" --> "*" Case
 Service_Division__c "1" --> "*" Case
-User "1" --> "*" Case : agent ownership
-Group_Queue "1" --> "*" Case : queue ownership
+User "1" --> "*" Case : agent
+Group_Queue "1" --> "*" Case : queue
 Case "1" --> "*" ContentDocumentLink
 ContentVersion "1" --> "*" ContentDocumentLink
 Case "1" --> "*" CaseMilestone
-Knowledge__kav "*" .. "*" Case : article usage
+Knowledge__kav "*" .. "*" Case : usage
 Integration_Error__c "*" --> "0..1" Case
-Migration_Batch__c "1" .. "*" Case : migrated records
-Case_Routing_Rule__mdt ..> Case : assignment attributes
+Migration_Batch__c "1" .. "*" Case : migrated
+Case_Routing_Rule__mdt ..> Case : routing
 
 @enduml

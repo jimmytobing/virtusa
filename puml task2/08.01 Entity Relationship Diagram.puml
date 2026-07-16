@@ -2,6 +2,9 @@
 hide methods
 hide circle
 skinparam linetype ortho
+skinparam nodesep 50
+skinparam ranksep 60
+left to right direction
 
 entity Account {
   * Id
@@ -159,17 +162,17 @@ entity Migration_Batch__c {
   Completed_Date__c
 }
 
-Account ||--o{ Contact : groups
+Account ||--o{ Contact : has
 Contact ||--o{ Case : raises
 Service_Division__c ||--o{ Case : scopes
 User ||--o{ Case : owns
-Group ||--o{ Case : queue owns
-Case ||--o{ ContentDocumentLink : has files
-ContentVersion ||--o{ ContentDocumentLink : links
-Case ||--o{ CaseMilestone : tracks SLA
-Knowledge__kav }o..o{ Case : used by
-Case_Routing_Rule__mdt ..> Case : routing criteria
-Integration_Error__c }o..|| Case : related failure
-Migration_Batch__c ..> Case : migration load
+Group ||--o{ Case : owns
+Case ||--o{ ContentDocumentLink : files
+ContentVersion ||--o{ ContentDocumentLink : versions
+Case ||--o{ CaseMilestone : SLA
+Knowledge__kav }o..o{ Case : used
+Case_Routing_Rule__mdt ..> Case : routes
+Integration_Error__c }o..|| Case : logs
+Migration_Batch__c ..> Case : loads
 
 @enduml

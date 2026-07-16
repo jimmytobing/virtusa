@@ -1,4 +1,5 @@
 @startuml
+skinparam sequenceMessageAlign center
 actor Agent
 participant "Salesforce Service Console" as Console
 participant "Citizen Verification Service" as Apex
@@ -7,19 +8,19 @@ participant "API Gateway" as Gateway
 participant "External MDM System" as MDM
 database "Contact" as Contact
 
-Agent -> Console : Enter phone or email
-Console -> Apex : Verify citizen request
+Agent -> Console : Enter contact detail
+Console -> Apex : Verify citizen
 Apex -> NC : Secure callout
 NC -> Gateway : REST request
-Gateway -> MDM : Verify citizen profile
+Gateway -> MDM : Verify profile
 MDM --> Gateway : Verification result
 Gateway --> NC : Response
 NC --> Apex : Citizen profile data
 
 alt Citizen matched
-  Apex -> Contact : Update existing Contact
+  Apex -> Contact : Update Contact
 else Citizen not found
-  Apex -> Contact : Create provisional Contact
+  Apex -> Contact : Create provisional
 end
 
 Apex --> Console : Verification status

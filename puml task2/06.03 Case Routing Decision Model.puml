@@ -3,16 +3,16 @@ start
 
 :Case created from any channel;
 :Identify case type;
-:Identify citizen preferred language;
+:Identify language;
 :Identify required skill;
 :Determine priority;
-:Check agent availability;
-:Check agent workload;
+:Check availability;
+:Check workload;
 
 if (Suitable agent available?) then (Yes)
-  :Assign case to best matched agent;
+  :Assign best agent;
 else (No)
-  :Route case to queue;
+  :Route to queue;
 endif
 
 if (Priority is High or SLA risk?) then (Yes)

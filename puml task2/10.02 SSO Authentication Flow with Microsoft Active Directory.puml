@@ -1,4 +1,5 @@
 @startuml
+skinparam sequenceMessageAlign center
 actor "Internal User" as User
 participant "Salesforce Login" as SFLogin
 participant "SAML Identity Provider" as IdP
@@ -11,6 +12,6 @@ IdP -> AD : Authenticate user
 AD --> IdP : Authentication success
 IdP --> SFLogin : SAML assertion
 SFLogin -> SF : Create user session
-SF --> User : Access granted based on profile and permission set
+SF --> User : Access granted
 
 @enduml

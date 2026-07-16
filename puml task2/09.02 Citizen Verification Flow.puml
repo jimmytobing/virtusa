@@ -3,29 +3,29 @@ title Citizen Verification and Contact Matching Flow
 
 start
 
-:Receive phone/email from Case intake or Agent action;
-:Search Salesforce Contact by MDM ID, phone, and email;
+:Receive phone/email;
+:Search Contact;
 
 if (Salesforce Contact found?) then (Yes)
-  :Use existing Contact candidate;
+  :Use Contact candidate;
 else (No)
-  :Create provisional Contact candidate;
+  :Create provisional Contact;
 endif
 
-:Call external MDM using Named Credential;
+:Call MDM;
 
 if (MDM matched citizen?) then (Yes)
-  :Update Contact with MDM citizen ID and verified attributes;
-  :Set Case verification status to Verified;
-  :Link Case to verified Contact;
+  :Update Contact;
+  :Mark Case Verified;
+  :Link verified Contact;
 else (No)
-  :Set Case verification status to Manual Review;
-  :Keep supplied phone/email on Case;
+  :Mark Manual Review;
+  :Keep supplied details;
 endif
 
 if (MDM call failed transiently?) then (Yes)
   :Log Integration_Error__c;
-  :Schedule retry or supervisor review;
+  :Schedule retry/review;
 endif
 
 stop

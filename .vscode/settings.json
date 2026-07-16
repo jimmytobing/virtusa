@@ -9,5 +9,6 @@
 "workbench.colorCustomizations": {
     "statusBar.background": "#2f53a8",
     "activityBar.background": "#2f53a8"
-}
+},
+"markdown-preview-enhanced.plantumlJarPath": "/Users/macbook-jimmyfines/tools/plantuml.jar"
 }

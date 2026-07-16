@@ -1,4 +1,6 @@
 @startuml
+left to right direction
+skinparam linetype ortho
 
 entity Case_Routing_Rule__mdt {
   DeveloperName
@@ -38,8 +40,8 @@ entity Integration_Error_Message__mdt {
   Active__c
 }
 
-Case_Routing_Rule__mdt ..> SLA_Policy__mdt
-Feedback_Category__mdt ..> SLA_Policy__mdt
-Integration_Error_Message__mdt ..> Case_Routing_Rule__mdt
+Case_Routing_Rule__mdt ..> SLA_Policy__mdt : applies SLA
+Feedback_Category__mdt ..> SLA_Policy__mdt : informs priority
+Integration_Error_Message__mdt ..> Case_Routing_Rule__mdt : fallback queue
 
 @enduml
