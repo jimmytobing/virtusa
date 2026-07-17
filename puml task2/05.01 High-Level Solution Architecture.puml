@@ -8,7 +8,7 @@ actor Agent
 
 cloud "Microsoft AD / Entra ID" as AAD
 cloud "External MDM System" as MDM
-cloud "API Gateway / Middleware" as Gateway
+cloud "API Gateway / Middleware\n(optional)" as Gateway
 
 package "Citizen Contact Channels" {
   [Agency Website]

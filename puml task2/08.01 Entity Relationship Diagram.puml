@@ -46,8 +46,13 @@ entity Case {
   Language__c
   Citizen_Verification_Status__c
   MDM_Verification_Id__c
+  Legacy_Case_Id__c
+  Migration_Batch__c
   Satisfaction_Level__c
+  Feedback_Severity__c
+  Feedback_Response_Required__c
   Improvement_Area__c
+  Feedback_Evaluation_Outcome__c
   Resolution_Summary__c
   Citizen_Confirmed_Closure__c
   Follow_Up_Date__c
@@ -101,6 +106,13 @@ entity ContentVersion {
   FileType
   ContentSize
   VersionData
+}
+
+entity ContentDocument {
+  * Id
+  --
+  LatestPublishedVersionId
+  Title
 }
 
 entity ContentDocumentLink {
@@ -168,11 +180,12 @@ Service_Division__c ||--o{ Case : scopes
 User ||--o{ Case : owns
 Group ||--o{ Case : owns
 Case ||--o{ ContentDocumentLink : files
-ContentVersion ||--o{ ContentDocumentLink : versions
+ContentDocument ||--o{ ContentVersion : has versions
+ContentDocument ||--o{ ContentDocumentLink : shared through
 Case ||--o{ CaseMilestone : SLA
 Knowledge__kav }o..o{ Case : used
 Case_Routing_Rule__mdt ..> Case : routes
-Integration_Error__c }o..|| Case : logs
+Integration_Error__c }o..o| Case : logs
 Migration_Batch__c ..> Case : loads
 
 @enduml

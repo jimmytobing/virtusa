@@ -8,6 +8,7 @@ if (Operation successful?) then (Yes)
   stop
 else (No)
   :Classify error;
+  :Discard or roll back\nunsafe work;
   if (Retryable integration error?) then (Yes)
     :Upsert Integration_Error__c;
     :Set retry status;
@@ -16,7 +17,6 @@ else (No)
     :Show message or alert;
     :Capture support detail;
   endif
-  :Rollback unsafe changes;
   stop
 endif
 

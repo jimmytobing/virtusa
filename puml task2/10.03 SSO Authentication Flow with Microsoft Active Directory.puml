@@ -3,7 +3,7 @@ skinparam sequenceMessageAlign center
 actor "Internal User" as User
 participant "Salesforce Login" as SFLogin
 participant "SAML Identity Provider" as IdP
-participant "Microsoft Active Directory / Azure AD" as AD
+participant "Microsoft Active Directory / Entra ID" as AD
 participant "Salesforce Service Cloud" as SF
 
 User -> SFLogin : Access Salesforce

@@ -5,7 +5,8 @@ start
 through supported channel;
 :Intake and Citizen Verification
 (6.5 Shared Case Intake and Verification Process);
-:Case Recording;
+:Record Enquiry-specific details
+and supporting files;
 :Case Assignment
 (6.6 Case Routing Process);
 :Resolution Support
@@ -24,16 +25,15 @@ if (Complex or SLA risk?) then (Yes)
   :Escalate to Supervisor;
 endif
 
-:Follow up with citizen;
-
-if (Citizen confirms resolution?) then (Yes)
-  :Record resolution summary
-and confirmation;
-  :Close Enquiry Case;
-else (No)
+ :Follow up with citizen;
+while (Citizen confirms resolution?) is (No)
   :Continue resolution
 and follow-up;
-endif
+endwhile (Yes)
+
+:Record resolution summary
+and confirmation;
+:Close Enquiry Case;
 
 stop
 @enduml

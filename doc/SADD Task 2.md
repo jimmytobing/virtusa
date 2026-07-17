@@ -69,20 +69,26 @@ package "Salesforce Solution" {
 @enduml
 ```
 
-| Assessment Requirement                                      | Design Response                                                                                                               |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Integrate with external MDM for citizen verification        | Flow HTTP Callout / External Services secured by External Credential and Named Credential; verify by phone or email.          |
-| Flexibility to adapt to changes                             | Case record types, page layouts, queues, Omni-Channel, Flow, Custom Metadata, Knowledge, and configurable dashboards.         |
-| Migrate 10 years / 6M records / 100GB files                 | Staged migration with profiling, cleansing, staging, Bulk API, file strategy, reconciliation, and cutover.                    |
-| Manage 5,000 new cases and 100MB uploads daily              | Standard Case and Salesforce Files with bulk-safe automation, storage forecasting, archive strategy, and selective reporting. |
-| Implement SSO using Microsoft Active Directory              | Salesforce SSO through Microsoft AD / Entra ID using SAML or OpenID Connect.                                                  |
-| Branch Admin evaluates agent performance across channels    | Division-level dashboards for volume, SLA, backlog, satisfaction, channel mix, and agent effectiveness.                       |
-| Salesforce licensing, editions, features, third-party tools | Covered in [Section 4](#4-salesforce-product-and-capability-selection).                                                       |
-| System landscape diagram                                    | Covered in [Section 5](#5-target-solution-architecture).                                                                      |
-| Business processes and user stories                         | Covered in [Section 6](#6-business-process-architecture).                                                                     |
-| Integration considerations                                  | Covered in [Section 9](#9-integration-architecture).                                                                          |
-| Data model, sharing, and security design                    | Covered in [Section 7](#7-application-architecture) and [Section 8](#8-data-architecture).                                    |
-| Data migration plan                                         | Covered in [Section 11](#11-data-migration-and-large-volume-strategy).                                                        |
+| Assessment Requirement                                         | Design Response                                                                                                                                                                                                  |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch Admin monitors incoming requests within the division    | Read-only division visibility in [Section 10.2](#102-access-model) and demand/performance KPIs in [Section 12.3](#123-branch-admin-dashboard).                                                                   |
+| Supervisor oversees Agents across both Case types and channels | Supervisor process stories and escalation responsibilities in [Section 6.1](#61-user-story-map), access in [Section 10.2](#102-access-model), and operational KPIs in [Section 12.4](#124-supervisor-dashboard). |
+| Agent handles Enquiries and Feedback from every channel        | Detailed Enquiry and Feedback handling in [Section 6.3](#63-enquiry-case-process) and [Section 6.4](#64-feedback-case-process).                                                                                  |
+| Enquiry seven-stage process                                    | Initiation through citizen-confirmed closure is covered in [Section 6.3](#63-enquiry-case-process).                                                                                                              |
+| Feedback six-stage process                                     | Receipt through Supervisor evaluation is covered in [Section 6.4](#64-feedback-case-process).                                                                                                                    |
+| Website, phone, real-time web/mobile, and email channels       | Channel architecture and controls are covered in [Section 5.1](#51-architecture-overview) and [Section 9.4](#94-channel-integrations).                                                                           |
+| Integrate with external MDM for citizen verification           | Declarative verification pattern and controls are covered in [Section 9.1](#91-citizen-verification-integration-pattern) and [Section 9.3](#93-mdm-verification).                                                |
+| Flexibility to adapt to changes                                | Configurable metadata and implementation allocation are covered in [Section 7.5](#75-configurable-business-rules) and [Section 7.6](#76-declarative-and-programmatic-implementation-strategy).                   |
+| Migrate 10 years / 6M records / 100GB files                    | Staged Bulk API/file migration and reconciliation are covered in [Section 11.2](#112-historical-case-data-migration-plan).                                                                                       |
+| Manage 5,000 new Cases and 100MB uploads daily                 | Annualized growth, bulk-safe automation, storage, reporting, and archive controls are covered in [Section 11.3](#113-large-volume-design).                                                                       |
+| Implement SSO using Microsoft Active Directory                 | Salesforce SSO through AD FS or Entra ID is covered in [Section 10.3](#103-sso-authentication-flow-with-microsoft-active-directory).                                                                             |
+| Branch Admin evaluates Agent performance across channels       | Division-level metrics by Agent, channel, and Case type are covered in [Section 12.2](#122-agent-performance-evaluation-model) and [Section 12.3](#123-branch-admin-dashboard).                                  |
+| Salesforce licensing, editions, features, third-party tools    | Covered in [Section 4](#4-salesforce-product-and-capability-selection).                                                                                                                                          |
+| System landscape diagram                                       | Covered in [Section 5](#5-target-solution-architecture).                                                                                                                                                         |
+| Business processes and user stories                            | Covered in [Section 6](#6-business-process-architecture).                                                                                                                                                        |
+| Integration considerations                                     | Covered in [Section 9](#9-integration-architecture).                                                                                                                                                             |
+| Data model, sharing, and security design                       | Covered in [Section 8](#8-data-architecture) and [Section 10](#10-security-access-and-identity).                                                                                                                 |
+| Data migration plan                                            | Covered in [Section 11](#11-data-migration-and-large-volume-strategy).                                                                                                                                           |
 
 ## 3. Scope, Assumptions, and Constraints
 
@@ -124,6 +130,7 @@ package "Salesforce Solution" {
 | A-07 | The mobile app is treated as a real-time assistance channel through Digital Engagement or an API/channel adapter; it is not assumed to embed Experience Cloud or use mobile webview.                                                         |
 | A-08 | Channel adapters may create a preliminary Case before MDM verification; the Case remains `Verification Pending` and cannot proceed to normal assignment until verification succeeds or an authorized manual-review outcome is recorded.      |
 | A-09 | Outbound APIs in scope expose REST/JSON contracts compatible with Flow HTTP Callout or an OpenAPI schema supported by External Services; unsupported contracts require API Gateway normalization rather than Salesforce custom callout code. |
+| A-10 | Citizen verification is applied to both `Enquiry` and `Feedback` Cases through the shared intake process; this extends the explicit Enquiry verification step into a consistent cross-channel identity-control policy.                       |
 
 ### 3.4 Constraints
 
@@ -136,6 +143,8 @@ package "Salesforce Solution" {
 | C-05 | Migration must preserve auditability, ownership, file links, and record-count reconciliation.       |
 
 ## 4. Salesforce Product and Capability Selection
+
+### 4.1 Capability Selection
 
 | Requirement Area       | Recommended Capability                                                                         | Rationale                                                                                                                 |
 | ---------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
@@ -150,10 +159,24 @@ package "Salesforce Solution" {
 | Reusable answers       | Salesforce Knowledge                                                                           | Provides approved solutions for recurring enquiries and supports draft-to-approval lifecycle.                             |
 | SLA management         | Entitlements and Milestones                                                                    | Tracks first response, follow-up, escalation, and resolution commitments.                                                 |
 | Reporting              | Reports and Dashboards; CRM Analytics if needed                                                | Meets Branch Admin and Supervisor monitoring needs.                                                                       |
-| Identity               | Salesforce SSO with Microsoft AD / Entra ID through SAML or OIDC                               | Reuses the existing identity provider and centralizes access management.                                                  |
+| Identity               | Salesforce SSO with Microsoft AD through AD FS or Microsoft Entra ID using SAML or OIDC        | Reuses the existing identity provider and centralizes access management.                                                  |
 | Integration            | Flow HTTP Callout, External Services, External Credentials, Named Credentials, and API Gateway | Provides declarative outbound REST callouts without hardcoded endpoints or credentials.                                   |
 | Migration              | Bulk API 2.0, ETL tooling, Data Loader, staging database                                       | Supports controlled high-volume migration and reconciliation.                                                             |
 | Backup/archive         | Salesforce Backup or approved AppExchange backup/archive product                               | Reduces risk for long retention, files, and operational recovery.                                                         |
+
+### 4.2 License and Commercial Validation
+
+| Capability                     | License / Commercial Posture                                                                                                                                                             |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Assessment build environment   | Use the required new Trailhead Playground Developer Edition for the prototype; deploy Flow, External Service, metadata, and configuration through source-controlled Salesforce metadata. |
+| Service Cloud                  | Enterprise Edition or higher is the baseline for internal Agents, Supervisors, and Branch Admins; confirm feature allocations and user counts during discovery.                          |
+| Experience Cloud               | External-user login/member licensing and guest-user access must be sized from citizen authentication and portal-usage assumptions.                                                       |
+| Digital Engagement / Messaging | Treat as an add-on subject to channel, conversation-volume, and regional availability validation.                                                                                        |
+| Telephony                      | Open CTI can reuse an approved telephony provider; Service Cloud Voice and telephony consumption require separate commercial validation.                                                 |
+| Government Cloud               | Conditional on government compliance, data residency, accreditation, and procurement policy.                                                                                             |
+| CRM Analytics                  | Optional; standard Reports and Dashboards remain the baseline unless advanced analytics requirements justify additional licensing.                                                       |
+| API Gateway / MuleSoft         | Optional when the existing enterprise integration platform can provide normalization, throttling, monitoring, or orchestration; not required for a compatible direct MDM REST contract.  |
+| Backup, archive, and storage   | Validate Salesforce Backup or an approved third-party product, additional data/file storage, retention, and external archive cost before production commitment.                          |
 
 ## 5. Target Solution Architecture
 
@@ -174,7 +197,7 @@ actor Agent
 
 cloud "Microsoft AD / Entra ID" as AAD
 cloud "External MDM System" as MDM
-cloud "API Gateway / Middleware" as Gateway
+cloud "API Gateway / Middleware\n(optional)" as Gateway
 
 package "Citizen Contact Channels" {
   [Agency Website]
@@ -377,17 +400,18 @@ BranchAdmin --> MonitorPerformance
 @enduml
 ```
 
-| Persona      | User Story                                                                                                                              |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Citizen      | As a citizen, I want to submit enquiries or feedback through my preferred channel so that I can receive help without visiting a branch. |
-| Citizen      | As a citizen, I want to upload supporting photos or documents so that the agency can understand my request.                             |
-| Agent        | As an agent, I want citizen verification by phone or email so that I handle the correct citizen record.                                 |
-| Agent        | As an agent, I want cases routed by expertise, language, workload, and availability so that work is distributed fairly.                 |
-| Agent        | As an agent, I want to use approved Knowledge articles so that responses are consistent.                                                |
-| Agent        | As an agent, I want to document a new solution when no existing answer exists so that similar enquiries can be resolved faster.         |
-| Supervisor   | As a supervisor, I want to monitor queue backlog, escalations, and SLA risk so that I can intervene quickly.                            |
-| Supervisor   | As a supervisor, I want to evaluate feedback handling and agent outcomes so that service quality improves.                              |
-| Branch Admin | As a Branch Admin, I want dashboards by division, channel, case type, and agent so that I can monitor operational performance.          |
+| Persona      | User Story                                                                                                                                           |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Citizen      | As a citizen, I want to submit enquiries or feedback through my preferred channel so that I can receive help without visiting a branch.              |
+| Citizen      | As a citizen, I want to upload supporting photos or documents so that the agency can understand my request.                                          |
+| Agent        | As an agent, I want citizen verification by phone or email so that I handle the correct citizen record.                                              |
+| Agent        | As an agent, I want cases routed by expertise, language, workload, and availability so that work is distributed fairly.                              |
+| Agent        | As an agent, I want to use approved Knowledge articles so that responses are consistent.                                                             |
+| Agent        | As an agent, I want to document a new solution when no existing answer exists so that similar enquiries can be resolved faster.                      |
+| Supervisor   | As a supervisor, I want to monitor queue backlog, escalations, and SLA risk so that I can intervene quickly.                                         |
+| Supervisor   | As a supervisor, I want to compare Enquiry and Feedback handling across channels so that I can coach Agents and maintain consistent service quality. |
+| Supervisor   | As a supervisor, I want to evaluate feedback handling and agent outcomes so that service quality improves.                                           |
+| Branch Admin | As a Branch Admin, I want dashboards by division, channel, case type, and agent so that I can monitor operational performance.                       |
 
 ### 6.2 Business Process Overview
 
@@ -428,7 +452,8 @@ start
 through supported channel;
 :Intake and Citizen Verification
 (6.5 Shared Case Intake and Verification Process);
-:Case Recording;
+:Record Enquiry-specific details
+and supporting files;
 :Case Assignment
 (6.6 Case Routing Process);
 :Resolution Support
@@ -447,16 +472,15 @@ if (Complex or SLA risk?) then (Yes)
   :Escalate to Supervisor;
 endif
 
-:Follow up with citizen;
-
-if (Citizen confirms resolution?) then (Yes)
-  :Record resolution summary
-and confirmation;
-  :Close Enquiry Case;
-else (No)
+ :Follow up with citizen;
+while (Citizen confirms resolution?) is (No)
   :Continue resolution
 and follow-up;
-endif
+endwhile (Yes)
+
+:Record resolution summary
+and confirmation;
+:Close Enquiry Case;
 
 stop
 @enduml
@@ -487,7 +511,7 @@ start
 Complaint, or Suggestion (Receipt);
 :Intake and Citizen Verification
 (6.5 Shared Case Intake and Verification Process);
-:Feedback Recording;
+:Record Feedback-specific details;
 :Case Assignment
 (6.6 Case Routing Process);
 :Agent analyzes root cause,
@@ -776,6 +800,7 @@ database Salesforce
 
 Citizen -> Channel : Submit enquiry or feedback
 Channel -> CaseIntakeService : Intake request
+CaseIntakeService -> Salesforce : Create preliminary Case\n(Verification Pending)
 CaseIntakeService -> CitizenVerificationFlow : Verify phone/email
 CitizenVerificationFlow -> ExternalService : Invoke generated action
 ExternalService -> NamedCredential : Authenticated HTTP callout
@@ -784,7 +809,7 @@ MDM --> NamedCredential : Match result
 NamedCredential --> ExternalService : REST response
 ExternalService --> CitizenVerificationFlow : Structured response
 CitizenVerificationFlow --> CaseIntakeService : Verification result
-CaseIntakeService -> Salesforce : Upsert Contact, create Case
+CaseIntakeService -> Salesforce : Link/update Contact,\ncomplete Case details
 CaseIntakeService -> CaseRoutingService : Assignment context
 CaseRoutingService -> Omni : Route work item
 Omni --> Agent : Assign Case
@@ -812,6 +837,7 @@ if (Operation successful?) then (Yes)
   stop
 else (No)
   :Classify error;
+  :Discard or roll back\nunsafe work;
   if (Retryable integration error?) then (Yes)
     :Upsert Integration_Error__c;
     :Set retry status;
@@ -820,7 +846,6 @@ else (No)
     :Show message or alert;
     :Capture support detail;
   endif
-  :Rollback unsafe changes;
   stop
 endif
 
@@ -951,8 +976,13 @@ entity Case {
   Language__c
   Citizen_Verification_Status__c
   MDM_Verification_Id__c
+  Legacy_Case_Id__c
+  Migration_Batch__c
   Satisfaction_Level__c
+  Feedback_Severity__c
+  Feedback_Response_Required__c
   Improvement_Area__c
+  Feedback_Evaluation_Outcome__c
   Resolution_Summary__c
   Citizen_Confirmed_Closure__c
   Follow_Up_Date__c
@@ -1006,6 +1036,13 @@ entity ContentVersion {
   FileType
   ContentSize
   VersionData
+}
+
+entity ContentDocument {
+  * Id
+  --
+  LatestPublishedVersionId
+  Title
 }
 
 entity ContentDocumentLink {
@@ -1073,11 +1110,12 @@ Service_Division__c ||--o{ Case : scopes
 User ||--o{ Case : owns
 Group ||--o{ Case : owns
 Case ||--o{ ContentDocumentLink : files
-ContentVersion ||--o{ ContentDocumentLink : versions
+ContentDocument ||--o{ ContentVersion : has versions
+ContentDocument ||--o{ ContentDocumentLink : shared through
 Case ||--o{ CaseMilestone : SLA
 Knowledge__kav }o..o{ Case : used
 Case_Routing_Rule__mdt ..> Case : routes
-Integration_Error__c }o..|| Case : logs
+Integration_Error__c }o..o| Case : logs
 Migration_Batch__c ..> Case : loads
 
 @enduml
@@ -1085,21 +1123,21 @@ Migration_Batch__c ..> Case : loads
 
 ### 8.2 Core Data Model
 
-| Object                               | Purpose                                                                                   |
-| ------------------------------------ | ----------------------------------------------------------------------------------------- |
-| Account                              | Optional household, organization, or agency account grouping where required.              |
-| Contact                              | Citizen master profile linked to verified phone/email and MDM reference.                  |
-| Case                                 | Primary enquiry and feedback transaction record.                                          |
-| Case Record Type                     | Separates Enquiry and Feedback lifecycle, page layout, fields, and validation.            |
-| Service_Division__c                  | Branch/division scope for reporting, queues, ownership, and sharing.                      |
-| User                                 | Branch Admin, Supervisor, Agent, integration user, and migration user.                    |
-| Group / Queue                        | Work queues for triage, division assignment, and escalation.                              |
-| Knowledge__kav                       | Approved solutions and draft knowledge candidates.                                        |
-| ContentVersion / ContentDocumentLink | Supporting photos and documents attached to Cases.                                        |
-| CaseMilestone                        | SLA tracking for response, follow-up, and resolution.                                     |
-| Integration_Error__c                 | Operational tracking for failed MDM, channel, or file-processing transactions.            |
-| Migration_Batch__c                   | Migration batch tracking and reconciliation summary.                                      |
-| Case_Routing_Rule__mdt               | Configurable routing attributes such as channel, skill, language, priority, and division. |
+| Object                                                 | Purpose                                                                                   |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| Account                                                | Optional household, organization, or agency account grouping where required.              |
+| Contact                                                | Citizen master profile linked to verified phone/email and MDM reference.                  |
+| Case                                                   | Primary enquiry and feedback transaction record.                                          |
+| Case Record Type                                       | Separates Enquiry and Feedback lifecycle, page layout, fields, and validation.            |
+| Service_Division__c                                    | Branch/division scope for reporting, queues, ownership, and sharing.                      |
+| User                                                   | Branch Admin, Supervisor, Agent, integration user, and migration user.                    |
+| Group / Queue                                          | Work queues for triage, division assignment, and escalation.                              |
+| Knowledge__kav                                         | Approved solutions and draft knowledge candidates.                                        |
+| ContentDocument / ContentVersion / ContentDocumentLink | Supporting files, versions, and their links to Cases.                                     |
+| CaseMilestone                                          | SLA tracking for response, follow-up, and resolution.                                     |
+| Integration_Error__c                                   | Operational tracking for failed MDM, channel, or file-processing transactions.            |
+| Migration_Batch__c                                     | Migration batch tracking and reconciliation summary.                                      |
+| Case_Routing_Rule__mdt                                 | Configurable routing attributes such as channel, skill, language, priority, and division. |
 
 ### 8.3 Recommended Case Fields
 
@@ -1114,8 +1152,13 @@ Migration_Batch__c ..> Case : loads
 | Language__c                    | Preferred language for routing.                                                                                                                                                  |
 | Citizen_Verification_Status__c | Verified, Not Found, Manual Review, Failed.                                                                                                                                      |
 | MDM_Verification_Id__c         | External verification reference.                                                                                                                                                 |
+| Legacy_Case_Id__c              | Unique external ID used for migration upsert, lineage, and reconciliation.                                                                                                       |
+| Migration_Batch__c             | Identifies the migration batch that loaded the historical Case.                                                                                                                  |
 | Satisfaction_Level__c          | Feedback satisfaction indicator.                                                                                                                                                 |
+| Feedback_Severity__c           | Feedback impact or severity used for prioritization, escalation, and reporting.                                                                                                  |
+| Feedback_Response_Required__c  | Indicates whether the agency must respond to the citizen.                                                                                                                        |
 | Improvement_Area__c            | Feedback classification for trend reporting.                                                                                                                                     |
+| Feedback_Evaluation_Outcome__c | Stores the Supervisor's evaluation result for handling quality, agent outcome, and citizen satisfaction.                                                                         |
 | Resolution_Summary__c          | Required before closure.                                                                                                                                                         |
 | Citizen_Confirmed_Closure__c   | Confirms citizen acceptance for enquiry closure.                                                                                                                                 |
 | Follow_Up_Date__c              | Drives follow-up tasks and overdue reporting.                                                                                                                                    |
@@ -1124,10 +1167,10 @@ Migration_Batch__c ..> Case : loads
 
 The solution uses two Salesforce Case record types to separate the agency's primary business processes while retaining a common Case data model, routing foundation, security model, and reporting framework.
 
-| Case Record Type | Support Process                 | Purpose                                                                     | Primary Process                                                                                        | Distinct Data and Controls                                                                                              |
-| ---------------- | ------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `Enquiry`        | `Enquiry Case Support Process`  | Manage citizen questions, concerns, and requests for information.           | Initiation, verification, recording, assignment, resolution, follow-up, and citizen-confirmed closure. | Knowledge usage, resolution summary, follow-up date, supervisor escalation, and citizen closure confirmation.           |
-| `Feedback`       | `Feedback Case Support Process` | Manage citizen feedback, complaints, and suggestions about agency services. | Receipt, recording, analysis, optional response, reporting, and supervisor evaluation.                 | Satisfaction level, severity, improvement area, response requirement, reporting classification, and evaluation outcome. |
+| Case Record Type | Support Process                 | Purpose                                                                     | Primary Process                                                                                        | Distinct Data and Controls                                                                                                                                          |
+| ---------------- | ------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Enquiry`        | `Enquiry Case Support Process`  | Manage citizen questions, concerns, and requests for information.           | Initiation, verification, recording, assignment, resolution, follow-up, and citizen-confirmed closure. | Knowledge usage, resolution summary, follow-up date, supervisor escalation, and citizen closure confirmation.                                                       |
+| `Feedback`       | `Feedback Case Support Process` | Manage citizen feedback, complaints, and suggestions about agency services. | Receipt, recording, analysis, optional response, reporting, and supervisor evaluation.                 | Satisfaction level, `Feedback_Severity__c`, `Improvement_Area__c`, `Feedback_Response_Required__c`, reporting classification, and `Feedback_Evaluation_Outcome__c`. |
 
 Each record type is associated with its own Salesforce Support Process, which controls the available `Case.Status` values. Record types also control the appropriate page layout, required fields, validation rules, status guidance, and automation entry criteria. The resulting lifecycles are defined separately in [Section 8.5](#85-enquiry-case-lifecycle) and [Section 8.6](#86-feedback-case-lifecycle).
 
@@ -1238,25 +1281,30 @@ This sequence diagram shows the declarative synchronous verification path from t
 ```plantuml
 @startuml
 skinparam sequenceMessageAlign center
-actor Agent
-participant "Salesforce Service Console" as Console
+actor "Agent / Intake Automation" as Initiator
+participant "Service Console / Intake Flow" as Entry
 participant "Citizen Verification Flow" as VerificationFlow
 participant "MDM External Service Action" as ExternalService
 participant "External Credential" as EC
 participant "Named Credential" as NC
-participant "API Gateway" as Gateway
+participant "API Gateway\n(optional)" as Gateway
 participant "External MDM System" as MDM
 database "Contact" as Contact
 
-Agent -> Console : Enter contact detail
-Console -> VerificationFlow : Verify citizen
+Initiator -> Entry : Supply phone/email
+Entry -> VerificationFlow : Verify citizen
 VerificationFlow -> ExternalService : Invoke generated action
 ExternalService -> NC : HTTP callout
 NC -> EC : Resolve authentication principal
-NC -> Gateway : Authenticated REST request
-Gateway -> MDM : Verify profile
-MDM --> Gateway : Verification result
-Gateway --> NC : Response
+alt API normalization required
+  NC -> Gateway : Authenticated REST request
+  Gateway -> MDM : Verify profile
+  MDM --> Gateway : Verification result
+  Gateway --> NC : Response
+else Compatible direct MDM REST API
+  NC -> MDM : Authenticated REST request
+  MDM --> NC : Verification result
+end
 NC --> ExternalService : Citizen profile response
 ExternalService --> VerificationFlow : Structured Flow output
 
@@ -1266,7 +1314,7 @@ else Citizen not found
   VerificationFlow -> Contact : Create provisional
 end
 
-VerificationFlow --> Console : Verification status
+VerificationFlow --> Entry : Verification status
 
 @enduml
 ```
@@ -1290,7 +1338,7 @@ start
 if (Retryable?) then (Yes)
   if (Retry count below limit?) then (Yes)
     :Increment retry count;
-    :Queue retry job;
+    :Schedule asynchronous\nFlow retry;
     :Hold Case if needed;
   else (No)
     :Mark Max Retry;
@@ -1430,7 +1478,7 @@ skinparam sequenceMessageAlign center
 actor "Internal User" as User
 participant "Salesforce Login" as SFLogin
 participant "SAML Identity Provider" as IdP
-participant "Microsoft Active Directory / Azure AD" as AD
+participant "Microsoft Active Directory / Entra ID" as AD
 participant "Salesforce Service Cloud" as SF
 
 User -> SFLogin : Access Salesforce
@@ -1564,13 +1612,13 @@ The migration scope includes 10 years of historical records, approximately 6 mil
 
 ### 11.3 Large Volume Design
 
-| Concern                | Design                                                                         |
-| ---------------------- | ------------------------------------------------------------------------------ |
-| 6M historical records  | Use external IDs, selective indexes, ownership mapping, and Bulk API batching. |
-| 100GB historical files | Forecast storage and consider external archive links for older files.          |
-| 5,000 daily Cases      | Keep automation bulk-safe and avoid excessive synchronous callouts.            |
-| 100MB daily uploads    | Monitor file storage growth and retention/archive policies.                    |
-| Reporting performance  | Use selective filters by date, division, record type, and status.              |
+| Concern                | Design                                                                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 6M historical records  | Use external IDs, selective indexes, ownership mapping, and Bulk API batching.                                                       |
+| 100GB historical files | Forecast storage and consider external archive links for older files.                                                                |
+| 5,000 daily Cases      | Plan for approximately 1.825 million additional Cases per year; keep automation bulk-safe and use selective reporting and archiving. |
+| 100MB daily uploads    | Plan for approximately 36.5GB additional file storage per year before retention or archive reduction.                                |
+| Reporting performance  | Use selective filters by date, division, record type, and status.                                                                    |
 
 ## 12. Reporting, SLA, and Performance Evaluation
 
@@ -1662,16 +1710,18 @@ AgentWorklist --> Agent
 
 ### 12.3 Branch Admin Dashboard
 
-| KPI                                             | Purpose                                                   |
-| ----------------------------------------------- | --------------------------------------------------------- |
-| New Cases by channel, division, and record type | Monitor demand across contact channels.                   |
-| Open backlog by age and priority                | Identify operational pressure.                            |
-| SLA breach count and rate                       | Evaluate service performance.                             |
-| Average first response time                     | Measure responsiveness.                                   |
-| Average resolution time                         | Measure closure efficiency.                               |
-| Agent case volume and closure rate              | Evaluate agent effectiveness.                             |
-| Reopened case rate                              | Identify quality or premature closure issues.             |
-| Feedback satisfaction trend                     | Track citizen satisfaction and service improvement areas. |
+| KPI                                             | Purpose                                                                                                                       |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| New Cases by channel, division, and record type | Monitor demand across contact channels.                                                                                       |
+| Open backlog by age and priority                | Identify operational pressure.                                                                                                |
+| SLA breach count and rate                       | Evaluate service performance.                                                                                                 |
+| Average first response time                     | Measure responsiveness.                                                                                                       |
+| Average resolution time                         | Measure closure efficiency.                                                                                                   |
+| Agent case volume and closure rate              | Evaluate agent effectiveness.                                                                                                 |
+| Agent effectiveness by channel and Case type    | Compare volume, response time, resolution time, SLA attainment, reopen rate, and satisfaction for each Agent across channels. |
+| Reopened case rate                              | Identify quality or premature closure issues.                                                                                 |
+| Feedback satisfaction trend                     | Track citizen satisfaction and service improvement areas.                                                                     |
+| Feedback volume by service and improvement area | Support internal review, trend analysis, and strategic service planning.                                                      |
 
 ### 12.4 Supervisor Dashboard
 

@@ -1,24 +1,29 @@
 @startuml
 skinparam sequenceMessageAlign center
-actor Agent
-participant "Salesforce Service Console" as Console
+actor "Agent / Intake Automation" as Initiator
+participant "Service Console / Intake Flow" as Entry
 participant "Citizen Verification Flow" as VerificationFlow
 participant "MDM External Service Action" as ExternalService
 participant "External Credential" as EC
 participant "Named Credential" as NC
-participant "API Gateway" as Gateway
+participant "API Gateway\n(optional)" as Gateway
 participant "External MDM System" as MDM
 database "Contact" as Contact
 
-Agent -> Console : Enter contact detail
-Console -> VerificationFlow : Verify citizen
+Initiator -> Entry : Supply phone/email
+Entry -> VerificationFlow : Verify citizen
 VerificationFlow -> ExternalService : Invoke generated action
 ExternalService -> NC : HTTP callout
 NC -> EC : Resolve authentication principal
-NC -> Gateway : Authenticated REST request
-Gateway -> MDM : Verify profile
-MDM --> Gateway : Verification result
-Gateway --> NC : Response
+alt API normalization required
+  NC -> Gateway : Authenticated REST request
+  Gateway -> MDM : Verify profile
+  MDM --> Gateway : Verification result
+  Gateway --> NC : Response
+else Compatible direct MDM REST API
+  NC -> MDM : Authenticated REST request
+  MDM --> NC : Verification result
+end
 NC --> ExternalService : Citizen profile response
 ExternalService --> VerificationFlow : Structured Flow output
 
@@ -28,6 +33,6 @@ else Citizen not found
   VerificationFlow -> Contact : Create provisional
 end
 
-VerificationFlow --> Console : Verification status
+VerificationFlow --> Entry : Verification status
 
 @enduml

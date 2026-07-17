@@ -8,7 +8,7 @@ start
 if (Retryable?) then (Yes)
   if (Retry count below limit?) then (Yes)
     :Increment retry count;
-    :Queue retry job;
+    :Schedule asynchronous\nFlow retry;
     :Hold Case if needed;
   else (No)
     :Mark Max Retry;

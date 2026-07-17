@@ -15,6 +15,7 @@ database Salesforce
 
 Citizen -> Channel : Submit enquiry or feedback
 Channel -> CaseIntakeService : Intake request
+CaseIntakeService -> Salesforce : Create preliminary Case\n(Verification Pending)
 CaseIntakeService -> CitizenVerificationFlow : Verify phone/email
 CitizenVerificationFlow -> ExternalService : Invoke generated action
 ExternalService -> NamedCredential : Authenticated HTTP callout
@@ -23,7 +24,7 @@ MDM --> NamedCredential : Match result
 NamedCredential --> ExternalService : REST response
 ExternalService --> CitizenVerificationFlow : Structured response
 CitizenVerificationFlow --> CaseIntakeService : Verification result
-CaseIntakeService -> Salesforce : Upsert Contact, create Case
+CaseIntakeService -> Salesforce : Link/update Contact,\ncomplete Case details
 CaseIntakeService -> CaseRoutingService : Assignment context
 CaseRoutingService -> Omni : Route work item
 Omni --> Agent : Assign Case
