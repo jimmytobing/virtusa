@@ -1,9 +1,10 @@
 @startuml
 left to right direction
 
-state "Received" as NewCase
+state "Received" as Received
 state "Verification Pending" as VerificationPending
 state "Manual Verification" as ManualVerification
+state "Recorded" as Recorded
 state "Assigned" as Assigned
 state "In Progress" as InProgress
 state "Pending Citizen" as PendingCitizen
@@ -12,18 +13,19 @@ state "Resolved" as Resolved
 state "Reopened" as Reopened
 state "Closed" as Closed
 
-[*] --> NewCase
-NewCase --> VerificationPending
-VerificationPending --> Assigned
+[*] --> Received
+Received --> VerificationPending
+VerificationPending --> Recorded
 VerificationPending --> ManualVerification : no match
-ManualVerification --> Assigned
+ManualVerification --> Recorded
+Recorded --> Assigned
 Assigned --> InProgress
 InProgress --> PendingCitizen
 PendingCitizen --> InProgress
 InProgress --> Escalated : complex
 Escalated --> InProgress : returned
 InProgress --> Resolved
-Resolved --> Closed
+Resolved --> Closed : citizen confirmed
 Resolved --> Reopened
 Reopened --> InProgress
 

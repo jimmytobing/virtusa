@@ -1089,47 +1089,48 @@ Migration_Batch__c ..> Case : loads
 
 ### 8.3 Recommended Case Fields
 
-| Field                          | Purpose                                                                                                        |
-| ------------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| RecordTypeId                   | Selects the `Enquiry` or `Feedback` Case record type defined in Section 8.4.                                   |
-| Origin                         | Website, Phone, Chat, Mobile App, or Email.                                                                    |
-| Status                         | Received, Verification Pending, Assigned, In Progress, Pending Citizen, Escalated, Resolved, Reopened, Closed. |
-| Priority                       | Standard Salesforce priority plus agency-specific severity mapping if required.                                |
-| Service_Division__c            | Branch or division scope.                                                                                      |
-| Service_Category__c            | Agency service/product area.                                                                                   |
-| Language__c                    | Preferred language for routing.                                                                                |
-| Citizen_Verification_Status__c | Verified, Not Found, Manual Review, Failed.                                                                    |
-| MDM_Verification_Id__c         | External verification reference.                                                                               |
-| Satisfaction_Level__c          | Feedback satisfaction indicator.                                                                               |
-| Improvement_Area__c            | Feedback classification for trend reporting.                                                                   |
-| Resolution_Summary__c          | Required before closure.                                                                                       |
-| Citizen_Confirmed_Closure__c   | Confirms citizen acceptance for enquiry closure.                                                               |
-| Follow_Up_Date__c              | Drives follow-up tasks and overdue reporting.                                                                  |
+| Field                          | Purpose                                                                                                      |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| RecordTypeId                   | Selects the `Enquiry` or `Feedback` Case record type defined in Section 8.4.                                 |
+| Origin                         | Website, Phone, Chat, Mobile App, or Email.                                                                  |
+| Status                         | Values are controlled by the Support Process associated with the Case record type; see Sections 8.5 and 8.6. |
+| Priority                       | Standard Salesforce priority plus agency-specific severity mapping if required.                              |
+| Service_Division__c            | Branch or division scope.                                                                                    |
+| Service_Category__c            | Agency service/product area.                                                                                 |
+| Language__c                    | Preferred language for routing.                                                                              |
+| Citizen_Verification_Status__c | Verified, Not Found, Manual Review, Failed.                                                                  |
+| MDM_Verification_Id__c         | External verification reference.                                                                             |
+| Satisfaction_Level__c          | Feedback satisfaction indicator.                                                                             |
+| Improvement_Area__c            | Feedback classification for trend reporting.                                                                 |
+| Resolution_Summary__c          | Required before closure.                                                                                     |
+| Citizen_Confirmed_Closure__c   | Confirms citizen acceptance for enquiry closure.                                                             |
+| Follow_Up_Date__c              | Drives follow-up tasks and overdue reporting.                                                                |
 
 ### 8.4 Case Record Type Design
 
 The solution uses two Salesforce Case record types to separate the agency's primary business processes while retaining a common Case data model, routing foundation, security model, and reporting framework.
 
-| Case Record Type | Purpose                                                                     | Primary Process                                                                                        | Distinct Data and Controls                                                                                              |
-| ---------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `Enquiry`        | Manage citizen questions, concerns, and requests for information.           | Initiation, verification, recording, assignment, resolution, follow-up, and citizen-confirmed closure. | Knowledge usage, resolution summary, follow-up date, supervisor escalation, and citizen closure confirmation.           |
-| `Feedback`       | Manage citizen feedback, complaints, and suggestions about agency services. | Receipt, recording, analysis, optional response, reporting, and supervisor evaluation.                 | Satisfaction level, severity, improvement area, response requirement, reporting classification, and evaluation outcome. |
+| Case Record Type | Support Process                 | Purpose                                                                     | Primary Process                                                                                        | Distinct Data and Controls                                                                                              |
+| ---------------- | ------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `Enquiry`        | `Enquiry Case Support Process`  | Manage citizen questions, concerns, and requests for information.           | Initiation, verification, recording, assignment, resolution, follow-up, and citizen-confirmed closure. | Knowledge usage, resolution summary, follow-up date, supervisor escalation, and citizen closure confirmation.           |
+| `Feedback`       | `Feedback Case Support Process` | Manage citizen feedback, complaints, and suggestions about agency services. | Receipt, recording, analysis, optional response, reporting, and supervisor evaluation.                 | Satisfaction level, severity, improvement area, response requirement, reporting classification, and evaluation outcome. |
 
-Record types control the appropriate page layout, required fields, validation rules, status guidance, and automation entry criteria. Both record types use the common lifecycle in Section 8.5; the `Feedback` record type also uses the review sub-status lifecycle in Section 8.6.
+Each record type is associated with its own Salesforce Support Process, which controls the available `Case.Status` values. Record types also control the appropriate page layout, required fields, validation rules, status guidance, and automation entry criteria. The resulting lifecycles are defined separately in Sections 8.5 and 8.6.
 
-### 8.5 Case Status Lifecycle
+### 8.5 Enquiry Case Lifecycle
 
-This state model defines the allowed Case status transitions shared by the `Enquiry` and `Feedback` record types defined in Section 8.4. It complements the business-stage flows in Sections 6.3 and 6.4 and is not a second business-process definition.
+This state model defines the allowed `Case.Status` transitions for the `Enquiry` record type through the `Enquiry Case Support Process`. It aligns the operational status model with verification, assignment, resolution, follow-up, citizen confirmation, and closure.
 
-[Case Status Lifecycle](<../puml task2/08.05 Case Status Lifecycle.puml>)
+[Enquiry Case Lifecycle](<../puml task2/08.05 Enquiry Case Lifecycle.puml>)
 
 ```plantuml
 @startuml
 left to right direction
 
-state "Received" as NewCase
+state "Received" as Received
 state "Verification Pending" as VerificationPending
 state "Manual Verification" as ManualVerification
+state "Recorded" as Recorded
 state "Assigned" as Assigned
 state "In Progress" as InProgress
 state "Pending Citizen" as PendingCitizen
@@ -1138,29 +1139,30 @@ state "Resolved" as Resolved
 state "Reopened" as Reopened
 state "Closed" as Closed
 
-[*] --> NewCase
-NewCase --> VerificationPending
-VerificationPending --> Assigned
+[*] --> Received
+Received --> VerificationPending
+VerificationPending --> Recorded
 VerificationPending --> ManualVerification : no match
-ManualVerification --> Assigned
+ManualVerification --> Recorded
+Recorded --> Assigned
 Assigned --> InProgress
 InProgress --> PendingCitizen
 PendingCitizen --> InProgress
 InProgress --> Escalated : complex
 Escalated --> InProgress : returned
 InProgress --> Resolved
-Resolved --> Closed
+Resolved --> Closed : citizen confirmed
 Resolved --> Reopened
 Reopened --> InProgress
 
 @enduml
 ```
 
-### 8.6 Feedback Review Status Lifecycle
+### 8.6 Feedback Case Lifecycle
 
-Feedback uses the common Case lifecycle above. The following sub-status model preserves the assessment-specific analysis, response, reporting, and supervisor-evaluation checkpoints.
+This state model defines the allowed `Case.Status` transitions for the `Feedback` record type through the `Feedback Case Support Process`. It incorporates citizen verification and assignment before analysis, optional response, reporting, supervisor evaluation, and closure.
 
-[Feedback Review Status Lifecycle](<../puml task2/08.06 Feedback Review Status Lifecycle.puml>)
+[Feedback Case Lifecycle](<../puml task2/08.06 Feedback Case Lifecycle.puml>)
 
 ```plantuml
 @startuml
@@ -1168,24 +1170,31 @@ left to right direction
 skinparam linetype ortho
 
 state "Received" as Received
+state "Verification Pending" as VerificationPending
+state "Manual Verification" as ManualVerification
 state "Recorded" as Recorded
-state "Analyzed" as Analyzed
+state "Assigned" as Assigned
+state "Under Analysis" as UnderAnalysis
 state "Response Required" as ResponseRequired
 state "No Response Required" as NoResponseRequired
 state "Responded" as Responded
-state "Reported" as Reported
+state "Reporting" as Reporting
 state "Supervisor Evaluation" as SupervisorEvaluation
 state "Closed" as Closed
 
 [*] --> Received
-Received --> Recorded
-Recorded --> Analyzed
-Analyzed --> ResponseRequired
-Analyzed --> NoResponseRequired
+Received --> VerificationPending
+VerificationPending --> Recorded
+VerificationPending --> ManualVerification : no match
+ManualVerification --> Recorded
+Recorded --> Assigned
+Assigned --> UnderAnalysis
+UnderAnalysis --> ResponseRequired
+UnderAnalysis --> NoResponseRequired
 ResponseRequired --> Responded
-Responded --> Reported
-NoResponseRequired --> Reported
-Reported --> SupervisorEvaluation
+Responded --> Reporting
+NoResponseRequired --> Reporting
+Reporting --> SupervisorEvaluation
 SupervisorEvaluation --> Closed
 
 @enduml
