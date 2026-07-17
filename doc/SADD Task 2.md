@@ -1473,7 +1473,6 @@ skinparam componentStyle rectangle
 skinparam linetype ortho
 skinparam nodesep 60
 skinparam ranksep 70
-left to right direction
 
 database "Legacy Data\n6M Cases, 100GB Files" as LegacyData
 
@@ -1583,11 +1582,10 @@ This diagram shows how Case lifecycle events, milestones, SLA alerts, and integr
 
 ```plantuml
 @startuml
-left to right direction
 skinparam componentStyle rectangle
 skinparam linetype ortho
-skinparam nodesep 60
-skinparam ranksep 65
+skinparam nodesep 70
+skinparam ranksep 60
 
 package "Case Operations" {
   [Case Lifecycle Events\nCreated, Assigned, Pending,\nEscalated, Closed] as CaseEvents
@@ -1624,7 +1622,6 @@ This model traces operational source data into performance metrics and scorecard
 
 ```plantuml
 @startuml
-left to right direction
 skinparam componentStyle rectangle
 skinparam linetype ortho
 skinparam nodesep 70
@@ -1715,50 +1712,15 @@ AgentWorklist --> Agent
 
 ## 15. Architectural Decision Records
 
-### ADR-001 - Use Standard Case for Enquiry and Feedback
+The following records summarize the principal architectural decisions, their justification, and the consequences that must be managed during implementation and operation.
 
-Decision: Use Salesforce Case with `Enquiry` and `Feedback` record types.
-
-Rationale: Standard Case works natively with Service Console, Omni-Channel, queues, Email-to-Case, Web-to-Case, Knowledge, entitlements, milestones, reports, dashboards, and CTI/messaging integrations.
-
-### ADR-002 - Use Service Cloud as the Core Platform
-
-Decision: Use Service Cloud as the internal operating model for Agents, Supervisors, and Branch Admins.
-
-Rationale: The requirement is case-centric and relies on channel intake, assignment, service process control, and performance reporting.
-
-### ADR-003 - Use Omni-Channel for Assignment
-
-Decision: Route Cases using Omni-Channel, queues, skills, capacity, availability, language, and priority.
-
-Rationale: Assignment must consider expertise, language, workload, and availability.
-
-### ADR-004 - Verify Citizens Through MDM Integration
-
-Decision: Verify by phone or email using Flow HTTP Callout / External Services secured by External Credential and Named Credential, with API Gateway normalization when required.
-
-Rationale: MDM remains the authoritative citizen source while Salesforce stores the service interaction; the declarative integration pattern improves maintainability and avoids custom callout code for compatible REST APIs.
-
-### ADR-005 - Use Microsoft AD / Entra ID for SSO
-
-Decision: Implement Salesforce SSO using SAML or OpenID Connect with Microsoft AD / Entra ID.
-
-Rationale: The assessment requires use of the existing Microsoft Active Directory.
-
-### ADR-006 - Use Salesforce Knowledge for Reusable Solutions
-
-Decision: Agents use approved Knowledge articles and create draft solutions when no answer exists.
-
-Rationale: Enquiry resolution requires consistent answers and a way to document new solutions.
-
-### ADR-007 - Use Salesforce Files for Photos and Supporting Documents
-
-Decision: Store uploaded photos/documents as Salesforce Files or approved archive links.
-
-Rationale: Salesforce Files is the modern attachment model and supports versioning, sharing, preview, and audit.
-
-### ADR-008 - Use Staged Migration for Historical Data
-
-Decision: Migrate historical data through profiling, cleansing, staging, pilot load, full load, file load, delta, validation, and cutover.
-
-Rationale: The volume of 6 million records and 100GB files requires controlled migration and reconciliation.
+| ADR     | Decision                                                                                                                                                                         | Rationale                                                                                                                                                                 | Consequences / Trade-offs                                                                                                                                                                           |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ADR-001 | Use Salesforce Case with `Enquiry` and `Feedback` record types and separate Support Processes.                                                                                   | Standard Case works natively with Service Console, Omni-Channel, queues, channel intake, Knowledge, entitlements, milestones, reports, and dashboards.                    | Record types, Support Processes, layouts, validation, and automation must remain aligned; custom objects are reserved for supporting data rather than duplicating Case.                             |
+| ADR-002 | Use Service Cloud as the internal operating platform for Agents, Supervisors, and Branch Admins.                                                                                 | The requirement is Case-centric and depends on intake, assignment, service-process control, oversight, and performance reporting.                                         | Requires appropriate Service Cloud licensing, administration capability, release governance, and user adoption of the Service Console.                                                              |
+| ADR-003 | Route Cases using Omni-Channel, queues, skills, capacity, availability, language, and priority.                                                                                  | Assignment must consider expertise, language, workload, and availability while supporting Supervisor intervention.                                                        | Routing quality depends on maintained skills, capacity settings, presence status, queue membership, and operational monitoring.                                                                     |
+| ADR-004 | Verify citizens by phone or email using Flow HTTP Callout / External Services secured by External Credential and Named Credential, with API Gateway normalization when required. | MDM remains the authoritative citizen source, while the declarative integration pattern improves maintainability and avoids custom callout code for compatible REST APIs. | Depends on MDM availability, compatible API contracts, Flow callout limits, secured credential-principal mapping, fault handling, retry controls, and a Manual Review fallback.                     |
+| ADR-005 | Implement Salesforce SSO using SAML or OpenID Connect with Microsoft AD / Entra ID.                                                                                              | The assessment requires reuse of the existing Microsoft Active Directory and centralized identity governance.                                                             | Salesforce access depends on identity-provider availability, user/role mapping, certificate or secret rotation, deprovisioning controls, and an approved emergency-access procedure.                |
+| ADR-006 | Use approved Salesforce Knowledge articles and create governed drafts when no suitable solution exists.                                                                          | Enquiry resolution requires consistent answers and a reusable process for documenting new solutions.                                                                      | Requires article ownership, approval workflow, data-category and language governance, periodic review, archival, and quality metrics.                                                               |
+| ADR-007 | Store current supporting photos/documents as Salesforce Files and use approved archive links when retention or capacity requires external storage.                               | Salesforce Files supports versioning, sharing, preview, and audit and is the standard attachment model.                                                                   | File growth requires storage forecasting, type/size validation, malware controls, retention rules, secure external-link access, and lifecycle monitoring.                                           |
+| ADR-008 | Use staged migration with profiling, cleansing, staging, pilot, full load, file load, delta, validation, reconciliation, and cutover.                                            | Six million records and 100GB of files require controlled migration with measurable acceptance criteria.                                                                  | Increases preparation and cutover coordination but reduces data-quality and reconciliation risk; requires source freeze/delta planning, external IDs, exception handling, and rollback checkpoints. |

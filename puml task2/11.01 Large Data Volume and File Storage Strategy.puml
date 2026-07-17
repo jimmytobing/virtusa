@@ -3,7 +3,6 @@ skinparam componentStyle rectangle
 skinparam linetype ortho
 skinparam nodesep 60
 skinparam ranksep 70
-left to right direction
 
 database "Legacy Data\n6M Cases, 100GB Files" as LegacyData
 
