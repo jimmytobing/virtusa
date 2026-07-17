@@ -6,20 +6,45 @@ skinparam nodesep 70
 skinparam ranksep 70
 
 package "Access Personas" {
-  [Internal Users\nBranch Admin, Supervisor, Agent] as InternalUsers
-  [External Users\nCitizen] as ExternalUsers
-  [System User\nIntegration User] as SystemUser
+  component InternalUsers [
+    <b>Internal Users</b>
+    <size:11><color:#64748B>Branch Admin, Supervisor, Agent</color></size>
+  ]
+  component ExternalUsers [
+    <b>External Users</b>
+    <size:11><color:#64748B>Citizen</color></size>
+  ]
+  component SystemUser [
+    <b>System User</b>
+    <size:11><color:#64748B>Integration User</color></size>
+  ]
 }
 
 package "Salesforce Security Controls" {
-  [Internal Access Model\nRole Hierarchy, Sharing Rules,\nQueues, Permission Sets, FLS] as InternalAccess
-  [Experience Sharing\nCitizen case visibility] as CitizenAccess
-  [Integration Scope\nAPI permissions and FLS] as IntegrationScope
+  component InternalAccess [
+    <b>Internal Access Model</b>
+    <size:11><color:#64748B>Role Hierarchy, Sharing Rules,</color></size>
+    <size:11><color:#64748B>Queues, Permission Sets, FLS</color></size>
+  ]
+  component CitizenAccess [
+    <b>Experience Sharing</b>
+    <size:11><color:#64748B>Citizen case visibility</color></size>
+  ]
+  component IntegrationScope [
+    <b>Integration Scope</b>
+    <size:11><color:#64748B>API permissions and FLS</color></size>
+  ]
 }
 
 package "Protected Records" {
-  [Service Data\nCase, Contact, Files] as ServiceData
-  [Knowledge and Reports\nApproved articles, dashboards] as KnowledgeReports
+  component ServiceData [
+    <b>Service Data</b>
+    <size:11><color:#64748B>Case, Contact, Files</color></size>
+  ]
+  component KnowledgeReports [
+    <b>Knowledge and Reports</b>
+    <size:11><color:#64748B>Approved articles, dashboards</color></size>
+  ]
 }
 
 InternalUsers --> InternalAccess

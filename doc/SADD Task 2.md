@@ -1352,20 +1352,45 @@ skinparam nodesep 70
 skinparam ranksep 70
 
 package "Access Personas" {
-  [Internal Users\nBranch Admin, Supervisor, Agent] as InternalUsers
-  [External Users\nCitizen] as ExternalUsers
-  [System User\nIntegration User] as SystemUser
+  component InternalUsers [
+    <b>Internal Users</b>
+    <size:11><color:#64748B>Branch Admin, Supervisor, Agent</color></size>
+  ]
+  component ExternalUsers [
+    <b>External Users</b>
+    <size:11><color:#64748B>Citizen</color></size>
+  ]
+  component SystemUser [
+    <b>System User</b>
+    <size:11><color:#64748B>Integration User</color></size>
+  ]
 }
 
 package "Salesforce Security Controls" {
-  [Internal Access Model\nRole Hierarchy, Sharing Rules,\nQueues, Permission Sets, FLS] as InternalAccess
-  [Experience Sharing\nCitizen case visibility] as CitizenAccess
-  [Integration Scope\nAPI permissions and FLS] as IntegrationScope
+  component InternalAccess [
+    <b>Internal Access Model</b>
+    <size:11><color:#64748B>Role Hierarchy, Sharing Rules,</color></size>
+    <size:11><color:#64748B>Queues, Permission Sets, FLS</color></size>
+  ]
+  component CitizenAccess [
+    <b>Experience Sharing</b>
+    <size:11><color:#64748B>Citizen case visibility</color></size>
+  ]
+  component IntegrationScope [
+    <b>Integration Scope</b>
+    <size:11><color:#64748B>API permissions and FLS</color></size>
+  ]
 }
 
 package "Protected Records" {
-  [Service Data\nCase, Contact, Files] as ServiceData
-  [Knowledge and Reports\nApproved articles, dashboards] as KnowledgeReports
+  component ServiceData [
+    <b>Service Data</b>
+    <size:11><color:#64748B>Case, Contact, Files</color></size>
+  ]
+  component KnowledgeReports [
+    <b>Knowledge and Reports</b>
+    <size:11><color:#64748B>Approved articles, dashboards</color></size>
+  ]
 }
 
 InternalUsers --> InternalAccess
@@ -1380,11 +1405,24 @@ IntegrationScope --> ServiceData
 @enduml
 ```
 
-### 10.2 SSO Authentication Flow with Microsoft Active Directory
+### 10.2 Access Model
+
+The access model applies least privilege by persona and separates operational access, citizen self-service, system integration, and temporary migration privileges.
+
+| Role             | Access Type                 | Access Design                                                                                                    |
+| ---------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Branch Admin     | Read-only                   | View Cases, dashboards, and reports for the assigned division; no Case resolution responsibility.                |
+| Supervisor       | Read / Write                | Manage team Cases and escalation queues, complete Feedback evaluation, and access performance dashboards.        |
+| Agent            | Read / Write                | Work owned and assigned-queue Cases and access required Contact details, Knowledge, and linked Files.            |
+| Citizen          | Create / Read own           | Submit Cases and view only their own Cases through Experience Cloud when authenticated portal access is enabled. |
+| Integration User | API-only, least privilege   | Read or update only the objects and fields required by MDM, channel, and operational integrations.               |
+| Migration User   | Temporary bulk Read / Write | Load historical data and perform reconciliation during the approved migration window.                            |
+
+### 10.3 SSO Authentication Flow with Microsoft Active Directory
 
 This sequence illustrates federated authentication for internal users, from Salesforce login redirection through Microsoft AD / Entra ID validation to creation of the Salesforce session.
 
-[SSO Authentication Flow with Microsoft Active Directory](<../puml task2/10.02 SSO Authentication Flow with Microsoft Active Directory.puml>)
+[SSO Authentication Flow with Microsoft Active Directory](<../puml task2/10.03 SSO Authentication Flow with Microsoft Active Directory.puml>)
 
 ```plantuml
 @startuml
@@ -1405,17 +1443,6 @@ SF --> User : Access granted
 
 @enduml
 ```
-
-### 10.3 Access Model
-
-| Role             | Access Design                                                                                                            |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Branch Admin     | Read-only visibility to Cases, dashboards, and reports for assigned division. No case resolution responsibility.         |
-| Supervisor       | Read/write access to team Cases, escalation queues, feedback evaluation, and performance dashboards.                     |
-| Agent            | Read/write access to owned Cases, assigned queue Cases, required Contact details, Knowledge, and linked Files.           |
-| Citizen          | Access only to own website-submitted Cases through Experience Cloud when authenticated citizen portal access is enabled. |
-| Integration User | API-only least privilege access for MDM, channel, and migration integrations.                                            |
-| Migration User   | Temporary least privilege access for historical data load and reconciliation.                                            |
 
 ### 10.4 Security Controls
 
