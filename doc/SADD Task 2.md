@@ -41,7 +41,7 @@ package "Salesforce Solution" {
   [CTI / Voice]
   [Digital Engagement]
   [Email-to-Case]
-  [CitizenVerificationService]
+  [Citizen Verification Flow]
   [Salesforce SSO]
   [Bulk API / ETL Migration]
   [Salesforce Files]
@@ -58,7 +58,7 @@ package "Salesforce Solution" {
 [Phone Channel] --> [CTI / Voice]
 [Real-Time Assistance] --> [Digital Engagement]
 [Email Channel] --> [Email-to-Case]
-[MDM Verification] --> [CitizenVerificationService]
+[MDM Verification] --> [Citizen Verification Flow]
 [SSO with Microsoft AD] --> [Salesforce SSO]
 [Historical Migration] --> [Bulk API / ETL Migration]
 [Daily Case and File Volume] --> [Salesforce Files]
@@ -71,18 +71,18 @@ package "Salesforce Solution" {
 
 | Assessment Requirement                                      | Design Response                                                                                                               |
 | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Integrate with external MDM for citizen verification        | Citizen verification service through Named Credentials/API Gateway; verify by phone or email.                                 |
+| Integrate with external MDM for citizen verification        | Flow HTTP Callout / External Services secured by External Credential and Named Credential; verify by phone or email.          |
 | Flexibility to adapt to changes                             | Case record types, page layouts, queues, Omni-Channel, Flow, Custom Metadata, Knowledge, and configurable dashboards.         |
 | Migrate 10 years / 6M records / 100GB files                 | Staged migration with profiling, cleansing, staging, Bulk API, file strategy, reconciliation, and cutover.                    |
 | Manage 5,000 new cases and 100MB uploads daily              | Standard Case and Salesforce Files with bulk-safe automation, storage forecasting, archive strategy, and selective reporting. |
 | Implement SSO using Microsoft Active Directory              | Salesforce SSO through Microsoft AD / Entra ID using SAML or OpenID Connect.                                                  |
 | Branch Admin evaluates agent performance across channels    | Division-level dashboards for volume, SLA, backlog, satisfaction, channel mix, and agent effectiveness.                       |
-| Salesforce licensing, editions, features, third-party tools | Covered in Section 4.                                                                                                         |
-| System landscape diagram                                    | Covered in Section 5.                                                                                                         |
-| Business processes and user stories                         | Covered in Section 6.                                                                                                         |
-| Integration considerations                                  | Covered in Section 9.                                                                                                         |
-| Data model, sharing, and security design                    | Covered in Sections 7 and 8.                                                                                                  |
-| Data migration plan                                         | Covered in Section 11.                                                                                                        |
+| Salesforce licensing, editions, features, third-party tools | Covered in [Section 4](#4-salesforce-product-and-capability-selection).                                                       |
+| System landscape diagram                                    | Covered in [Section 5](#5-target-solution-architecture).                                                                      |
+| Business processes and user stories                         | Covered in [Section 6](#6-business-process-architecture).                                                                     |
+| Integration considerations                                  | Covered in [Section 9](#9-integration-architecture).                                                                          |
+| Data model, sharing, and security design                    | Covered in [Section 7](#7-application-architecture) and [Section 8](#8-data-architecture).                                    |
+| Data migration plan                                         | Covered in [Section 11](#11-data-migration-and-large-volume-strategy).                                                        |
 
 ## 3. Scope, Assumptions, and Constraints
 
@@ -113,46 +113,47 @@ package "Salesforce Solution" {
 
 ### 3.3 Assumptions
 
-| ID   | Assumption                                                                                                                                                                                                                              |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A-01 | Internal agency users authenticate through Microsoft AD / Microsoft Entra ID.                                                                                                                                                           |
-| A-02 | The external MDM exposes secure APIs for citizen lookup by phone and email.                                                                                                                                                             |
-| A-03 | Enquiry and feedback are implemented as Salesforce Case record types.                                                                                                                                                                   |
-| A-04 | The agency has divisions or branches that can be mapped to roles, queues, public groups, and reports.                                                                                                                                   |
-| A-05 | Historical source records contain enough identifiers to support migration reconciliation.                                                                                                                                               |
-| A-06 | File storage strategy will be validated against Salesforce storage limits before production migration.                                                                                                                                  |
-| A-07 | The mobile app is treated as a real-time assistance channel through Digital Engagement or an API/channel adapter; it is not assumed to embed Experience Cloud or use mobile webview.                                                    |
-| A-08 | Channel adapters may create a preliminary Case before MDM verification; the Case remains `Verification Pending` and cannot proceed to normal assignment until verification succeeds or an authorized manual-review outcome is recorded. |
+| ID   | Assumption                                                                                                                                                                                                                                   |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-01 | Internal agency users authenticate through Microsoft AD / Microsoft Entra ID.                                                                                                                                                                |
+| A-02 | The external MDM exposes secure APIs for citizen lookup by phone and email.                                                                                                                                                                  |
+| A-03 | Enquiry and feedback are implemented as Salesforce Case record types.                                                                                                                                                                        |
+| A-04 | The agency has divisions or branches that can be mapped to roles, queues, public groups, and reports.                                                                                                                                        |
+| A-05 | Historical source records contain enough identifiers to support migration reconciliation.                                                                                                                                                    |
+| A-06 | File storage strategy will be validated against Salesforce storage limits before production migration.                                                                                                                                       |
+| A-07 | The mobile app is treated as a real-time assistance channel through Digital Engagement or an API/channel adapter; it is not assumed to embed Experience Cloud or use mobile webview.                                                         |
+| A-08 | Channel adapters may create a preliminary Case before MDM verification; the Case remains `Verification Pending` and cannot proceed to normal assignment until verification succeeds or an authorized manual-review outcome is recorded.      |
+| A-09 | Outbound APIs in scope expose REST/JSON contracts compatible with Flow HTTP Callout or an OpenAPI schema supported by External Services; unsupported contracts require API Gateway normalization rather than Salesforce custom callout code. |
 
 ### 3.4 Constraints
 
-| ID   | Constraint                                                                                    |
-| ---- | --------------------------------------------------------------------------------------------- |
-| C-01 | Salesforce governor limits apply to Apex, Flow, and integration transactions.                 |
-| C-02 | MDM response time determines whether verification can be fully synchronous.                   |
-| C-03 | Salesforce data/file storage capacity must be sized for historical and daily growth.          |
-| C-04 | Security design must protect citizen personally identifiable information.                     |
-| C-05 | Migration must preserve auditability, ownership, file links, and record-count reconciliation. |
+| ID   | Constraint                                                                                          |
+| ---- | --------------------------------------------------------------------------------------------------- |
+| C-01 | Salesforce Flow, HTTP Callout, External Services, and integration limits apply to each transaction. |
+| C-02 | MDM response time determines whether verification can be fully synchronous.                         |
+| C-03 | Salesforce data/file storage capacity must be sized for historical and daily growth.                |
+| C-04 | Security design must protect citizen personally identifiable information.                           |
+| C-05 | Migration must preserve auditability, ownership, file links, and record-count reconciliation.       |
 
 ## 4. Salesforce Product and Capability Selection
 
-| Requirement Area       | Recommended Capability                                                  | Rationale                                                                                                                 |
-| ---------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Internal case handling | Service Cloud Enterprise or higher                                      | Provides Case, Service Console, queues, automation, reporting, and service process foundation.                            |
-| Public-sector hosting  | Salesforce Government Cloud or equivalent regulated option, if mandated | Supports public-sector compliance and data residency requirements when required by policy.                                |
-| Website citizen access | Experience Cloud                                                        | Supports website-based case submission, status visibility, file upload, and authenticated/public citizen access patterns. |
-| Website intake         | Experience Cloud LWC, Web-to-Case, or API-backed form                   | Supports structured website submission, validation, attachments, and channel tracking.                                    |
-| Phone intake           | Open CTI or Service Cloud Voice-compatible integration                  | Enables screen-pop, call logging, and phone-origin Case creation.                                                         |
-| Real-time assistance   | Messaging, Chat, or Digital Engagement                                  | Supports real-time citizen assistance from the agency website or mobile app and routes work to agents.                    |
-| Email intake           | Email-to-Case                                                           | Converts emails into Cases and maintains email thread history.                                                            |
-| Work assignment        | Omni-Channel                                                            | Routes by queue, skill, language, capacity, workload, and availability.                                                   |
-| Reusable answers       | Salesforce Knowledge                                                    | Provides approved solutions for recurring enquiries and supports draft-to-approval lifecycle.                             |
-| SLA management         | Entitlements and Milestones                                             | Tracks first response, follow-up, escalation, and resolution commitments.                                                 |
-| Reporting              | Reports and Dashboards; CRM Analytics if needed                         | Meets Branch Admin and Supervisor monitoring needs.                                                                       |
-| Identity               | Salesforce SSO with Microsoft AD / Entra ID through SAML or OIDC        | Reuses the existing identity provider and centralizes access management.                                                  |
-| Integration            | Named Credentials, External Credentials, Apex, API Gateway or MuleSoft  | Secures MDM and channel integrations without hardcoded credentials.                                                       |
-| Migration              | Bulk API 2.0, ETL tooling, Data Loader, staging database                | Supports controlled high-volume migration and reconciliation.                                                             |
-| Backup/archive         | Salesforce Backup or approved AppExchange backup/archive product        | Reduces risk for long retention, files, and operational recovery.                                                         |
+| Requirement Area       | Recommended Capability                                                                         | Rationale                                                                                                                 |
+| ---------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Internal case handling | Service Cloud Enterprise or higher                                                             | Provides Case, Service Console, queues, automation, reporting, and service process foundation.                            |
+| Public-sector hosting  | Salesforce Government Cloud or equivalent regulated option, if mandated                        | Supports public-sector compliance and data residency requirements when required by policy.                                |
+| Website citizen access | Experience Cloud                                                                               | Supports website-based case submission, status visibility, file upload, and authenticated/public citizen access patterns. |
+| Website intake         | Experience Cloud LWC, Web-to-Case, or API-backed form                                          | Supports structured website submission, validation, attachments, and channel tracking.                                    |
+| Phone intake           | Open CTI or Service Cloud Voice-compatible integration                                         | Enables screen-pop, call logging, and phone-origin Case creation.                                                         |
+| Real-time assistance   | Messaging, Chat, or Digital Engagement                                                         | Supports real-time citizen assistance from the agency website or mobile app and routes work to agents.                    |
+| Email intake           | Email-to-Case                                                                                  | Converts emails into Cases and maintains email thread history.                                                            |
+| Work assignment        | Omni-Channel                                                                                   | Routes by queue, skill, language, capacity, workload, and availability.                                                   |
+| Reusable answers       | Salesforce Knowledge                                                                           | Provides approved solutions for recurring enquiries and supports draft-to-approval lifecycle.                             |
+| SLA management         | Entitlements and Milestones                                                                    | Tracks first response, follow-up, escalation, and resolution commitments.                                                 |
+| Reporting              | Reports and Dashboards; CRM Analytics if needed                                                | Meets Branch Admin and Supervisor monitoring needs.                                                                       |
+| Identity               | Salesforce SSO with Microsoft AD / Entra ID through SAML or OIDC                               | Reuses the existing identity provider and centralizes access management.                                                  |
+| Integration            | Flow HTTP Callout, External Services, External Credentials, Named Credentials, and API Gateway | Provides declarative outbound REST callouts without hardcoded endpoints or credentials.                                   |
+| Migration              | Bulk API 2.0, ETL tooling, Data Loader, staging database                                       | Supports controlled high-volume migration and reconciliation.                                                             |
+| Backup/archive         | Salesforce Backup or approved AppExchange backup/archive product                               | Reduces risk for long retention, files, and operational recovery.                                                         |
 
 ## 5. Target Solution Architecture
 
@@ -202,7 +203,9 @@ package "Salesforce Service Cloud" {
 
 package "Salesforce Platform Services" {
   [Flow Automation]
-  [CitizenVerificationService]
+  [Citizen Verification Flow]
+  [MDM External Service Action]
+  [External Credential]
   [Named Credentials]
   [Custom Metadata]
 }
@@ -239,15 +242,17 @@ BranchAdmin --> [Reports and Dashboards]
 [Service Console] --> [Salesforce Knowledge]
 [Case Management] --> [Entitlements and Milestones]
 [Case Management] --> [Flow Automation]
-[Flow Automation] --> [CitizenVerificationService]
-[CitizenVerificationService] --> [Named Credentials]
+[Flow Automation] --> [Citizen Verification Flow]
+[Citizen Verification Flow] --> [MDM External Service Action]
+[MDM External Service Action] --> [Named Credentials]
+[Named Credentials] --> [External Credential]
 [Named Credentials] --> Gateway
 Gateway --> MDM
 
 [Case Management] --> CoreServiceData
 [Salesforce Knowledge] --> KnowledgeData
 [Entitlements and Milestones] --> OperationalTrackingData
-[CitizenVerificationService] --> OperationalTrackingData
+[Citizen Verification Flow] --> OperationalTrackingData
 [Reports and Dashboards] --> CoreServiceData
 [Reports and Dashboards] --> OperationalTrackingData
 
@@ -291,11 +296,11 @@ package "Orchestration Layer" as OrchestrationLayer {
 
 package "Business Service Layer" as BusinessServiceLayer {
   [Core Case Services\nCaseIntakeService,\nCaseRoutingService,\nCaseLifecycleService] as CoreCaseServices
-  [Supporting Services\nCitizenVerificationService,\nFeedbackAnalysisService,\nIntegrationErrorService] as SupportingServices
+  [Supporting Services\nFeedbackAnalysisService,\nIntegrationErrorService] as SupportingServices
 }
 
 package "Integration Layer" as IntegrationLayer {
-  [External Platform Services\nMicrosoft AD / Entra ID,\nNamed Credentials,\nAPI Gateway, External MDM] as ExternalPlatformServices
+  [Declarative Integration Services\nCitizen Verification Flow, External Services,\nExternal Credentials, Named Credentials,\nAPI Gateway, External MDM] as ExternalPlatformServices
 }
 
 package "Persistence Layer" as PersistenceLayer {
@@ -647,7 +652,7 @@ package "Application Layer" {
 
 package "Business Services" {
   [Core Case Services\nCaseIntakeService,\nCaseRoutingService,\nCaseLifecycleService] as CaseServices
-  [Supporting Services\nCitizenVerificationService,\nFeedbackAnalysisService,\nIntegrationErrorService] as SupportServices
+  [Supporting Services\nFeedbackAnalysisService,\nIntegrationErrorService] as SupportServices
 }
 
 database "Salesforce Data" {
@@ -680,9 +685,10 @@ skinparam linetype ortho
 skinparam ArrowColor #2563EB
 hide empty members
 
-package "Intake Services" {
+package "Intake Services and Automation" {
   class CaseIntakeService
-  class CitizenVerificationService
+  class CitizenVerificationFlow <<Flow>>
+  class MDMVerificationAction <<External Service>>
 }
 
 package "Case Operations" {
@@ -711,7 +717,8 @@ package "Data Contracts" {
   class "Operational Data\nIntegration_Error__c,\nMigration_Batch__c,\nCase_Routing_Rule__mdt" as OperationalData
 }
 
-CaseIntakeService --> CitizenVerificationService
+CaseIntakeService --> CitizenVerificationFlow
+CitizenVerificationFlow --> MDMVerificationAction
 CaseIntakeService --> CaseRoutingService
 CaseIntakeService --> CaseLifecycleService
 CaseIntakeService --> CoreCaseData
@@ -723,7 +730,7 @@ CaseLifecycleService --> FileData
 FeedbackAnalysisService --> CoreCaseData
 KnowledgeSuggestionService --> KnowledgeData
 
-CitizenVerificationService --> NamedCredential
+MDMVerificationAction --> NamedCredential
 IntegrationErrorService --> OperationalData
 MigrationReconciliationService --> OperationalData
 Flow --> CaseLifecycleService
@@ -731,22 +738,23 @@ Flow --> CaseLifecycleService
 @enduml
 ```
 
-The responsibilities of the canonical application services are defined below.
+The responsibilities of the canonical application services and declarative integration components are defined below.
 
-| Service                        | Responsibility                                                                            |
-| ------------------------------ | ----------------------------------------------------------------------------------------- |
-| CaseIntakeService              | Normalize website, phone, email, and real-time assistance interactions into Case records. |
-| CitizenVerificationService     | Verify phone/email against MDM and update Contact/Case verification fields.               |
-| CaseRoutingService             | Prepare routing attributes used by Omni-Channel and queues.                               |
-| CaseLifecycleService           | Enforce lifecycle transitions, closure validations, and follow-up requirements.           |
-| FeedbackAnalysisService        | Classify feedback, satisfaction, severity, and improvement area.                          |
-| KnowledgeSuggestionService     | Suggest existing articles and create draft article candidates when needed.                |
-| IntegrationErrorService        | Capture MDM/channel/file failures and retry status.                                       |
-| MigrationReconciliationService | Track migration batches, counts, file links, and exception summaries.                     |
+| Component                      | Responsibility                                                                               |
+| ------------------------------ | -------------------------------------------------------------------------------------------- |
+| CaseIntakeService              | Normalize website, phone, email, and real-time assistance interactions into Case records.    |
+| CitizenVerificationFlow        | Orchestrate phone/email verification and update Contact/Case verification fields.            |
+| MDMVerificationAction          | External Service action that performs the secured MDM REST callout through Named Credential. |
+| CaseRoutingService             | Prepare routing attributes used by Omni-Channel and queues.                                  |
+| CaseLifecycleService           | Enforce lifecycle transitions, closure validations, and follow-up requirements.              |
+| FeedbackAnalysisService        | Classify feedback, satisfaction, severity, and improvement area.                             |
+| KnowledgeSuggestionService     | Suggest existing articles and create draft article candidates when needed.                   |
+| IntegrationErrorService        | Capture MDM/channel/file failures and retry status.                                          |
+| MigrationReconciliationService | Track migration batches, counts, file links, and exception summaries.                        |
 
 ### 7.3 Service Interaction Diagram
 
-This sequence shows the runtime collaboration among application services from channel submission through agent assignment. MDM transport and failure handling are detailed separately in Section 9.
+This sequence shows the runtime collaboration among application services from channel submission through agent assignment. MDM transport and failure handling are detailed separately in [Section 9](#9-integration-architecture).
 
 [Service Interaction Diagram](<../puml task2/07.03 Service Interaction Diagram.puml>)
 
@@ -757,7 +765,9 @@ skinparam sequenceMessageAlign center
 participant Citizen
 participant "Channel Adapter" as Channel
 participant CaseIntakeService
-participant CitizenVerificationService
+participant CitizenVerificationFlow
+participant "MDM External Service" as ExternalService
+participant "Named Credential" as NamedCredential
 participant "External MDM" as MDM
 participant CaseRoutingService
 participant "Omni-Channel" as Omni
@@ -766,10 +776,14 @@ database Salesforce
 
 Citizen -> Channel : Submit enquiry or feedback
 Channel -> CaseIntakeService : Intake request
-CaseIntakeService -> CitizenVerificationService : Verify phone/email
-CitizenVerificationService -> MDM : Lookup citizen
-MDM --> CitizenVerificationService : Match result
-CitizenVerificationService --> CaseIntakeService : Verification result
+CaseIntakeService -> CitizenVerificationFlow : Verify phone/email
+CitizenVerificationFlow -> ExternalService : Invoke generated action
+ExternalService -> NamedCredential : Authenticated HTTP callout
+NamedCredential -> MDM : Lookup citizen
+MDM --> NamedCredential : Match result
+NamedCredential --> ExternalService : REST response
+ExternalService --> CitizenVerificationFlow : Structured response
+CitizenVerificationFlow --> CaseIntakeService : Verification result
 CaseIntakeService -> Salesforce : Upsert Contact, create Case
 CaseIntakeService -> CaseRoutingService : Assignment context
 CaseRoutingService -> Omni : Route work item
@@ -815,7 +829,7 @@ endif
 
 ### 7.5 Configurable Business Rules
 
-This diagram identifies the Custom Metadata Types used to externalize routing, SLA, feedback-classification, and integration-error behavior. Keeping these rules in metadata allows authorized administrators to adjust operational policy without embedding frequently changing values in Apex or Flow logic.
+This diagram identifies the Custom Metadata Types used to externalize routing, SLA, feedback-classification, and integration-error behavior. Keeping these rules in metadata allows authorized administrators to adjust operational policy without embedding frequently changing values in Flow logic.
 
 [Configurable Business Rules](<../puml task2/07.05 Configurable Business Rules.puml>)
 
@@ -869,16 +883,16 @@ Integration_Error_Message__mdt ..> Case_Routing_Rule__mdt : fallback queue
 
 ### 7.6 Declarative and Programmatic Implementation Strategy
 
-| Requirement                | Technology                                           | Rationale                                                        |
-| -------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------- |
-| Case creation and updates  | Flow, Case assignment, Email-to-Case, Web/API intake | Standard Salesforce service capabilities.                        |
-| Routing                    | Omni-Channel, queues, skills, capacity               | Native routing by availability and workload.                     |
-| SLA                        | Entitlements and Milestones                          | Standard response and resolution tracking.                       |
-| Notifications              | Flow and email templates                             | Administrator maintainable.                                      |
-| Knowledge lifecycle        | Salesforce Knowledge approval process                | Standard article governance.                                     |
-| MDM verification           | Apex / middleware integration                        | Requires external callout, mapping, timeout, and retry handling. |
-| Migration                  | Bulk API / ETL                                       | High-volume load and reconciliation.                             |
-| Operational error tracking | Custom object and dashboards                         | Required for support visibility.                                 |
+| Requirement                | Technology                                                                  | Rationale                                                                                                 |
+| -------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Case creation and updates  | Flow, Case assignment, Email-to-Case, Web/API intake                        | Standard Salesforce service capabilities.                                                                 |
+| Routing                    | Omni-Channel, queues, skills, capacity                                      | Native routing by availability and workload.                                                              |
+| SLA                        | Entitlements and Milestones                                                 | Standard response and resolution tracking.                                                                |
+| Notifications              | Flow and email templates                                                    | Administrator maintainable.                                                                               |
+| Knowledge lifecycle        | Salesforce Knowledge approval process                                       | Standard article governance.                                                                              |
+| MDM verification           | Flow HTTP Callout, External Services, External Credential, Named Credential | Declarative REST callout with secured authentication, response mapping, timeout, and Flow fault handling. |
+| Migration                  | Bulk API / ETL                                                              | High-volume load and reconciliation.                                                                      |
+| Operational error tracking | Custom object and dashboards                                                | Required for support visibility.                                                                          |
 
 ## 8. Data Architecture
 
@@ -1089,22 +1103,22 @@ Migration_Batch__c ..> Case : loads
 
 ### 8.3 Recommended Case Fields
 
-| Field                          | Purpose                                                                                                      |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| RecordTypeId                   | Selects the `Enquiry` or `Feedback` Case record type defined in Section 8.4.                                 |
-| Origin                         | Website, Phone, Chat, Mobile App, or Email.                                                                  |
-| Status                         | Values are controlled by the Support Process associated with the Case record type; see Sections 8.5 and 8.6. |
-| Priority                       | Standard Salesforce priority plus agency-specific severity mapping if required.                              |
-| Service_Division__c            | Branch or division scope.                                                                                    |
-| Service_Category__c            | Agency service/product area.                                                                                 |
-| Language__c                    | Preferred language for routing.                                                                              |
-| Citizen_Verification_Status__c | Verified, Not Found, Manual Review, Failed.                                                                  |
-| MDM_Verification_Id__c         | External verification reference.                                                                             |
-| Satisfaction_Level__c          | Feedback satisfaction indicator.                                                                             |
-| Improvement_Area__c            | Feedback classification for trend reporting.                                                                 |
-| Resolution_Summary__c          | Required before closure.                                                                                     |
-| Citizen_Confirmed_Closure__c   | Confirms citizen acceptance for enquiry closure.                                                             |
-| Follow_Up_Date__c              | Drives follow-up tasks and overdue reporting.                                                                |
+| Field                          | Purpose                                                                                                                                                                          |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RecordTypeId                   | Selects the `Enquiry` or `Feedback` Case record type defined in [Section 8.4](#84-case-record-type-design).                                                                      |
+| Origin                         | Website, Phone, Chat, Mobile App, or Email.                                                                                                                                      |
+| Status                         | Values are controlled by the Support Process associated with the Case record type; see [Section 8.5](#85-enquiry-case-lifecycle) and [Section 8.6](#86-feedback-case-lifecycle). |
+| Priority                       | Standard Salesforce priority plus agency-specific severity mapping if required.                                                                                                  |
+| Service_Division__c            | Branch or division scope.                                                                                                                                                        |
+| Service_Category__c            | Agency service/product area.                                                                                                                                                     |
+| Language__c                    | Preferred language for routing.                                                                                                                                                  |
+| Citizen_Verification_Status__c | Verified, Not Found, Manual Review, Failed.                                                                                                                                      |
+| MDM_Verification_Id__c         | External verification reference.                                                                                                                                                 |
+| Satisfaction_Level__c          | Feedback satisfaction indicator.                                                                                                                                                 |
+| Improvement_Area__c            | Feedback classification for trend reporting.                                                                                                                                     |
+| Resolution_Summary__c          | Required before closure.                                                                                                                                                         |
+| Citizen_Confirmed_Closure__c   | Confirms citizen acceptance for enquiry closure.                                                                                                                                 |
+| Follow_Up_Date__c              | Drives follow-up tasks and overdue reporting.                                                                                                                                    |
 
 ### 8.4 Case Record Type Design
 
@@ -1115,7 +1129,7 @@ The solution uses two Salesforce Case record types to separate the agency's prim
 | `Enquiry`        | `Enquiry Case Support Process`  | Manage citizen questions, concerns, and requests for information.           | Initiation, verification, recording, assignment, resolution, follow-up, and citizen-confirmed closure. | Knowledge usage, resolution summary, follow-up date, supervisor escalation, and citizen closure confirmation.           |
 | `Feedback`       | `Feedback Case Support Process` | Manage citizen feedback, complaints, and suggestions about agency services. | Receipt, recording, analysis, optional response, reporting, and supervisor evaluation.                 | Satisfaction level, severity, improvement area, response requirement, reporting classification, and evaluation outcome. |
 
-Each record type is associated with its own Salesforce Support Process, which controls the available `Case.Status` values. Record types also control the appropriate page layout, required fields, validation rules, status guidance, and automation entry criteria. The resulting lifecycles are defined separately in Sections 8.5 and 8.6.
+Each record type is associated with its own Salesforce Support Process, which controls the available `Case.Status` values. Record types also control the appropriate page layout, required fields, validation rules, status guidance, and automation entry criteria. The resulting lifecycles are defined separately in [Section 8.5](#85-enquiry-case-lifecycle) and [Section 8.6](#86-feedback-case-lifecycle).
 
 ### 8.5 Enquiry Case Lifecycle
 
@@ -1202,9 +1216,22 @@ SupervisorEvaluation --> Closed
 
 ## 9. Integration Architecture
 
+The integration architecture is declarative-first in both directions, with the pattern selected according to interaction direction, authentication context, and payload complexity.
+
+| Direction / Scenario                  | Preferred Pattern                                                                                            | Security and Usage                                                                                             |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Inbound authenticated custom payload  | External application invokes an autolaunched Flow through the Salesforce REST invocable-action endpoint.     | OAuth 2.0 or Salesforce session authentication; use an integration user with least-privilege access.           |
+| Inbound anonymous citizen interaction | Public Experience Cloud page invokes an enabled Screen Flow.                                                 | Restricted guest-user Flow, object, field, and file permissions; apply validation, spam, and abuse controls.   |
+| Inbound standard citizen channel      | Email-to-Case, Web-to-Case or Experience Cloud Flow, Digital Engagement, and CTI / Service Cloud Voice.      | Use native channel authentication, routing, and Omni-Channel controls where applicable.                        |
+| Outbound REST/JSON callout            | Flow HTTP Callout or registered External Service action secured by External Credential and Named Credential. | Used for MDM citizen verification and future compatible APIs; API Gateway can normalize unsupported contracts. |
+| Identity federation                   | Salesforce SSO with Microsoft AD / Entra ID through SAML or OpenID Connect.                                  | Separate identity pattern; not a citizen-channel intake or business API callout.                               |
+| Data migration and bulk exchange      | Bulk API 2.0 with ETL, staging, reconciliation, and controlled migration credentials.                        | Separate high-volume pattern; not executed as a transactional Flow callout.                                    |
+
+Middleware is optional when protocol mediation, complex transformation, centralized security policy, throttling, or cross-system orchestration is required.
+
 ### 9.1 Citizen Verification Integration Pattern
 
-This sequence diagram shows the secured synchronous verification path from the Service Console through `CitizenVerificationService`, Named Credentials, and the enterprise integration layer to the external MDM.
+This sequence diagram shows the declarative synchronous verification path from the Service Console through Flow, an External Service action, Named Credential, and the enterprise integration layer to the external MDM.
 
 [Citizen Verification Integration Pattern](<../puml task2/09.01 Citizen Verification Integration Pattern.puml>)
 
@@ -1213,33 +1240,38 @@ This sequence diagram shows the secured synchronous verification path from the S
 skinparam sequenceMessageAlign center
 actor Agent
 participant "Salesforce Service Console" as Console
-participant CitizenVerificationService
+participant "Citizen Verification Flow" as VerificationFlow
+participant "MDM External Service Action" as ExternalService
+participant "External Credential" as EC
 participant "Named Credential" as NC
 participant "API Gateway" as Gateway
 participant "External MDM System" as MDM
 database "Contact" as Contact
 
 Agent -> Console : Enter contact detail
-Console -> CitizenVerificationService : Verify citizen
-CitizenVerificationService -> NC : Secure callout
-NC -> Gateway : REST request
+Console -> VerificationFlow : Verify citizen
+VerificationFlow -> ExternalService : Invoke generated action
+ExternalService -> NC : HTTP callout
+NC -> EC : Resolve authentication principal
+NC -> Gateway : Authenticated REST request
 Gateway -> MDM : Verify profile
 MDM --> Gateway : Verification result
 Gateway --> NC : Response
-NC --> CitizenVerificationService : Citizen profile data
+NC --> ExternalService : Citizen profile response
+ExternalService --> VerificationFlow : Structured Flow output
 
 alt Citizen matched
-  CitizenVerificationService -> Contact : Update Contact
+  VerificationFlow -> Contact : Update Contact
 else Citizen not found
-  CitizenVerificationService -> Contact : Create provisional
+  VerificationFlow -> Contact : Create provisional
 end
 
-CitizenVerificationService --> Console : Verification status
+VerificationFlow --> Console : Verification status
 
 @enduml
 ```
 
-The business decision flow for Contact matching and manual review is defined once in Section 6.2. This section focuses on the technical call sequence and integration boundary.
+The business decision flow for Contact matching and manual review is defined once in [Section 6.5](#65-shared-case-intake-and-verification-process). This section focuses on the technical call sequence and integration boundary.
 
 ### 9.2 Retry Strategy
 
@@ -1283,14 +1315,15 @@ stop
 
 MDM verification is required during intake and case handling. Salesforce sends phone or email to the external MDM through a secured integration layer and receives citizen match status, citizen identifier, and profile attributes required for case servicing.
 
-| Design Area       | Decision                                                                                            |
-| ----------------- | --------------------------------------------------------------------------------------------------- |
-| Integration style | Synchronous lookup when MDM response time is acceptable; asynchronous fallback when unavailable.    |
-| Security          | Named Credentials and External Credentials, or approved middleware credential vault.                |
-| Transport         | REST API through API Gateway, MuleSoft, or existing enterprise middleware.                          |
-| Error handling    | Failed verification is logged to `Integration_Error__c`; Case moves to Manual Review when required. |
-| Retry             | Retry only transient failures and cap retry attempts to avoid loops.                                |
-| Data protection   | Store only required MDM response data in Salesforce.                                                |
+| Design Area       | Decision                                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------------------- |
+| Integration style | Synchronous lookup when MDM response time is acceptable; asynchronous fallback when unavailable.              |
+| Invocation        | Flow HTTP Callout or registered External Service action; no Apex callout in the baseline design.              |
+| Security          | External Credential defines the authentication protocol and principal; Named Credential defines the endpoint. |
+| Transport         | REST/JSON through API Gateway, which normalizes unsupported MDM contracts when required.                      |
+| Error handling    | Flow fault paths log `Integration_Error__c` and move the Case to Manual Review when required.                 |
+| Retry             | A scheduled or asynchronous Flow retries only transient failures and caps retry attempts.                     |
+| Data protection   | Store only required MDM response data in Salesforce.                                                          |
 
 ### 9.4 Channel Integrations
 
@@ -1629,16 +1662,16 @@ AgentWorklist --> Agent
 
 ## 13. Non-Functional Requirements
 
-| Area            | Design Response                                                                                       |
-| --------------- | ----------------------------------------------------------------------------------------------------- |
-| Scalability     | Standard Case, Omni-Channel, bulk-safe Flow/Apex, selective reports, and archive strategy.            |
-| Flexibility     | Record types, page layouts, Flow, Custom Metadata, queues, and Knowledge allow process changes.       |
-| Security        | SSO, least privilege, sharing, FLS, encryption where required, and audit monitoring.                  |
-| Reliability     | Retry strategy, manual verification fallback, Integration Error tracking, and operational dashboards. |
-| Maintainability | Standard Service Cloud capabilities are preferred before custom code.                                 |
-| Performance     | Avoid unnecessary synchronous processing; use asynchronous retries for slow external systems.         |
-| Availability    | Salesforce platform resilience with controlled handling of MDM/channel outages.                       |
-| Compliance      | Minimize stored MDM data, protect PII, and apply retention/archive rules.                             |
+| Area            | Design Response                                                                                                 |
+| --------------- | --------------------------------------------------------------------------------------------------------------- |
+| Scalability     | Standard Case, Omni-Channel, bulk-safe Flow, controlled HTTP callouts, selective reports, and archive strategy. |
+| Flexibility     | Record types, page layouts, Flow, Custom Metadata, queues, and Knowledge allow process changes.                 |
+| Security        | SSO, least privilege, sharing, FLS, encryption where required, and audit monitoring.                            |
+| Reliability     | Retry strategy, manual verification fallback, Integration Error tracking, and operational dashboards.           |
+| Maintainability | Standard Service Cloud capabilities are preferred before custom code.                                           |
+| Performance     | Avoid unnecessary synchronous processing; use asynchronous retries for slow external systems.                   |
+| Availability    | Salesforce platform resilience with controlled handling of MDM/channel outages.                                 |
+| Compliance      | Minimize stored MDM data, protect PII, and apply retention/archive rules.                                       |
 
 ## 14. Risks and Mitigation
 
@@ -1675,9 +1708,9 @@ Rationale: Assignment must consider expertise, language, workload, and availabil
 
 ### ADR-004 - Verify Citizens Through MDM Integration
 
-Decision: Verify by phone or email against external MDM through Named Credentials or middleware.
+Decision: Verify by phone or email using Flow HTTP Callout / External Services secured by External Credential and Named Credential, with API Gateway normalization when required.
 
-Rationale: MDM remains the authoritative citizen source while Salesforce stores the service interaction.
+Rationale: MDM remains the authoritative citizen source while Salesforce stores the service interaction; the declarative integration pattern improves maintainability and avoids custom callout code for compatible REST APIs.
 
 ### ADR-005 - Use Microsoft AD / Entra ID for SSO
 

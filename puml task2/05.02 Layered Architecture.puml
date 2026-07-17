@@ -19,11 +19,11 @@ package "Orchestration Layer" as OrchestrationLayer {
 
 package "Business Service Layer" as BusinessServiceLayer {
   [Core Case Services\nCaseIntakeService,\nCaseRoutingService,\nCaseLifecycleService] as CoreCaseServices
-  [Supporting Services\nCitizenVerificationService,\nFeedbackAnalysisService,\nIntegrationErrorService] as SupportingServices
+  [Supporting Services\nFeedbackAnalysisService,\nIntegrationErrorService] as SupportingServices
 }
 
 package "Integration Layer" as IntegrationLayer {
-  [External Platform Services\nMicrosoft AD / Entra ID,\nNamed Credentials,\nAPI Gateway, External MDM] as ExternalPlatformServices
+  [Declarative Integration Services\nCitizen Verification Flow, External Services,\nExternal Credentials, Named Credentials,\nAPI Gateway, External MDM] as ExternalPlatformServices
 }
 
 package "Persistence Layer" as PersistenceLayer {

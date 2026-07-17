@@ -4,7 +4,9 @@ skinparam sequenceMessageAlign center
 participant Citizen
 participant "Channel Adapter" as Channel
 participant CaseIntakeService
-participant CitizenVerificationService
+participant CitizenVerificationFlow
+participant "MDM External Service" as ExternalService
+participant "Named Credential" as NamedCredential
 participant "External MDM" as MDM
 participant CaseRoutingService
 participant "Omni-Channel" as Omni
@@ -13,10 +15,14 @@ database Salesforce
 
 Citizen -> Channel : Submit enquiry or feedback
 Channel -> CaseIntakeService : Intake request
-CaseIntakeService -> CitizenVerificationService : Verify phone/email
-CitizenVerificationService -> MDM : Lookup citizen
-MDM --> CitizenVerificationService : Match result
-CitizenVerificationService --> CaseIntakeService : Verification result
+CaseIntakeService -> CitizenVerificationFlow : Verify phone/email
+CitizenVerificationFlow -> ExternalService : Invoke generated action
+ExternalService -> NamedCredential : Authenticated HTTP callout
+NamedCredential -> MDM : Lookup citizen
+MDM --> NamedCredential : Match result
+NamedCredential --> ExternalService : REST response
+ExternalService --> CitizenVerificationFlow : Structured response
+CitizenVerificationFlow --> CaseIntakeService : Verification result
 CaseIntakeService -> Salesforce : Upsert Contact, create Case
 CaseIntakeService -> CaseRoutingService : Assignment context
 CaseRoutingService -> Omni : Route work item

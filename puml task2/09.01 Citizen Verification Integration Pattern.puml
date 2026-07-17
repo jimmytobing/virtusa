@@ -2,27 +2,32 @@
 skinparam sequenceMessageAlign center
 actor Agent
 participant "Salesforce Service Console" as Console
-participant CitizenVerificationService
+participant "Citizen Verification Flow" as VerificationFlow
+participant "MDM External Service Action" as ExternalService
+participant "External Credential" as EC
 participant "Named Credential" as NC
 participant "API Gateway" as Gateway
 participant "External MDM System" as MDM
 database "Contact" as Contact
 
 Agent -> Console : Enter contact detail
-Console -> CitizenVerificationService : Verify citizen
-CitizenVerificationService -> NC : Secure callout
-NC -> Gateway : REST request
+Console -> VerificationFlow : Verify citizen
+VerificationFlow -> ExternalService : Invoke generated action
+ExternalService -> NC : HTTP callout
+NC -> EC : Resolve authentication principal
+NC -> Gateway : Authenticated REST request
 Gateway -> MDM : Verify profile
 MDM --> Gateway : Verification result
 Gateway --> NC : Response
-NC --> CitizenVerificationService : Citizen profile data
+NC --> ExternalService : Citizen profile response
+ExternalService --> VerificationFlow : Structured Flow output
 
 alt Citizen matched
-  CitizenVerificationService -> Contact : Update Contact
+  VerificationFlow -> Contact : Update Contact
 else Citizen not found
-  CitizenVerificationService -> Contact : Create provisional
+  VerificationFlow -> Contact : Create provisional
 end
 
-CitizenVerificationService --> Console : Verification status
+VerificationFlow --> Console : Verification status
 
 @enduml

@@ -5,9 +5,10 @@ skinparam linetype ortho
 skinparam ArrowColor #2563EB
 hide empty members
 
-package "Intake Services" {
+package "Intake Services and Automation" {
   class CaseIntakeService
-  class CitizenVerificationService
+  class CitizenVerificationFlow <<Flow>>
+  class MDMVerificationAction <<External Service>>
 }
 
 package "Case Operations" {
@@ -36,7 +37,8 @@ package "Data Contracts" {
   class "Operational Data\nIntegration_Error__c,\nMigration_Batch__c,\nCase_Routing_Rule__mdt" as OperationalData
 }
 
-CaseIntakeService --> CitizenVerificationService
+CaseIntakeService --> CitizenVerificationFlow
+CitizenVerificationFlow --> MDMVerificationAction
 CaseIntakeService --> CaseRoutingService
 CaseIntakeService --> CaseLifecycleService
 CaseIntakeService --> CoreCaseData
@@ -48,7 +50,7 @@ CaseLifecycleService --> FileData
 FeedbackAnalysisService --> CoreCaseData
 KnowledgeSuggestionService --> KnowledgeData
 
-CitizenVerificationService --> NamedCredential
+MDMVerificationAction --> NamedCredential
 IntegrationErrorService --> OperationalData
 MigrationReconciliationService --> OperationalData
 Flow --> CaseLifecycleService

@@ -17,7 +17,7 @@ package "Application Layer" {
 
 package "Business Services" {
   [Core Case Services\nCaseIntakeService,\nCaseRoutingService,\nCaseLifecycleService] as CaseServices
-  [Supporting Services\nCitizenVerificationService,\nFeedbackAnalysisService,\nIntegrationErrorService] as SupportServices
+  [Supporting Services\nFeedbackAnalysisService,\nIntegrationErrorService] as SupportServices
 }
 
 database "Salesforce Data" {
