@@ -1,6 +1,4 @@
 @startuml
-left to right direction
-skinparam linetype ortho
 
 entity Case_Routing_Rule__mdt {
   DeveloperName

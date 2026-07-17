@@ -1,0 +1,30 @@
+@startuml
+start
+
+:Citizen submits Feedback,
+Complaint, or Suggestion (Receipt);
+:Intake and Citizen Verification
+(6.5 Shared Case Intake and Verification Process);
+:Feedback Recording;
+:Case Assignment
+(6.6 Case Routing Process);
+:Agent analyzes root cause,
+impact, and improvement area;
+
+if (Citizen response required?) then (Yes)
+  :Respond to citizen;
+  :Record communication history;
+else (No)
+  :Record no-response rationale;
+endif
+
+:Include Feedback in reporting
+by service, branch, channel,
+severity, trend, and satisfaction;
+:Supervisor evaluates handling,
+outcome, SLA, and satisfaction;
+:Record evaluation outcome;
+:Close Feedback Case;
+
+stop
+@enduml

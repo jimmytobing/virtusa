@@ -2,6 +2,7 @@
 left to right direction
 skinparam classAttributeIconSize 0
 skinparam linetype ortho
+skinparam ArrowColor #2563EB
 hide empty members
 
 package "Intake Services" {

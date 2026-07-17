@@ -1,0 +1,32 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Citizen
+actor Agent
+actor Supervisor
+actor "Branch Admin" as BranchAdmin
+
+rectangle "Citizen Service Case Management" {
+  usecase "Submit Enquiry or Feedback\nthrough preferred channel" as SubmitCase
+  usecase "Upload supporting\nphotos or documents" as UploadFiles
+  usecase "Verify citizen by\nphone or email" as VerifyCitizen
+  usecase "Receive skill- and\ncapacity-based assignment" as ReceiveAssignment
+  usecase "Use approved\nKnowledge article" as UseKnowledge
+  usecase "Document and propose\na new solution" as ProposeSolution
+  usecase "Monitor backlog,\nescalations, and SLA risk" as MonitorOperations
+  usecase "Evaluate Feedback handling\nand agent outcomes" as EvaluateHandling
+  usecase "Monitor performance by\ndivision, channel, type, and agent" as MonitorPerformance
+}
+
+Citizen --> SubmitCase
+Citizen --> UploadFiles
+Agent --> VerifyCitizen
+Agent --> ReceiveAssignment
+Agent --> UseKnowledge
+Agent --> ProposeSolution
+Supervisor --> MonitorOperations
+Supervisor --> EvaluateHandling
+BranchAdmin --> MonitorPerformance
+
+@enduml

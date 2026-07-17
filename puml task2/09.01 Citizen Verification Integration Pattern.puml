@@ -2,27 +2,27 @@
 skinparam sequenceMessageAlign center
 actor Agent
 participant "Salesforce Service Console" as Console
-participant "Citizen Verification Service" as Apex
+participant CitizenVerificationService
 participant "Named Credential" as NC
 participant "API Gateway" as Gateway
 participant "External MDM System" as MDM
 database "Contact" as Contact
 
 Agent -> Console : Enter contact detail
-Console -> Apex : Verify citizen
-Apex -> NC : Secure callout
+Console -> CitizenVerificationService : Verify citizen
+CitizenVerificationService -> NC : Secure callout
 NC -> Gateway : REST request
 Gateway -> MDM : Verify profile
 MDM --> Gateway : Verification result
 Gateway --> NC : Response
-NC --> Apex : Citizen profile data
+NC --> CitizenVerificationService : Citizen profile data
 
 alt Citizen matched
-  Apex -> Contact : Update Contact
+  CitizenVerificationService -> Contact : Update Contact
 else Citizen not found
-  Apex -> Contact : Create provisional
+  CitizenVerificationService -> Contact : Create provisional
 end
 
-Apex --> Console : Verification status
+CitizenVerificationService --> Console : Verification status
 
 @enduml

@@ -10,6 +10,10 @@ This SADD only addresses the Task 2 requirement in `SF Technical Assessment (tas
 
 ## 2. Requirement Coverage
 
+### 2.1 Requirement Coverage Map
+
+This map traces each assessment requirement to the Salesforce capability or architectural mechanism that addresses it, providing an initial view of solution completeness.
+
 [Requirement Coverage Map](<../puml task2/02.01 Requirement Coverage Map.puml>)
 
 ```plantuml
@@ -37,7 +41,7 @@ package "Salesforce Solution" {
   [CTI / Voice]
   [Digital Engagement]
   [Email-to-Case]
-  [Citizen Verification Service]
+  [CitizenVerificationService]
   [Salesforce SSO]
   [Bulk API / ETL Migration]
   [Salesforce Files]
@@ -54,7 +58,7 @@ package "Salesforce Solution" {
 [Phone Channel] --> [CTI / Voice]
 [Real-Time Assistance] --> [Digital Engagement]
 [Email Channel] --> [Email-to-Case]
-[MDM Verification] --> [Citizen Verification Service]
+[MDM Verification] --> [CitizenVerificationService]
 [SSO with Microsoft AD] --> [Salesforce SSO]
 [Historical Migration] --> [Bulk API / ETL Migration]
 [Daily Case and File Volume] --> [Salesforce Files]
@@ -109,15 +113,16 @@ package "Salesforce Solution" {
 
 ### 3.3 Assumptions
 
-| ID   | Assumption                                                                                                                                                                           |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| A-01 | Internal agency users authenticate through Microsoft AD / Microsoft Entra ID.                                                                                                        |
-| A-02 | The external MDM exposes secure APIs for citizen lookup by phone and email.                                                                                                          |
-| A-03 | Enquiry and feedback are implemented as Salesforce Case record types.                                                                                                                |
-| A-04 | The agency has divisions or branches that can be mapped to roles, queues, public groups, and reports.                                                                                |
-| A-05 | Historical source records contain enough identifiers to support migration reconciliation.                                                                                            |
-| A-06 | File storage strategy will be validated against Salesforce storage limits before production migration.                                                                               |
-| A-07 | The mobile app is treated as a real-time assistance channel through Digital Engagement or an API/channel adapter; it is not assumed to embed Experience Cloud or use mobile webview. |
+| ID   | Assumption                                                                                                                                                                                                                              |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-01 | Internal agency users authenticate through Microsoft AD / Microsoft Entra ID.                                                                                                                                                           |
+| A-02 | The external MDM exposes secure APIs for citizen lookup by phone and email.                                                                                                                                                             |
+| A-03 | Enquiry and feedback are implemented as Salesforce Case record types.                                                                                                                                                                   |
+| A-04 | The agency has divisions or branches that can be mapped to roles, queues, public groups, and reports.                                                                                                                                   |
+| A-05 | Historical source records contain enough identifiers to support migration reconciliation.                                                                                                                                               |
+| A-06 | File storage strategy will be validated against Salesforce storage limits before production migration.                                                                                                                                  |
+| A-07 | The mobile app is treated as a real-time assistance channel through Digital Engagement or an API/channel adapter; it is not assumed to embed Experience Cloud or use mobile webview.                                                    |
+| A-08 | Channel adapters may create a preliminary Case before MDM verification; the Case remains `Verification Pending` and cannot proceed to normal assignment until verification succeeds or an authorized manual-review outcome is recorded. |
 
 ### 3.4 Constraints
 
@@ -150,6 +155,10 @@ package "Salesforce Solution" {
 | Backup/archive         | Salesforce Backup or approved AppExchange backup/archive product        | Reduces risk for long retention, files, and operational recovery.                                                         |
 
 ## 5. Target Solution Architecture
+
+### 5.1 Architecture Overview
+
+This diagram shows the end-to-end target landscape across citizen channels, Salesforce capabilities, enterprise identity, MDM integration, and the principal data stores used by the solution.
 
 [High-Level Solution Architecture](<../puml task2/05.01 High-Level Solution Architecture.puml>)
 
@@ -193,7 +202,7 @@ package "Salesforce Service Cloud" {
 
 package "Salesforce Platform Services" {
   [Flow Automation]
-  [Apex Integration Services]
+  [CitizenVerificationService]
   [Named Credentials]
   [Custom Metadata]
 }
@@ -230,15 +239,15 @@ BranchAdmin --> [Reports and Dashboards]
 [Service Console] --> [Salesforce Knowledge]
 [Case Management] --> [Entitlements and Milestones]
 [Case Management] --> [Flow Automation]
-[Flow Automation] --> [Apex Integration Services]
-[Apex Integration Services] --> [Named Credentials]
+[Flow Automation] --> [CitizenVerificationService]
+[CitizenVerificationService] --> [Named Credentials]
 [Named Credentials] --> Gateway
 Gateway --> MDM
 
 [Case Management] --> CoreServiceData
 [Salesforce Knowledge] --> KnowledgeData
 [Entitlements and Milestones] --> OperationalTrackingData
-[Apex Integration Services] --> OperationalTrackingData
+[CitizenVerificationService] --> OperationalTrackingData
 [Reports and Dashboards] --> CoreServiceData
 [Reports and Dashboards] --> OperationalTrackingData
 
@@ -248,8 +257,6 @@ AAD ..> [Citizen Portal] : optional citizen authentication
 @enduml
 ```
 
-### 5.1 Architecture Overview
-
 Citizens interact with the agency through supported contact channels. Salesforce normalizes those interactions into Case records with consistent channel, record type, priority, service division, citizen identity, SLA, and ownership attributes.
 
 Agents use Service Console to verify citizens, work Cases, review files, search Knowledge, respond to citizens, and complete follow-up actions. Supervisors manage queue health, escalations, SLA risk, and handling quality. Branch Admins monitor division-level demand and performance without directly resolving Cases.
@@ -257,6 +264,8 @@ Agents use Service Console to verify citizens, work Cases, review files, search 
 MDM integration verifies citizens by phone or email. Microsoft AD / Entra ID authenticates internal users and maps access through profiles, permission sets, roles, groups, queues, and sharing rules.
 
 ### 5.2 Layered Architecture
+
+This view organizes the solution into presentation, intake, orchestration, business-service, integration, and persistence layers to clarify dependency direction and separation of responsibility.
 
 [Layered Architecture](<../puml task2/05.02 Layered Architecture.puml>)
 
@@ -313,167 +322,236 @@ SupportingServices --> SalesforceDataModel
 @enduml
 ```
 
-### 5.3 Multi-Channel Case Intake Architecture
+## 6. Business Process Architecture
 
-[Multi-Channel Case Intake Architecture](<../puml task2/05.03 Multi-Channel Case Intake Architecture.puml>)
+The assessment defines two primary end-to-end business processes. Contact channels are intake mechanisms shared by both processes, not separate business processes.
+
+| Business Process         | Required Stages                                                                           |
+| ------------------------ | ----------------------------------------------------------------------------------------- |
+| Enquiry Case Management  | Initiation, Verification, Case Recording, Case Assignment, Resolution, Follow-Up, Closure |
+| Feedback Case Management | Receipt, Recording, Analysis, Response when required, Reporting, Evaluation               |
+
+### 6.1 User Story Map
+
+This diagram maps each business persona to the capabilities they need, forming the traceability bridge between role responsibilities and the processes defined later in this section.
+
+[User Story Map](<../puml task2/06.01 User Story Map.puml>)
 
 ```plantuml
 @startuml
-skinparam componentStyle rectangle
+left to right direction
+skinparam packageStyle rectangle
 
 actor Citizen
+actor Agent
+actor Supervisor
+actor "Branch Admin" as BranchAdmin
 
-package "Citizen Contact Channels" {
-  [Agency Website]
-  [Mobile App]
-  [Email]
-  [Phone Call]
-  [Live Chat]
+rectangle "Citizen Service Case Management" {
+  usecase "Submit Enquiry or Feedback\nthrough preferred channel" as SubmitCase
+  usecase "Upload supporting\nphotos or documents" as UploadFiles
+  usecase "Verify citizen by\nphone or email" as VerifyCitizen
+  usecase "Receive skill- and\ncapacity-based assignment" as ReceiveAssignment
+  usecase "Use approved\nKnowledge article" as UseKnowledge
+  usecase "Document and propose\na new solution" as ProposeSolution
+  usecase "Monitor backlog,\nescalations, and SLA risk" as MonitorOperations
+  usecase "Evaluate Feedback handling\nand agent outcomes" as EvaluateHandling
+  usecase "Monitor performance by\ndivision, channel, type, and agent" as MonitorPerformance
 }
 
-package "Salesforce Service Cloud" {
-  [Experience Cloud]
-  [Email-to-Case]
-  [Service Console]
-  [Digital Engagement]
-  [Voice / CTI Integration]
-  [Case Management]
-  [Salesforce Files]
-  [Omni-Channel]
-  [Knowledge]
-  [Entitlements and Milestones]
-}
-
-package "External Systems" {
-  [External MDM]
-  [Microsoft AD / Entra ID]
-}
-
-Citizen --> [Agency Website]
-Citizen --> [Mobile App]
-Citizen --> [Email]
-Citizen --> [Phone Call]
-Citizen --> [Live Chat]
-
-[Agency Website] --> [Experience Cloud]
-[Email] --> [Email-to-Case]
-[Phone Call] --> [Voice / CTI Integration]
-[Mobile App] --> [Digital Engagement]
-[Live Chat] --> [Digital Engagement]
-
-[Experience Cloud] --> [Case Management]
-[Email-to-Case] --> [Case Management]
-[Voice / CTI Integration] --> [Case Management]
-[Digital Engagement] --> [Case Management]
-[Case Management] --> [Salesforce Files]
-[Case Management] --> [Omni-Channel]
-[Case Management] --> [Entitlements and Milestones]
-[Omni-Channel] --> [Service Console]
-[Service Console] --> [Knowledge]
-[Case Management] --> [External MDM] : citizen verification
-[Microsoft AD / Entra ID] --> [Service Console] : internal SSO
+Citizen --> SubmitCase
+Citizen --> UploadFiles
+Agent --> VerifyCitizen
+Agent --> ReceiveAssignment
+Agent --> UseKnowledge
+Agent --> ProposeSolution
+Supervisor --> MonitorOperations
+Supervisor --> EvaluateHandling
+BranchAdmin --> MonitorPerformance
 
 @enduml
 ```
 
-## 6. Business Process Architecture
+| Persona      | User Story                                                                                                                              |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Citizen      | As a citizen, I want to submit enquiries or feedback through my preferred channel so that I can receive help without visiting a branch. |
+| Citizen      | As a citizen, I want to upload supporting photos or documents so that the agency can understand my request.                             |
+| Agent        | As an agent, I want citizen verification by phone or email so that I handle the correct citizen record.                                 |
+| Agent        | As an agent, I want cases routed by expertise, language, workload, and availability so that work is distributed fairly.                 |
+| Agent        | As an agent, I want to use approved Knowledge articles so that responses are consistent.                                                |
+| Agent        | As an agent, I want to document a new solution when no existing answer exists so that similar enquiries can be resolved faster.         |
+| Supervisor   | As a supervisor, I want to monitor queue backlog, escalations, and SLA risk so that I can intervene quickly.                            |
+| Supervisor   | As a supervisor, I want to evaluate feedback handling and agent outcomes so that service quality improves.                              |
+| Branch Admin | As a Branch Admin, I want dashboards by division, channel, case type, and agent so that I can monitor operational performance.          |
 
-[Citizen Case Management Lifecycle](<../puml task2/06.01 Citizen Case Management Lifecycle.puml>)
+### 6.2 Business Process Overview
+
+This high-level process distinguishes the two primary Case journeys—Enquiry and Feedback—before their detailed steps and shared supporting processes are described separately.
+
+[Business Process Overview](<../puml task2/06.02 Business Process Overview.puml>)
 
 ```plantuml
 @startuml
 start
 
-:Citizen submits\nEnquiry / Feedback;
-:Capture channel\nand attachments;
-:Create Case\nwith category;
-:Verify citizen\nwith MDM;
-
-if (Citizen verified?) then (Yes)
-  :Link or update Contact;
-else (No)
-  :Flag Manual Review;
-endif
-
-:Route by skill,\nlanguage, workload;
-:Agent works Case;
+:Citizen contacts agency\nthrough a supported channel;
+:Identify Enquiry or Feedback;
 
 if (Case type?) then (Enquiry)
-  :Search Knowledge;
-  if (Existing solution available?) then (Yes)
-    :Provide approved solution;
-  else (No)
-    :Draft resolution\nand article;
-  endif
-  if (Complex enquiry?) then (Yes)
-    :Escalate to Supervisor;
-  endif
-  :Follow up\nuntil confirmed;
+  :Enquiry Case Process\n(6.3);
 else (Feedback)
-  :Analyze feedback;
-  if (Citizen response required?) then (Yes)
-    :Respond to citizen;
-  endif
-  :Update reports;
-  :Supervisor evaluates;
+  :Feedback Case Process\n(6.4);
 endif
 
-:Close Case\nwith audit trail;
-:Branch Admin\nmonitors dashboards;
+:Branch Admin monitors outcomes\nthrough dashboards;
 
 stop
 @enduml
 ```
 
-[Business Flow](<../puml task2/06.02 Business Flow.puml>)
+### 6.3 Enquiry Case Process
+
+This activity diagram follows an Enquiry from citizen initiation through intake, verification, assignment, Knowledge-assisted resolution, follow-up, and citizen-confirmed closure.
+
+[Enquiry Case Process](<../puml task2/06.03 Enquiry Case Process.puml>)
 
 ```plantuml
 @startuml
 start
 
-:Citizen contacts agency;
-:Create Case\nwith key details;
-:Verify citizen\nagainst MDM;
+:Citizen initiates Enquiry
+through supported channel;
+:Intake and Citizen Verification
+(6.5 Shared Case Intake and Verification Process);
+:Case Recording;
+:Case Assignment
+(6.6 Case Routing Process);
+:Resolution Support
+(6.7 Knowledge Management Process);
 
-if (Citizen matched?) then (Yes)
-  :Link existing Contact;
+if (Approved solution exists?) then (Yes)
+  :Provide approved solution;
 else (No)
-  :Create provisional Contact;
-  :Flag manual verification;
-endif
-
-:Set type, priority,\ndivision, skill;
-:Route through\nOmni-Channel;
-:Agent handles Case;
-
-if (Case type?) then (Enquiry)
-  :Search Knowledge;
-  if (Solution exists?) then (Yes)
-    :Provide solution;
-  else (No)
-    :Draft resolution\nand article;
-  endif
-  :Follow up\nuntil confirmed;
-else (Feedback)
-  :Analyze feedback;
-  if (Citizen response required?) then (Yes)
-    :Respond and log;
-  endif
-  :Update reporting;
+  :Develop and document
+new solution;
+  :Submit Knowledge draft
+for review;
 endif
 
 if (Complex or SLA risk?) then (Yes)
   :Escalate to Supervisor;
 endif
 
-:Close Case\nwith audit trail;
-:Branch Admin\nmonitors dashboards;
+:Follow up with citizen;
+
+if (Citizen confirms resolution?) then (Yes)
+  :Record resolution summary
+and confirmation;
+  :Close Enquiry Case;
+else (No)
+  :Continue resolution
+and follow-up;
+endif
 
 stop
 @enduml
 ```
 
-[Case Routing Decision Model](<../puml task2/06.03 Case Routing Decision Model.puml>)
+| Step               | Salesforce Design                                                                                                        |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| Initiation         | Citizen creates an enquiry through website, phone, real-time assistance on the agency website/mobile app, or email.      |
+| Verification       | Agent or automated integration verifies phone/email against MDM and links the Case to Contact.                           |
+| Case Recording     | Case captures subject, description, origin, service category, division, priority, language, and supporting files/photos. |
+| Assignment         | Omni-Channel assigns work using expertise, language, workload, availability, priority, channel, and division.            |
+| Resolution         | Agent searches Knowledge. Existing approved articles are used when available; new solutions are documented when needed.  |
+| Supervisor Support | Complex, policy-sensitive, aged, or SLA-risk Cases are escalated to Supervisor.                                          |
+| Follow-Up          | Follow-up tasks and milestones remain active until the citizen confirms resolution.                                      |
+| Closure            | Case is closed with resolution summary, closure confirmation, and audit trail.                                           |
+
+### 6.4 Feedback Case Process
+
+This activity diagram follows Feedback from receipt and recording through analysis, optional citizen response, reporting, supervisor evaluation, and closure.
+
+[Feedback Case Process](<../puml task2/06.04 Feedback Case Process.puml>)
+
+```plantuml
+@startuml
+start
+
+:Citizen submits Feedback,
+Complaint, or Suggestion (Receipt);
+:Intake and Citizen Verification
+(6.5 Shared Case Intake and Verification Process);
+:Feedback Recording;
+:Case Assignment
+(6.6 Case Routing Process);
+:Agent analyzes root cause,
+impact, and improvement area;
+
+if (Citizen response required?) then (Yes)
+  :Respond to citizen;
+  :Record communication history;
+else (No)
+  :Record no-response rationale;
+endif
+
+:Include Feedback in reporting
+by service, branch, channel,
+severity, trend, and satisfaction;
+:Supervisor evaluates handling,
+outcome, SLA, and satisfaction;
+:Record evaluation outcome;
+:Close Feedback Case;
+
+stop
+@enduml
+```
+
+| Step       | Salesforce Design                                                                                        |
+| ---------- | -------------------------------------------------------------------------------------------------------- |
+| Receipt    | Feedback, complaint, or suggestion is received through a supported channel.                              |
+| Recording  | Case record type `Feedback` captures service area, satisfaction level, category, severity, and evidence. |
+| Analysis   | Agent assesses root cause, impact, improvement area, and response requirement.                           |
+| Response   | Agent responds when required and records communication history.                                          |
+| Reporting  | Feedback is grouped by service, branch, channel, severity, trend, and satisfaction level.                |
+| Evaluation | Supervisor reviews handling quality, SLA performance, agent outcome, and citizen satisfaction.           |
+
+### 6.5 Shared Case Intake and Verification Process
+
+This shared subprocess normalizes interactions from every supported channel, establishes a preliminary Case, verifies the citizen against MDM, and prepares complete routing attributes.
+
+[Shared Case Intake and Verification Process](<../puml task2/06.05 Shared Case Intake and Verification Process.puml>)
+
+```plantuml
+@startuml
+start
+
+:Receive Enquiry or Feedback\nfrom supported channel;
+:Capture supplied phone/email,\nchannel, type, and evidence;
+:Create preliminary Case\nin Verification Pending;
+:Search Salesforce Contact\nand verify against MDM;
+
+if (Citizen matched?) then (Yes)
+  :Link or update\nverified Contact;
+  :Mark Case Verified;
+else (No)
+  :Create provisional Contact;
+  :Route to Manual Review;
+endif
+
+:Complete Case details\nand attach files;
+:Set category, priority,\ndivision, language, and skill;
+:Apply SLA and pass Case\nto 6.6 Case Routing Process;
+
+stop
+@enduml
+```
+
+### 6.6 Case Routing Process
+
+This process determines the best available Agent or queue using Case type, language, skill, priority, workload, and availability, with escalation for high-risk work.
+
+[Case Routing Process](<../puml task2/06.06 Case Routing Process.puml>)
 
 ```plantuml
 @startuml
@@ -507,7 +585,11 @@ stop
 @enduml
 ```
 
-[Knowledge Management Lifecycle](<../puml task2/06.04 Knowledge Management Lifecycle.puml>)
+### 6.7 Knowledge Management Process
+
+This process governs reuse of approved solutions and the creation, review, publication, and later reuse of new Knowledge articles when no suitable answer exists.
+
+[Knowledge Management Process](<../puml task2/06.07 Knowledge Management Process.puml>)
 
 ```plantuml
 @startuml
@@ -537,55 +619,19 @@ stop
 @enduml
 ```
 
-### 6.1 Enquiry Case Process
-
-| Step               | Salesforce Design                                                                                                        |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| Initiation         | Citizen creates an enquiry through website, phone, real-time assistance on the agency website/mobile app, or email.      |
-| Verification       | Agent or automated integration verifies phone/email against MDM and links the Case to Contact.                           |
-| Case Recording     | Case captures subject, description, origin, service category, division, priority, language, and supporting files/photos. |
-| Assignment         | Omni-Channel assigns work using expertise, language, workload, availability, priority, channel, and division.            |
-| Resolution         | Agent searches Knowledge. Existing approved articles are used when available; new solutions are documented when needed.  |
-| Supervisor Support | Complex, policy-sensitive, aged, or SLA-risk Cases are escalated to Supervisor.                                          |
-| Follow-Up          | Follow-up tasks and milestones remain active until the citizen confirms resolution.                                      |
-| Closure            | Case is closed with resolution summary, closure confirmation, and audit trail.                                           |
-
-### 6.2 Feedback Case Process
-
-| Step       | Salesforce Design                                                                                        |
-| ---------- | -------------------------------------------------------------------------------------------------------- |
-| Receipt    | Feedback, complaint, or suggestion is received through a supported channel.                              |
-| Recording  | Case record type `Feedback` captures service area, satisfaction level, category, severity, and evidence. |
-| Analysis   | Agent assesses root cause, impact, improvement area, and response requirement.                           |
-| Response   | Agent responds when required and records communication history.                                          |
-| Reporting  | Feedback is grouped by service, branch, channel, severity, trend, and satisfaction level.                |
-| Evaluation | Supervisor reviews handling quality, SLA performance, agent outcome, and citizen satisfaction.           |
-
-### 6.3 User Stories
-
-| Persona      | User Story                                                                                                                              |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Citizen      | As a citizen, I want to submit enquiries or feedback through my preferred channel so that I can receive help without visiting a branch. |
-| Citizen      | As a citizen, I want to upload supporting photos or documents so that the agency can understand my request.                             |
-| Agent        | As an agent, I want citizen verification by phone or email so that I handle the correct citizen record.                                 |
-| Agent        | As an agent, I want cases routed by expertise, language, workload, and availability so that work is distributed fairly.                 |
-| Agent        | As an agent, I want to use approved Knowledge articles so that responses are consistent.                                                |
-| Agent        | As an agent, I want to document a new solution when no existing answer exists so that similar enquiries can be resolved faster.         |
-| Supervisor   | As a supervisor, I want to monitor queue backlog, escalations, and SLA risk so that I can intervene quickly.                            |
-| Supervisor   | As a supervisor, I want to evaluate feedback handling and agent outcomes so that service quality improves.                              |
-| Branch Admin | As a Branch Admin, I want dashboards by division, channel, case type, and agent so that I can monitor operational performance.          |
-
 ## 7. Application Architecture
+
+### 7.1 Application Layer Overview
+
+This diagram presents the logical application layers and the primary direction of dependency from user interfaces and channel services to platform controls, business services, and Salesforce data. It establishes separation of concerns without prescribing the runtime sequence of an individual Case transaction.
 
 [Application Layer Overview](<../puml task2/07.01 Application Layer Overview.puml>)
 
 ```plantuml
 @startuml
 skinparam componentStyle rectangle
-skinparam linetype ortho
 skinparam nodesep 60
 skinparam ranksep 70
-left to right direction
 
 package "Presentation Layer" {
   [Citizen and Agent UI\nExperience Cloud, Service Console,\nSupervisor Console, Dashboards] as UI
@@ -600,8 +646,8 @@ package "Application Layer" {
 }
 
 package "Business Services" {
-  [Case Services\nCaseIntakeService,\nCaseRoutingService,\nCaseLifecycleService] as CaseServices
-  [Support Services\nCitizenVerificationService,\nFeedbackAnalysisService,\nIntegrationErrorService] as SupportServices
+  [Core Case Services\nCaseIntakeService,\nCaseRoutingService,\nCaseLifecycleService] as CaseServices
+  [Supporting Services\nCitizenVerificationService,\nFeedbackAnalysisService,\nIntegrationErrorService] as SupportServices
 }
 
 database "Salesforce Data" {
@@ -620,45 +666,18 @@ AppControls --> ServiceData
 @enduml
 ```
 
-[Application Flow](<../puml task2/07.02 Application Flow.puml>)
+### 7.2 Service Layer Design
 
-```plantuml
-@startuml
-start
+This diagram decomposes the business-service layer into canonical services with distinct responsibilities and shows their dependencies on Salesforce platform capabilities and data contracts. The arrows represent service or data dependencies; they do not imply that every dependency is invoked in a single transaction.
 
-:Receive channel interaction;
-:Normalize intake request;
-:Validate fields and files;
-
-if (Validation passed?) then (Yes)
-  :Prepare Contact;
-  :Verify with MDM;
-  if (Verification successful?) then (Yes)
-    :Link verified Contact;
-  else (No)
-    :Set Manual Review;
-    :Log exception if needed;
-  endif
-  :Create Case;
-  :Attach files;
-  :Apply SLA and routing;
-  :Route work item;
-  :Send notifications;
-else (No)
-  :Return validation message;
-endif
-
-stop
-@enduml
-```
-
-[Service Layer Design](<../puml task2/07.03 Service Layer Design.puml>)
+[Service Layer Design](<../puml task2/07.02 Service Layer Design.puml>)
 
 ```plantuml
 @startuml
 left to right direction
 skinparam classAttributeIconSize 0
 skinparam linetype ortho
+skinparam ArrowColor #2563EB
 hide empty members
 
 package "Intake Services" {
@@ -712,7 +731,24 @@ Flow --> CaseLifecycleService
 @enduml
 ```
 
-[Service Interaction Diagram](<../puml task2/07.04 Service Interaction Diagram.puml>)
+The responsibilities of the canonical application services are defined below.
+
+| Service                        | Responsibility                                                                            |
+| ------------------------------ | ----------------------------------------------------------------------------------------- |
+| CaseIntakeService              | Normalize website, phone, email, and real-time assistance interactions into Case records. |
+| CitizenVerificationService     | Verify phone/email against MDM and update Contact/Case verification fields.               |
+| CaseRoutingService             | Prepare routing attributes used by Omni-Channel and queues.                               |
+| CaseLifecycleService           | Enforce lifecycle transitions, closure validations, and follow-up requirements.           |
+| FeedbackAnalysisService        | Classify feedback, satisfaction, severity, and improvement area.                          |
+| KnowledgeSuggestionService     | Suggest existing articles and create draft article candidates when needed.                |
+| IntegrationErrorService        | Capture MDM/channel/file failures and retry status.                                       |
+| MigrationReconciliationService | Track migration batches, counts, file links, and exception summaries.                     |
+
+### 7.3 Service Interaction Diagram
+
+This sequence shows the runtime collaboration among application services from channel submission through agent assignment. MDM transport and failure handling are detailed separately in Section 9.
+
+[Service Interaction Diagram](<../puml task2/07.03 Service Interaction Diagram.puml>)
 
 ```plantuml
 @startuml
@@ -745,7 +781,11 @@ Channel --> Citizen : Confirmation
 @enduml
 ```
 
-[Error Handling Strategy](<../puml task2/07.05 Error Handling Strategy.puml>)
+### 7.4 Error Handling Strategy
+
+This activity diagram defines the common application-level response to service failures. It separates successful transaction completion from retryable integration failures and non-retryable errors, while ensuring unsafe changes are rolled back and operational details remain available for support and review.
+
+[Error Handling Strategy](<../puml task2/07.04 Error Handling Strategy.puml>)
 
 ```plantuml
 @startuml
@@ -773,12 +813,14 @@ endif
 @enduml
 ```
 
-[Configurable Business Rules](<../puml task2/07.06 Configurable Business Rules.puml>)
+### 7.5 Configurable Business Rules
+
+This diagram identifies the Custom Metadata Types used to externalize routing, SLA, feedback-classification, and integration-error behavior. Keeping these rules in metadata allows authorized administrators to adjust operational policy without embedding frequently changing values in Apex or Flow logic.
+
+[Configurable Business Rules](<../puml task2/07.05 Configurable Business Rules.puml>)
 
 ```plantuml
 @startuml
-left to right direction
-skinparam linetype ortho
 
 entity Case_Routing_Rule__mdt {
   DeveloperName
@@ -825,7 +867,7 @@ Integration_Error_Message__mdt ..> Case_Routing_Rule__mdt : fallback queue
 @enduml
 ```
 
-### 7.1 Declarative-First Approach
+### 7.6 Declarative and Programmatic Implementation Strategy
 
 | Requirement                | Technology                                           | Rationale                                                        |
 | -------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------- |
@@ -838,20 +880,11 @@ Integration_Error_Message__mdt ..> Case_Routing_Rule__mdt : fallback queue
 | Migration                  | Bulk API / ETL                                       | High-volume load and reconciliation.                             |
 | Operational error tracking | Custom object and dashboards                         | Required for support visibility.                                 |
 
-### 7.2 Service Responsibilities
-
-| Service                        | Responsibility                                                                            |
-| ------------------------------ | ----------------------------------------------------------------------------------------- |
-| CaseIntakeService              | Normalize website, phone, email, and real-time assistance interactions into Case records. |
-| CitizenVerificationService     | Verify phone/email against MDM and update Contact/Case verification fields.               |
-| CaseRoutingService             | Prepare routing attributes used by Omni-Channel and queues.                               |
-| CaseLifecycleService           | Enforce lifecycle transitions, closure validations, and follow-up requirements.           |
-| FeedbackAnalysisService        | Classify feedback, satisfaction, severity, and improvement area.                          |
-| KnowledgeSuggestionService     | Suggest existing articles and create draft article candidates when needed.                |
-| IntegrationErrorService        | Capture MDM/channel/file failures and retry status.                                       |
-| MigrationReconciliationService | Track migration batches, counts, file links, and exception summaries.                     |
-
 ## 8. Data Architecture
+
+### 8.1 Entity Relationship Diagram
+
+This ERD defines the principal Salesforce standard objects, custom objects, metadata, files, and operational records together with the relationships required for Case management.
 
 [Entity Relationship Diagram](<../puml task2/08.01 Entity Relationship Diagram.puml>)
 
@@ -1021,7 +1054,7 @@ entity Migration_Batch__c {
 }
 
 Account ||--o{ Contact : has
-Contact ||--o{ Case : raises
+Contact ||-o{ Case : raises
 Service_Division__c ||--o{ Case : scopes
 User ||--o{ Case : owns
 Group ||--o{ Case : owns
@@ -1036,53 +1069,65 @@ Migration_Batch__c ..> Case : loads
 @enduml
 ```
 
-[Object Relationships](<../puml task2/08.02 Object Relationships.puml>)
+### 8.2 Core Data Model
+
+| Object                               | Purpose                                                                                   |
+| ------------------------------------ | ----------------------------------------------------------------------------------------- |
+| Account                              | Optional household, organization, or agency account grouping where required.              |
+| Contact                              | Citizen master profile linked to verified phone/email and MDM reference.                  |
+| Case                                 | Primary enquiry and feedback transaction record.                                          |
+| Case Record Type                     | Separates Enquiry and Feedback lifecycle, page layout, fields, and validation.            |
+| Service_Division__c                  | Branch/division scope for reporting, queues, ownership, and sharing.                      |
+| User                                 | Branch Admin, Supervisor, Agent, integration user, and migration user.                    |
+| Group / Queue                        | Work queues for triage, division assignment, and escalation.                              |
+| Knowledge__kav                       | Approved solutions and draft knowledge candidates.                                        |
+| ContentVersion / ContentDocumentLink | Supporting photos and documents attached to Cases.                                        |
+| CaseMilestone                        | SLA tracking for response, follow-up, and resolution.                                     |
+| Integration_Error__c                 | Operational tracking for failed MDM, channel, or file-processing transactions.            |
+| Migration_Batch__c                   | Migration batch tracking and reconciliation summary.                                      |
+| Case_Routing_Rule__mdt               | Configurable routing attributes such as channel, skill, language, priority, and division. |
+
+### 8.3 Recommended Case Fields
+
+| Field                          | Purpose                                                                                                        |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| RecordTypeId                   | Selects the `Enquiry` or `Feedback` Case record type defined in Section 8.4.                                   |
+| Origin                         | Website, Phone, Chat, Mobile App, or Email.                                                                    |
+| Status                         | Received, Verification Pending, Assigned, In Progress, Pending Citizen, Escalated, Resolved, Reopened, Closed. |
+| Priority                       | Standard Salesforce priority plus agency-specific severity mapping if required.                                |
+| Service_Division__c            | Branch or division scope.                                                                                      |
+| Service_Category__c            | Agency service/product area.                                                                                   |
+| Language__c                    | Preferred language for routing.                                                                                |
+| Citizen_Verification_Status__c | Verified, Not Found, Manual Review, Failed.                                                                    |
+| MDM_Verification_Id__c         | External verification reference.                                                                               |
+| Satisfaction_Level__c          | Feedback satisfaction indicator.                                                                               |
+| Improvement_Area__c            | Feedback classification for trend reporting.                                                                   |
+| Resolution_Summary__c          | Required before closure.                                                                                       |
+| Citizen_Confirmed_Closure__c   | Confirms citizen acceptance for enquiry closure.                                                               |
+| Follow_Up_Date__c              | Drives follow-up tasks and overdue reporting.                                                                  |
+
+### 8.4 Case Record Type Design
+
+The solution uses two Salesforce Case record types to separate the agency's primary business processes while retaining a common Case data model, routing foundation, security model, and reporting framework.
+
+| Case Record Type | Purpose                                                                     | Primary Process                                                                                        | Distinct Data and Controls                                                                                              |
+| ---------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `Enquiry`        | Manage citizen questions, concerns, and requests for information.           | Initiation, verification, recording, assignment, resolution, follow-up, and citizen-confirmed closure. | Knowledge usage, resolution summary, follow-up date, supervisor escalation, and citizen closure confirmation.           |
+| `Feedback`       | Manage citizen feedback, complaints, and suggestions about agency services. | Receipt, recording, analysis, optional response, reporting, and supervisor evaluation.                 | Satisfaction level, severity, improvement area, response requirement, reporting classification, and evaluation outcome. |
+
+Record types control the appropriate page layout, required fields, validation rules, status guidance, and automation entry criteria. Both record types use the common lifecycle in Section 8.5; the `Feedback` record type also uses the review sub-status lifecycle in Section 8.6.
+
+### 8.5 Case Status Lifecycle
+
+This state model defines the allowed Case status transitions shared by the `Enquiry` and `Feedback` record types defined in Section 8.4. It complements the business-stage flows in Sections 6.3 and 6.4 and is not a second business-process definition.
+
+[Case Status Lifecycle](<../puml task2/08.05 Case Status Lifecycle.puml>)
 
 ```plantuml
 @startuml
 left to right direction
-skinparam linetype ortho
-skinparam nodesep 50
-skinparam ranksep 55
 
-object Account
-object Contact
-object Case
-object Service_Division__c
-object User
-object Group_Queue
-object Knowledge__kav
-object ContentVersion
-object ContentDocumentLink
-object CaseMilestone
-object Integration_Error__c
-object Migration_Batch__c
-object Case_Routing_Rule__mdt
-
-Account "1" --> "*" Contact
-Contact "1" --> "*" Case
-Service_Division__c "1" --> "*" Case
-User "1" --> "*" Case : agent
-Group_Queue "1" --> "*" Case : queue
-Case "1" --> "*" ContentDocumentLink
-ContentVersion "1" --> "*" ContentDocumentLink
-Case "1" --> "*" CaseMilestone
-Knowledge__kav "*" .. "*" Case : usage
-Integration_Error__c "*" --> "0..1" Case
-Migration_Batch__c "1" .. "*" Case : migrated
-Case_Routing_Rule__mdt ..> Case : routing
-
-@enduml
-```
-
-[Case Lifecycle](<../puml task2/08.03 Case Lifecycle.puml>)
-
-```plantuml
-@startuml
-left to right direction
-skinparam linetype ortho
-
-state "New" as NewCase
+state "Received" as NewCase
 state "Verification Pending" as VerificationPending
 state "Manual Verification" as ManualVerification
 state "Assigned" as Assigned
@@ -1111,7 +1156,11 @@ Reopened --> InProgress
 @enduml
 ```
 
-[Feedback Review Lifecycle](<../puml task2/08.04 Feedback Case Lifecycle.puml>)
+### 8.6 Feedback Review Status Lifecycle
+
+Feedback uses the common Case lifecycle above. The following sub-status model preserves the assessment-specific analysis, response, reporting, and supervisor-evaluation checkpoints.
+
+[Feedback Review Status Lifecycle](<../puml task2/08.06 Feedback Review Status Lifecycle.puml>)
 
 ```plantuml
 @startuml
@@ -1142,44 +1191,11 @@ SupervisorEvaluation --> Closed
 @enduml
 ```
 
-### 8.1 Core Data Model
-
-| Object                               | Purpose                                                                                   |
-| ------------------------------------ | ----------------------------------------------------------------------------------------- |
-| Account                              | Optional household, organization, or agency account grouping where required.              |
-| Contact                              | Citizen master profile linked to verified phone/email and MDM reference.                  |
-| Case                                 | Primary enquiry and feedback transaction record.                                          |
-| Case Record Type                     | Separates Enquiry and Feedback lifecycle, page layout, fields, and validation.            |
-| Service_Division__c                  | Branch/division scope for reporting, queues, ownership, and sharing.                      |
-| User                                 | Branch Admin, Supervisor, Agent, integration user, and migration user.                    |
-| Group / Queue                        | Work queues for triage, division assignment, and escalation.                              |
-| Knowledge__kav                       | Approved solutions and draft knowledge candidates.                                        |
-| ContentVersion / ContentDocumentLink | Supporting photos and documents attached to Cases.                                        |
-| CaseMilestone                        | SLA tracking for response, follow-up, and resolution.                                     |
-| Integration_Error__c                 | Operational tracking for failed MDM, channel, or file-processing transactions.            |
-| Migration_Batch__c                   | Migration batch tracking and reconciliation summary.                                      |
-| Case_Routing_Rule__mdt               | Configurable routing attributes such as channel, skill, language, priority, and division. |
-
-### 8.2 Recommended Case Fields
-
-| Field                          | Purpose                                                                                         |
-| ------------------------------ | ----------------------------------------------------------------------------------------------- |
-| RecordTypeId                   | Enquiry or Feedback.                                                                            |
-| Origin                         | Website, Phone, Chat, Mobile App, or Email.                                                     |
-| Status                         | New, Verification Pending, Assigned, In Progress, Pending Citizen, Escalated, Resolved, Closed. |
-| Priority                       | Standard Salesforce priority plus agency-specific severity mapping if required.                 |
-| Service_Division__c            | Branch or division scope.                                                                       |
-| Service_Category__c            | Agency service/product area.                                                                    |
-| Language__c                    | Preferred language for routing.                                                                 |
-| Citizen_Verification_Status__c | Verified, Not Found, Manual Review, Failed.                                                     |
-| MDM_Verification_Id__c         | External verification reference.                                                                |
-| Satisfaction_Level__c          | Feedback satisfaction indicator.                                                                |
-| Improvement_Area__c            | Feedback classification for trend reporting.                                                    |
-| Resolution_Summary__c          | Required before closure.                                                                        |
-| Citizen_Confirmed_Closure__c   | Confirms citizen acceptance for enquiry closure.                                                |
-| Follow_Up_Date__c              | Drives follow-up tasks and overdue reporting.                                                   |
-
 ## 9. Integration Architecture
+
+### 9.1 Citizen Verification Integration Pattern
+
+This sequence diagram shows the secured synchronous verification path from the Service Console through `CitizenVerificationService`, Named Credentials, and the enterprise integration layer to the external MDM.
 
 [Citizen Verification Integration Pattern](<../puml task2/09.01 Citizen Verification Integration Pattern.puml>)
 
@@ -1188,70 +1204,39 @@ SupervisorEvaluation --> Closed
 skinparam sequenceMessageAlign center
 actor Agent
 participant "Salesforce Service Console" as Console
-participant "Citizen Verification Service" as Apex
+participant CitizenVerificationService
 participant "Named Credential" as NC
 participant "API Gateway" as Gateway
 participant "External MDM System" as MDM
 database "Contact" as Contact
 
 Agent -> Console : Enter contact detail
-Console -> Apex : Verify citizen
-Apex -> NC : Secure callout
+Console -> CitizenVerificationService : Verify citizen
+CitizenVerificationService -> NC : Secure callout
 NC -> Gateway : REST request
 Gateway -> MDM : Verify profile
 MDM --> Gateway : Verification result
 Gateway --> NC : Response
-NC --> Apex : Citizen profile data
+NC --> CitizenVerificationService : Citizen profile data
 
 alt Citizen matched
-  Apex -> Contact : Update Contact
+  CitizenVerificationService -> Contact : Update Contact
 else Citizen not found
-  Apex -> Contact : Create provisional
+  CitizenVerificationService -> Contact : Create provisional
 end
 
-Apex --> Console : Verification status
+CitizenVerificationService --> Console : Verification status
 
 @enduml
 ```
 
-[Citizen Verification Flow](<../puml task2/09.02 Citizen Verification Flow.puml>)
+The business decision flow for Contact matching and manual review is defined once in Section 6.2. This section focuses on the technical call sequence and integration boundary.
 
-```plantuml
-@startuml
-title Citizen Verification and Contact Matching Flow
+### 9.2 Retry Strategy
 
-start
+This activity diagram defines how transient and permanent integration failures are classified, retried within a controlled limit, surfaced to support, and reconciled after recovery.
 
-:Receive phone/email;
-:Search Contact;
-
-if (Salesforce Contact found?) then (Yes)
-  :Use Contact candidate;
-else (No)
-  :Create provisional Contact;
-endif
-
-:Call MDM;
-
-if (MDM matched citizen?) then (Yes)
-  :Update Contact;
-  :Mark Case Verified;
-  :Link verified Contact;
-else (No)
-  :Mark Manual Review;
-  :Keep supplied details;
-endif
-
-if (MDM call failed transiently?) then (Yes)
-  :Log Integration_Error__c;
-  :Schedule retry/review;
-endif
-
-stop
-@enduml
-```
-
-[Retry Strategy](<../puml task2/09.03 Retry Strategy.puml>)
+[Retry Strategy](<../puml task2/09.02 Retry Strategy.puml>)
 
 ```plantuml
 @startuml
@@ -1285,7 +1270,7 @@ stop
 @enduml
 ```
 
-### 9.1 MDM Verification
+### 9.3 MDM Verification
 
 MDM verification is required during intake and case handling. Salesforce sends phone or email to the external MDM through a secured integration layer and receives citizen match status, citizen identifier, and profile attributes required for case servicing.
 
@@ -1298,7 +1283,7 @@ MDM verification is required during intake and case handling. Salesforce sends p
 | Retry             | Retry only transient failures and cap retry attempts to avoid loops.                                |
 | Data protection   | Store only required MDM response data in Salesforce.                                                |
 
-### 9.2 Channel Integrations
+### 9.4 Channel Integrations
 
 | Channel                             | Design                                                                                                                         |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
@@ -1309,6 +1294,10 @@ MDM verification is required during intake and case handling. Salesforce sends p
 | Files                               | Salesforce Files with file type/size validation and malware scanning where required by policy.                                 |
 
 ## 10. Security, Access, and Identity
+
+### 10.1 Role-Based Access and Visibility Model
+
+This diagram maps internal, external, and system personas to the Salesforce security controls that govern access to service records, Knowledge, reports, and integration data.
 
 [Role-Based Access and Visibility Model](<../puml task2/10.01 Role-Based Access and Visibility Model.puml>)
 
@@ -1349,6 +1338,10 @@ IntegrationScope --> ServiceData
 @enduml
 ```
 
+### 10.2 SSO Authentication Flow with Microsoft Active Directory
+
+This sequence illustrates federated authentication for internal users, from Salesforce login redirection through Microsoft AD / Entra ID validation to creation of the Salesforce session.
+
 [SSO Authentication Flow with Microsoft Active Directory](<../puml task2/10.02 SSO Authentication Flow with Microsoft Active Directory.puml>)
 
 ```plantuml
@@ -1371,7 +1364,7 @@ SF --> User : Access granted
 @enduml
 ```
 
-### 10.1 Access Model
+### 10.3 Access Model
 
 | Role             | Access Design                                                                                                            |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
@@ -1382,7 +1375,7 @@ SF --> User : Access granted
 | Integration User | API-only least privilege access for MDM, channel, and migration integrations.                                            |
 | Migration User   | Temporary least privilege access for historical data load and reconciliation.                                            |
 
-### 10.2 Security Controls
+### 10.4 Security Controls
 
 | Control              | Design                                                                                   |
 | -------------------- | ---------------------------------------------------------------------------------------- |
@@ -1398,6 +1391,10 @@ SF --> User : Access granted
 | SSO                  | Microsoft AD / Entra ID through SAML or OpenID Connect.                                  |
 
 ## 11. Data Migration and Large Volume Strategy
+
+### 11.1 Large Data Volume and File Storage Strategy
+
+This diagram presents the controlled pipeline for profiling, cleansing, staging, loading, reconciling, indexing, and retaining approximately 6 million records and 100GB of historical files.
 
 [Large Data Volume and File Storage Strategy](<../puml task2/11.01 Large Data Volume and File Storage Strategy.puml>)
 
@@ -1448,6 +1445,10 @@ Files --> StoragePlan
 @enduml
 ```
 
+### 11.2 Historical Case Data Migration Plan
+
+This activity diagram defines the migration execution sequence from legacy extraction and pilot validation through full and delta loads, reconciliation, acceptance, and channel cutover.
+
 [Historical Case Data Migration Plan](<../puml task2/11.02 Historical Case Data Migration Plan.puml>)
 
 ```plantuml
@@ -1493,7 +1494,7 @@ The migration scope includes 10 years of historical records, approximately 6 mil
 | Validation | Reconcile counts, file links, sharing, audit fields, reports, and sample citizen histories.                                                                |
 | Cutover    | Switch channels to Salesforce, monitor exceptions, and retain rollback checkpoints until accepted.                                                         |
 
-### 11.1 Large Volume Design
+### 11.3 Large Volume Design
 
 | Concern                | Design                                                                         |
 | ---------------------- | ------------------------------------------------------------------------------ |
@@ -1504,6 +1505,10 @@ The migration scope includes 10 years of historical records, approximately 6 mil
 | Reporting performance  | Use selective filters by date, division, record type, and status.              |
 
 ## 12. Reporting, SLA, and Performance Evaluation
+
+### 12.1 Operational Monitoring and SLA Management
+
+This diagram shows how Case lifecycle events, milestones, SLA alerts, and integration errors feed operational dashboards used to identify backlog, risk, and service exceptions.
 
 [Operational Monitoring and SLA Management](<../puml task2/12.01 Operational Monitoring and SLA Management.puml>)
 
@@ -1542,47 +1547,11 @@ IntegrationErrors --> Dashboards
 @enduml
 ```
 
-[Case Analytics Model](<../puml task2/12.02 Case Analytics Model.puml>)
+### 12.2 Agent Performance Evaluation Model
 
-```plantuml
-@startuml
-left to right direction
-skinparam componentStyle rectangle
-skinparam linetype ortho
-skinparam nodesep 60
-skinparam ranksep 65
+This model traces operational source data into performance metrics and scorecards tailored to the oversight needs of Branch Admins, Supervisors, and Agents.
 
-database "Operational Sources\nCase, Contact, User,\nCase Milestone, Knowledge Usage" as Sources
-
-package "Analytics Dataset" {
-  [Case and Channel Metrics] as CaseChannelMetrics
-  [Agent and SLA Metrics] as AgentSlaMetrics
-  [Feedback and Knowledge Metrics] as FeedbackKnowledgeMetrics
-  [Backlog Aging Metrics] as BacklogMetrics
-}
-
-package "Dashboards" {
-  [Branch Admin Dashboard] as BranchDashboard
-  [Supervisor Dashboard] as SupervisorDashboard
-  [Agent Dashboard] as AgentDashboard
-}
-
-Sources --> CaseChannelMetrics
-Sources --> AgentSlaMetrics
-Sources --> FeedbackKnowledgeMetrics
-Sources --> BacklogMetrics
-
-CaseChannelMetrics --> BranchDashboard
-FeedbackKnowledgeMetrics --> BranchDashboard
-BacklogMetrics --> BranchDashboard
-AgentSlaMetrics --> SupervisorDashboard
-FeedbackKnowledgeMetrics --> SupervisorDashboard
-CaseChannelMetrics --> AgentDashboard
-
-@enduml
-```
-
-[Agent Performance Evaluation Model](<../puml task2/12.03 Agent Performance Evaluation Model.puml>)
+[Agent Performance Evaluation Model](<../puml task2/12.02 Agent Performance Evaluation Model.puml>)
 
 ```plantuml
 @startuml
@@ -1625,7 +1594,7 @@ AgentWorklist --> Agent
 @enduml
 ```
 
-### 12.1 Branch Admin Dashboard
+### 12.3 Branch Admin Dashboard
 
 | KPI                                             | Purpose                                                   |
 | ----------------------------------------------- | --------------------------------------------------------- |
@@ -1638,7 +1607,7 @@ AgentWorklist --> Agent
 | Reopened case rate                              | Identify quality or premature closure issues.             |
 | Feedback satisfaction trend                     | Track citizen satisfaction and service improvement areas. |
 
-### 12.2 Supervisor Dashboard
+### 12.4 Supervisor Dashboard
 
 | KPI                             | Purpose                                          |
 | ------------------------------- | ------------------------------------------------ |

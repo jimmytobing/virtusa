@@ -1,9 +1,7 @@
 @startuml
 skinparam componentStyle rectangle
-skinparam linetype ortho
 skinparam nodesep 60
 skinparam ranksep 70
-left to right direction
 
 package "Presentation Layer" {
   [Citizen and Agent UI\nExperience Cloud, Service Console,\nSupervisor Console, Dashboards] as UI
@@ -18,8 +16,8 @@ package "Application Layer" {
 }
 
 package "Business Services" {
-  [Case Services\nCaseIntakeService,\nCaseRoutingService,\nCaseLifecycleService] as CaseServices
-  [Support Services\nCitizenVerificationService,\nFeedbackAnalysisService,\nIntegrationErrorService] as SupportServices
+  [Core Case Services\nCaseIntakeService,\nCaseRoutingService,\nCaseLifecycleService] as CaseServices
+  [Supporting Services\nCitizenVerificationService,\nFeedbackAnalysisService,\nIntegrationErrorService] as SupportServices
 }
 
 database "Salesforce Data" {

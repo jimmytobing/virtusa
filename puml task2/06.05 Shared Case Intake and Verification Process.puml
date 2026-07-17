@@ -1,0 +1,22 @@
+@startuml
+start
+
+:Receive Enquiry or Feedback\nfrom supported channel;
+:Capture supplied phone/email,\nchannel, type, and evidence;
+:Create preliminary Case\nin Verification Pending;
+:Search Salesforce Contact\nand verify against MDM;
+
+if (Citizen matched?) then (Yes)
+  :Link or update\nverified Contact;
+  :Mark Case Verified;
+else (No)
+  :Create provisional Contact;
+  :Route to Manual Review;
+endif
+
+:Complete Case details\nand attach files;
+:Set category, priority,\ndivision, language, and skill;
+:Apply SLA and pass Case\nto 6.6 Case Routing Process;
+
+stop
+@enduml

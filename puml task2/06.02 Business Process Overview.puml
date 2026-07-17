@@ -1,0 +1,16 @@
+@startuml
+start
+
+:Citizen contacts agency\nthrough a supported channel;
+:Identify Enquiry or Feedback;
+
+if (Case type?) then (Enquiry)
+  :Enquiry Case Process\n(6.3);
+else (Feedback)
+  :Feedback Case Process\n(6.4);
+endif
+
+:Branch Admin monitors outcomes\nthrough dashboards;
+
+stop
+@enduml

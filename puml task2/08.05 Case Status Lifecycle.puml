@@ -1,8 +1,7 @@
 @startuml
 left to right direction
-skinparam linetype ortho
 
-state "New" as NewCase
+state "Received" as NewCase
 state "Verification Pending" as VerificationPending
 state "Manual Verification" as ManualVerification
 state "Assigned" as Assigned

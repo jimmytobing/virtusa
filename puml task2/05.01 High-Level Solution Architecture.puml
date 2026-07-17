@@ -37,7 +37,7 @@ package "Salesforce Service Cloud" {
 
 package "Salesforce Platform Services" {
   [Flow Automation]
-  [Apex Integration Services]
+  [CitizenVerificationService]
   [Named Credentials]
   [Custom Metadata]
 }
@@ -74,15 +74,15 @@ BranchAdmin --> [Reports and Dashboards]
 [Service Console] --> [Salesforce Knowledge]
 [Case Management] --> [Entitlements and Milestones]
 [Case Management] --> [Flow Automation]
-[Flow Automation] --> [Apex Integration Services]
-[Apex Integration Services] --> [Named Credentials]
+[Flow Automation] --> [CitizenVerificationService]
+[CitizenVerificationService] --> [Named Credentials]
 [Named Credentials] --> Gateway
 Gateway --> MDM
 
 [Case Management] --> CoreServiceData
 [Salesforce Knowledge] --> KnowledgeData
 [Entitlements and Milestones] --> OperationalTrackingData
-[Apex Integration Services] --> OperationalTrackingData
+[CitizenVerificationService] --> OperationalTrackingData
 [Reports and Dashboards] --> CoreServiceData
 [Reports and Dashboards] --> OperationalTrackingData
 
