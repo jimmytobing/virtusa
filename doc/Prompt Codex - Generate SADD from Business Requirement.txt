@@ -1,0 +1,408 @@
+PROMPT CODEX — GENERATE A NEW SALESFORCE SADD FROM A DIFFERENT BUSINESS REQUIREMENT
+
+You are acting as a Salesforce Solution Architect and technical documentation specialist. Create a production-quality Solution Architecture Design Document (SADD) from the new business-process requirement supplied below. Use the existing Task 2 SADD only as the architectural-quality, structure, depth, writing-style, traceability, and diagram-density benchmark.
+
+============================================================
+1. INPUTS — UPDATE THESE VALUES BEFORE RUNNING THIS PROMPT
+============================================================
+
+REFERENCE_SADD:
+/Users/macbook-jimmyfines/Documents/virtusa/virtusa/doc/SADD Task 2.md
+
+REFERENCE_REQUIREMENT_USED_TO_CREATE_REFERENCE_SADD:
+/Users/macbook-jimmyfines/Documents/virtusa/virtusa/doc/SF Technical Assessment (task2).md
+
+NEW_BUSINESS_REQUIREMENT:
+[REPLACE WITH THE ABSOLUTE PATH OF THE NEW BUSINESS-PROCESS REQUIREMENT DOCUMENT]
+
+OUTPUT_SADD:
+[REPLACE WITH THE ABSOLUTE PATH OF THE NEW SADD MARKDOWN FILE]
+
+OUTPUT_PUML_DIRECTORY:
+[REPLACE WITH THE ABSOLUTE PATH OF THE DIRECTORY FOR THE NEW .puml FILES]
+
+SOLUTION_NAME:
+[REPLACE WITH THE SOLUTION OR ASSESSMENT NAME; IF UNKNOWN, DERIVE A NEUTRAL TITLE FROM THE NEW REQUIREMENT]
+
+OUTPUT_LANGUAGE:
+English, unless the new requirement or an explicit instruction asks for another language.
+
+============================================================
+2. OBJECTIVE
+============================================================
+
+Create one complete Markdown SADD at OUTPUT_SADD and a set of standalone PlantUML source files in OUTPUT_PUML_DIRECTORY.
+
+The result must:
+
+- Preserve the reference SADD's architecture-document style, professional quality, depth, disciplined reasoning, and balance of prose, tables, and diagrams.
+- Be based on the NEW_BUSINESS_REQUIREMENT, not on the REFERENCE_REQUIREMENT_USED_TO_CREATE_REFERENCE_SADD business scenario.
+- Maintain at least the reference's diagram density and traceability quality. The reference baseline is 15 main sections, approximately 6,500 non-PlantUML words, and 26 PlantUML diagrams. Target at least 26 useful diagrams and approximately the same narrative depth. More diagrams are encouraged when they clarify distinct processes, states, integrations, security boundaries, data flows, deployment, or operational concerns.
+- Avoid padding. If a reference diagram type is irrelevant to the new scope, replace it with a more relevant architectural view rather than inserting an artificial diagram.
+- Embed every PlantUML diagram in the Markdown document and also save the exact same PlantUML source as a standalone .puml file.
+- Be internally consistent and ready for an architecture walkthrough in which every important design choice can be justified.
+
+============================================================
+3. SOURCE-USE RULES
+============================================================
+
+Read all three input documents completely before designing:
+
+1. REFERENCE_REQUIREMENT_USED_TO_CREATE_REFERENCE_SADD — use this to understand how raw requirements were transformed into architecture.
+2. REFERENCE_SADD — use this as the format, quality, granularity, and diagram-style benchmark.
+3. NEW_BUSINESS_REQUIREMENT — use this as the authoritative source of business facts for the new solution.
+
+Do not copy Task 2 domain facts into the new SADD unless the new requirement independently supports them. This prohibition includes, but is not limited to, citizen enquiries, citizen feedback, government branches, MDM verification, Case record types, specific channels, Microsoft Active Directory, volumes, roles, products, integrations, status values, objects, fields, KPIs, and migration figures.
+
+Treat statements using the following evidence hierarchy:
+
+- Explicit requirement: stated directly in NEW_BUSINESS_REQUIREMENT.
+- Derived design: an architectural response logically required to meet an explicit requirement.
+- Assumption: a reasonable choice needed because the requirement is silent.
+- Constraint: a stated or unavoidable limitation.
+- Open question / TBD: a decision that cannot responsibly be finalized from available information.
+
+Never present an assumption or preferred design as if it were an explicit business requirement. State all material assumptions clearly in the assumptions table. Put unresolved commercial, compliance, volume, identity, integration-contract, retention, RTO/RPO, or data-residency matters in a clearly visible validation/TBD list.
+
+When product editions, licensing, feature availability, limits, or names may have changed, verify them against current official Salesforce documentation if internet access is available. Clearly distinguish baseline recommendations, optional capabilities, add-ons, and items requiring commercial validation. Do not invent license entitlements or exact limits.
+
+============================================================
+4. WORKING METHOD
+============================================================
+
+Perform the work autonomously. Do not stop for clarification when a safe, reasonable assumption allows progress. Record that assumption instead. Ask the user only if a missing decision would materially change the entire solution and no responsible default exists.
+
+Before writing, build an internal inventory containing:
+
+- Business objectives and expected outcomes.
+- Actors, personas, organizational boundaries, and responsibilities.
+- End-to-end business processes, subprocesses, decisions, exceptions, approvals, escalations, and closure criteria.
+- Channels and user experiences.
+- Functional requirements.
+- Data entities, ownership, relationships, lifecycle states, retention, volume, quality, and migration needs.
+- Integrations, systems of record, direction, protocol, authentication, frequency, latency, retry, reconciliation, and failure handling.
+- Security, identity, privacy, sharing, segregation-of-duty, audit, and compliance needs.
+- Reporting, KPI, SLA, operational support, and monitoring needs.
+- Non-functional requirements and stated constraints.
+- Gaps, ambiguities, assumptions, and open questions.
+
+Then create a requirement-to-design coverage matrix before drafting the later sections. Every explicit requirement must map to at least one concrete section, capability, control, object, integration, process, or decision. No explicit requirement may be silently omitted.
+
+Prefer standard Salesforce capabilities before custom development when they satisfy the requirement. Prefer declarative configuration before programmatic implementation when it remains reliable, maintainable, secure, bulk-safe, and testable. Do not force Salesforce products or patterns from the reference onto a new domain when they are not justified.
+
+Use exact Salesforce terminology. Where a proposed custom service, object, field, metadata type, platform event, queue, integration user, or component is conceptual rather than already implemented, make that clear through context and consistent naming.
+
+============================================================
+5. REQUIRED SADD STRUCTURE
+============================================================
+
+Use the following structure as the baseline. Adapt subsection names to the new domain, and add sections where the new requirement warrants them. Preserve numbered headings and cross-links.
+
+# Solution Architecture Design Document (SADD) — [SOLUTION_NAME]
+
+## 1. Executive Summary
+
+- Summarize the business problem, target users, proposed Salesforce solution, external systems, and architectural outcome.
+- State precisely which requirement document is covered and what is excluded.
+- Keep the summary concise but specific to the new business process.
+
+## 2. Requirement Coverage
+
+### 2.1 Requirement Coverage Map
+
+- Include a PlantUML map from requirement groups to solution capabilities.
+- Follow it with a detailed Markdown traceability table.
+- Link each requirement to the section where its design is explained.
+- Include functional, data, integration, identity, security, reporting, migration, volume, and non-functional requirements where applicable.
+
+## 3. Scope, Assumptions, Constraints, and Open Questions
+
+### 3.1 In Scope
+### 3.2 Out of Scope
+### 3.3 Assumptions
+### 3.4 Constraints
+### 3.5 Open Questions / Validation Items
+
+- Give assumptions stable IDs such as A-01 and constraints IDs such as C-01.
+- Make scope boundaries unambiguous.
+
+## 4. Salesforce Product and Capability Selection
+
+### 4.1 Capability Selection
+### 4.2 License and Commercial Validation
+### 4.3 Build-versus-Buy or Standard-versus-Custom Decisions, when relevant
+
+- Map requirement areas to recommended Salesforce clouds/features and justified third-party or middleware capabilities.
+- Include rationale and meaningful alternatives/trade-offs.
+- Separate mandatory baseline, conditional, optional, and commercial-validation items.
+
+## 5. Target Solution Architecture
+
+### 5.1 Architecture Overview / System Landscape
+### 5.2 Layered Architecture
+### 5.3 Context or Container View, when it adds clarity
+### 5.4 Data Flow or Trust-Boundary View, when relevant
+
+- Explain actors, channels, Salesforce clouds, platform services, external systems, identity providers, middleware, and principal data stores.
+- The prose must explain what the diagrams mean, not merely repeat labels.
+
+## 6. Business Process Architecture
+
+### 6.1 Persona and User Story Map
+### 6.2 End-to-End Business Process Overview
+### 6.x One detailed subsection for every primary business process
+### 6.x Shared intake, validation, matching, triage, routing, approval, escalation, fulfillment, notification, and closure subprocesses as applicable
+### 6.x Exception and alternate-path process where material
+
+For each primary process:
+
+- Include a PlantUML activity, use-case, BPMN-like activity, or sequence diagram.
+- Include a table mapping each business step to the Salesforce implementation.
+- Preserve explicit decisions, exception paths, manual fallbacks, approvals, SLAs, and closure conditions.
+- Do not combine materially different business journeys into an unreadable single diagram.
+
+Write user stories in the form: “As a [persona], I want [capability], so that [business outcome].” Cover all personas and major responsibilities.
+
+## 7. Application Architecture
+
+### 7.1 Application Layer Overview
+### 7.2 Service / Component Layer Design
+### 7.3 Important Service Interaction Sequence(s)
+### 7.4 Error Handling Strategy
+### 7.5 Configurable Business Rules
+### 7.6 Declarative and Programmatic Implementation Strategy
+### 7.7 Automation Inventory and Transaction Boundaries, when relevant
+
+- Define canonical service/component responsibilities without implying custom Apex is mandatory.
+- Identify Flow, approval, orchestration, LWC, Apex, async jobs, platform events, custom metadata, APIs, and standard Salesforce services only where justified.
+- Separate logical dependencies from runtime call sequences.
+- Explain fault behavior, idempotency, rollback boundaries, bulk safety, and support visibility.
+
+## 8. Data Architecture
+
+### 8.1 Entity Relationship Diagram
+### 8.2 Core Data Model
+### 8.3 Recommended Objects and Fields
+### 8.4 Record Type / Type / Category Design where applicable
+### 8.x Lifecycle State Diagrams for every major transactional entity
+### 8.x Data Ownership, Quality, Retention, and Archiving
+
+- Prefer standard objects where appropriate and justify custom objects.
+- Include key standard and custom fields needed by processes, routing, integration, audit, reporting, migration, and security.
+- Make cardinalities explicit in the ERD.
+- Ensure every object and field referenced elsewhere exists here, and every material ERD entity has an explained purpose.
+- Ensure lifecycle status values exactly match process diagrams, automation, reporting, and closure controls.
+
+## 9. Integration Architecture
+
+### 9.1 Integration Pattern Matrix
+### 9.x One subsection and sequence/data-flow diagram for every material integration
+### 9.x Retry, Idempotency, Error Handling, and Reconciliation
+### 9.x Channel or Interface Integrations
+### 9.x Integration Security and Credential Model
+
+For every integration, document:
+
+- Source and target.
+- System of record.
+- Direction and trigger.
+- Synchronous, asynchronous, batch, event-driven, or virtualized pattern.
+- Expected contract/protocol and payload ownership.
+- Authentication and authorization.
+- Timeout, retry, backoff, dead-letter/manual-review behavior.
+- Idempotency/correlation key and duplicate prevention.
+- Logging, alerting, reconciliation, replay, and data minimization.
+- Whether middleware is required, optional, or unnecessary, with rationale.
+
+## 10. Security, Access, Identity, and Compliance
+
+### 10.1 Role-Based Access and Visibility Model
+### 10.2 Persona Access Matrix
+### 10.3 Authentication / SSO / External Identity Flow as applicable
+### 10.4 Security Controls
+### 10.5 Privacy, Audit, Segregation of Duty, and Compliance Considerations
+
+- Cover OWD, role hierarchy, territories if relevant, queues/groups, sharing rules, restriction rules, permission-set strategy, FLS, encryption, secrets, integration users, audit/event monitoring, session controls, and emergency access as applicable.
+- Model internal, external, partner, administrator, integration, and migration personas only when supported by the new requirement or an explicit assumption.
+- Explicitly protect sensitive data and cross-business-unit boundaries.
+
+## 11. Data Migration, Volume, and Lifecycle Strategy
+
+### 11.1 Data Volume and Storage Strategy
+### 11.2 Migration Architecture and Execution Plan
+### 11.3 Large Data Volume Design
+### 11.4 Reconciliation, Cutover, Rollback, and Archiving
+
+- Use the actual volumes and retention stated in the new requirement. Never reuse Task 2 figures.
+- Where daily or monthly growth is provided, calculate annual growth and label the calculation.
+- Include discovery, profiling, mapping, cleansing, deduplication, reference-data load, pilot, full load, file load, delta, validation, reconciliation, cutover, rollback checkpoints, and acceptance criteria as applicable.
+- Address selective queries/indexing, data skew, ownership, automation bypass controls, file strategy, storage forecasting, archive, and backup where relevant.
+- If migration is explicitly out of scope, state that and replace unnecessary migration diagrams with relevant deployment, data-lifecycle, or operational diagrams while keeping overall diagram density.
+
+## 12. Reporting, SLA, Monitoring, and Operational Support
+
+### 12.1 Operational Monitoring and SLA Management
+### 12.2 Performance / Outcome Evaluation Model
+### 12.x Persona-Specific Dashboards and KPIs
+### 12.x Integration and Automation Support Dashboard
+
+- Trace KPIs to source objects/fields and intended consumers.
+- Separate operational workload metrics, business outcomes, quality, SLA, adoption, errors, and executive trends.
+- Do not invent target values; mark unspecified targets as TBD.
+
+## 13. Non-Functional Requirements
+
+- Cover scalability, performance, availability, reliability, recoverability, security, privacy, compliance, flexibility, maintainability, observability, accessibility, localization, deployment, and supportability as relevant.
+- State measurable values only when sourced or explicitly marked as a proposed target requiring validation.
+
+## 14. Risks and Mitigation
+
+- Include risk, cause/trigger, impact, likelihood or priority where useful, mitigation, contingency, and owner/TBD where appropriate.
+- Make risks specific to the new requirement and proposed architecture.
+
+## 15. Architectural Decision Records
+
+- Use stable IDs such as ADR-001.
+- For each material decision include Decision, Requirement/Context, Rationale, Alternatives Considered, and Consequences/Trade-offs.
+- Include decisions about the primary Salesforce data model, products, automation approach, integration pattern, identity, security/sharing, files/storage, migration, and any major customization.
+
+Add further sections if required, for example Deployment Architecture, Environment Strategy, DevSecOps/CI-CD, Testing Strategy, Disaster Recovery, or Governance. Do not omit a topic explicitly requested by the new requirement merely because it is absent from the reference SADD.
+
+============================================================
+6. PLANTUML REQUIREMENTS
+============================================================
+
+Use a minimum of 26 useful diagrams, unless the new requirement itself explicitly prohibits diagrams. Favor additional focused diagrams over one overloaded diagram.
+
+The diagram portfolio should include, where applicable:
+
+1. Requirement Coverage Map.
+2. High-Level Solution Architecture / System Landscape.
+3. Layered Architecture.
+4. System Context or Trust-Boundary Diagram.
+5. Persona/User Story Use-Case Map.
+6. Overall Business Process.
+7+. One diagram for each primary business process.
+8+. Shared intake/validation/triage process.
+9+. Routing/assignment or approval process.
+10+. Exception/escalation/manual-fallback process.
+11. Application Layer Overview.
+12. Service/Component Layer Design.
+13+. Important Service Interaction sequence diagrams.
+14. Error Handling Strategy.
+15. Configurable Business Rules / Metadata Model.
+16. Automation or Event-Orchestration View.
+17. ERD.
+18+. One state/lifecycle diagram for each major transaction type.
+19+. One technical sequence or data-flow diagram per material external integration.
+20. Retry/Idempotency/Reconciliation Process.
+21. Role-Based Access and Visibility Model.
+22. Authentication/SSO/Identity Flow when applicable.
+23. Data Volume/File Storage or Data Lifecycle Strategy.
+24. Migration Process or, if not applicable, Deployment/Data-Lifecycle Process.
+25. Operational Monitoring and SLA Model.
+26. Performance/Outcome Evaluation Model.
+
+Diagram quality rules:
+
+- Use fenced `plantuml` blocks containing `@startuml` and `@enduml`.
+- Immediately before each embedded diagram, include a Markdown link to its standalone source file, following the reference style, for example:
+  `[Diagram Title](<../puml solution/05.01 Diagram Title.puml>)`
+- Name standalone files with their section number and diagram title, following the pattern `05.01 High-Level Solution Architecture.puml`.
+- The standalone .puml content must be exactly synchronized with the corresponding embedded block.
+- Use stable aliases and valid PlantUML syntax. Avoid dangling references, ambiguous names, and duplicate aliases.
+- Choose the correct notation: actor/use case for personas, activity for business workflow, sequence for runtime interaction, component/package for landscape and layers, entity for ERD/configuration model, and state for lifecycle.
+- Use `skinparam`, direction, orthogonal lines, spacing, packages, aliases, and concise labels to keep diagrams readable.
+- Split diagrams when they become dense or cross too many concerns.
+- Every diagram must have one or two introductory sentences explaining its purpose and scope. Add explanatory prose or a mapping table after it where useful.
+- Diagrams must add information; do not create decorative duplicates.
+- If local PlantUML tooling is available, render or syntax-check all files and fix every error. If it is unavailable, perform a structural validation of every block and explicitly report that rendering was not executed.
+
+============================================================
+7. WRITING AND ARCHITECTURE QUALITY BAR
+============================================================
+
+Match or exceed the reference SADD in these qualities:
+
+- Clear, concise, professional architecture English.
+- Specific design statements instead of generic Salesforce marketing language.
+- Strong requirement traceability from business need to process, capability, data, integration, security, reporting, risk, and ADR.
+- Tables for exact mappings and comparisons; prose for rationale and consequences; diagrams for relationships, flow, state, and topology.
+- Standard Salesforce capability first, with customization justified rather than assumed.
+- Explicit commercial/licensing caveats.
+- Explicit assumptions and constraints.
+- Concrete error, retry, manual fallback, monitoring, and reconciliation behavior.
+- Least-privilege security and sensitive-data minimization.
+- Realistic large-volume, file, migration, and reporting considerations based only on the new inputs.
+- Trade-offs and alternatives, not unexplained product selection.
+- Consistent naming, capitalization, section numbering, anchors, object names, field names, status values, actors, systems, and diagram labels.
+
+Do not:
+
+- Copy paragraphs or merely substitute nouns from the Task 2 SADD.
+- Carry Task 2 facts into the new solution without evidence.
+- Invent integrations, volumes, compliance obligations, SLAs, roles, or products and label them as requirements.
+- Recommend every Salesforce product by default.
+- Use Apex where a robust standard/declarative capability is sufficient.
+- Claim a third-party tool or premium add-on is mandatory without rationale and commercial validation.
+- Leave contradictions between user stories, process diagrams, ERD, lifecycle states, access tables, integration sequences, migration mappings, KPIs, and ADRs.
+- Leave placeholder text such as “TBD” without also listing who/what must validate it and why it matters.
+- Produce a short generic document that only imitates the reference headings.
+
+============================================================
+8. CROSS-DOCUMENT CONSISTENCY CHECKS
+============================================================
+
+Before considering the work complete, perform these checks and correct every discrepancy found:
+
+1. Every explicit source requirement appears in the coverage matrix.
+2. Every coverage-matrix claim points to an existing section.
+3. Every persona has responsibilities, user stories, access rules, and relevant dashboards/workspaces.
+4. Every primary business-process stage appears in both prose and its diagram.
+5. Every important exception, approval, escalation, and manual fallback is represented.
+6. Every object/field named in a process, service, integration, migration, security, or report is represented or explained in the data architecture.
+7. ERD cardinalities agree with the prose and implementation tables.
+8. Lifecycle states and transitions agree across process diagrams, support processes, automation, validations, KPIs, and closure rules.
+9. Integration sequence participants agree with the system landscape and integration matrix.
+10. Each integration has authentication, timeout/failure, retry, idempotency, logging, and reconciliation treatment where applicable.
+11. Access permissions do not contradict role responsibilities or data-sharing boundaries.
+12. Migration mappings use objects and external IDs defined in the data model.
+13. Volume calculations are arithmetically correct and use only new requirement figures.
+14. KPI definitions are supported by available data and assigned to appropriate personas.
+15. Risks correspond to real requirements/designs and have actionable mitigation.
+16. ADRs capture the material choices actually used throughout the design.
+17. Every Markdown PlantUML block has one matching standalone .puml file with identical content.
+18. The SADD contains at least 26 meaningful diagrams and comparable or greater diagram density than the reference.
+19. All Markdown links and relative .puml paths resolve from OUTPUT_SADD.
+20. No Task 2-only term or number remains unless independently present in NEW_BUSINESS_REQUIREMENT.
+
+============================================================
+9. FILE CREATION AND VALIDATION
+============================================================
+
+- Inspect any repository-level instructions before editing.
+- Create OUTPUT_PUML_DIRECTORY if it does not exist.
+- Create or update only OUTPUT_SADD and the intended files inside OUTPUT_PUML_DIRECTORY unless another required generated artifact is explicitly agreed.
+- Preserve unrelated user changes and do not overwrite unrelated files.
+- Use repository-native editing mechanisms.
+- Ensure the Markdown remains readable even when diagrams are not rendered.
+- Validate heading hierarchy, section numbering, internal anchors, relative links, diagram count, duplicate filenames, and exact inline-versus-standalone PlantUML synchronization.
+- Run any available Markdown lint and PlantUML validation tools that do not destructively modify unrelated files.
+- Review the final diff for accidental Task 2 leakage and internal inconsistencies.
+
+============================================================
+10. COMPLETION RESPONSE
+============================================================
+
+Do not return only a draft in chat. Create the requested files.
+
+At completion, report concisely:
+
+- The absolute path of the generated SADD.
+- The absolute path of the PlantUML directory.
+- The number of main sections, words, and PlantUML diagrams.
+- Validation performed and any validation that could not be run.
+- The most important assumptions and open validation items.
+- A short confirmation that Task 2-specific facts were not reused unless supported by the new requirement.
+
+Begin by reading the three input documents completely, then produce the new SADD and PlantUML files end to end.
