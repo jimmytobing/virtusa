@@ -1,0 +1,69 @@
+@startuml
+title Task 1 - Peta Dampak Perubahan Saat Assessment
+
+left to right direction
+skinparam shadowing false
+skinparam linetype ortho
+skinparam rectangle {
+  BackgroundColor #F8F9F9
+  BorderColor #5D6D7E
+}
+
+rectangle "Requirement berubah" as Requirement #D6EAF8
+
+rectangle "Validasi input\nphone, email, postal, income" as Validation #E8F1FB
+rectangle "Matching applicant\nphone -> key lain" as Matching #E8F1FB
+rectangle "Support option\namount, duration, active" as Option #E7F4E4
+rectangle "Eligibility / threshold" as Eligibility #E7F4E4
+rectangle "Jadwal pembayaran" as Schedule #E7F4E4
+rectangle "Guest / security" as Security #F1EAF7
+rectangle "Bulk upload" as Upload #F1EAF7
+rectangle "Integration / retry" as Integration #FDEDEC
+
+rectangle "LWC + Visualforce\nDTO + Controller" as UI
+rectangle "GrantApplicationService\nContactTriggerHandler\nBulkUploadService" as Rules
+rectangle "ContactMatchingService\nContactRepository" as MatchClasses
+rectangle "Support Option CMDT\nSupportOptionService" as OptionClasses
+rectangle "Grant Configuration CMDT\nConfigurationRepository\nDisbursementService" as EligibilityClasses
+rectangle "DisbursementService\nDisbursementTrigger" as ScheduleClasses
+rectangle "Queueable Jobs\nsharing + permissions" as SecurityClasses
+rectangle "Application Trigger\nBulkUploadService" as UploadClasses
+rectangle "Integration_Error__c\nIntegrationService\nRetryService\nNamed Credential" as IntegrationClasses
+rectangle "Relevant Test Class\n+ regression test" as Tests #FCF3CF
+
+Requirement --> Validation
+Requirement --> Matching
+Requirement --> Option
+Requirement --> Eligibility
+Requirement --> Schedule
+Requirement --> Security
+Requirement --> Upload
+Requirement --> Integration
+
+Validation --> UI
+Validation --> Rules
+Matching --> MatchClasses
+Option --> OptionClasses
+Eligibility --> EligibilityClasses
+Schedule --> ScheduleClasses
+Security --> SecurityClasses
+Upload --> UploadClasses
+Integration --> IntegrationClasses
+
+UI --> Tests
+Rules --> Tests
+MatchClasses --> Tests
+OptionClasses --> Tests
+EligibilityClasses --> Tests
+ScheduleClasses --> Tests
+SecurityClasses --> Tests
+UploadClasses --> Tests
+IntegrationClasses --> Tests
+
+note bottom of Tests
+  Jangan selesai setelah mengubah satu method.
+  Cari semua entry point, automation, metadata,
+  dan test yang menjaga perilaku lama.
+end note
+
+@enduml

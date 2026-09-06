@@ -1,0 +1,120 @@
+@startuml
+title Task 1 - Peta Eksekusi Apex
+
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam componentStyle rectangle
+skinparam ArrowColor #5D6D7E
+
+legend left
+  --> panggilan langsung
+  ..> DML memicu automation
+  Biru = entry point
+  Hijau = business service
+  Kuning = data/configuration
+  Ungu = trigger/asynchronous
+endlegend
+
+package "1. Submit dari UI" #E8F1FB {
+  [LWC Form] as LWC
+  [Visualforce Portal] as VF
+  [GrantApplicationController] as AppController
+  [GrantPortalController] as PortalController
+}
+
+package "2. Orchestration" #E7F4E4 {
+  [GrantApplicationService] as AppService
+  [ContactMatchingService] as ContactMatch
+  [GrantSupportOptionService] as OptionService
+  [GrantApplicationRepository] as AppRepo
+  [GrantDisbursementService] as DisbursementService
+}
+
+package "3. Guest Async" #F1EAF7 {
+  [ApplicantLinkJob] as LinkJob
+  [GuestUpdateJob] as GuestJob
+}
+
+package "4. Database dan Automation" #FCF3CF {
+  database "Contact" as Contact
+  database "Grant_Application__c" as Application
+  database "Grant_Disbursement__c" as Disbursement
+  [ContactTrigger\n+ Handler] as ContactTrigger
+  [GrantApplicationTrigger\n+ Handler] as AppTrigger
+  [GrantDisbursementTrigger] as DisbursementTrigger
+  [Record-Triggered Flows] as Flows
+}
+
+package "5. Bulk Upload" #F1EAF7 {
+  [Insert staging fields\npada Grant Application] as Upload
+  [GrantApplicationBulkUploadService] as BulkService
+}
+
+package "6. Shared Configuration" #FCF3CF {
+  database "Grant_Support_Option__mdt" as OptionMDT
+  database "Grant_Configuration__mdt" as ConfigMDT
+  database "Grant_Error_Message__mdt" as ErrorMDT
+  [GrantConfigurationRepository] as ConfigRepo
+  [GrantExceptionService] as ExceptionService
+}
+
+LWC --> AppController
+VF --> PortalController
+AppController --> AppService
+PortalController --> AppService
+
+AppService --> OptionService : valid option
+AppService --> ContactMatch : upsert applicant
+AppService --> AppRepo : save application
+AppService --> DisbursementService : non-guest
+AppService --> LinkJob : guest new
+AppService --> GuestJob : guest reuse
+
+ContactMatch --> Contact
+AppRepo --> Application
+DisbursementService --> Disbursement
+LinkJob --> Application
+LinkJob --> Contact
+LinkJob --> DisbursementService
+GuestJob --> Application
+GuestJob --> Contact
+GuestJob --> DisbursementService
+
+Contact ..> ContactTrigger
+ContactTrigger --> ContactMatch : validate / merge
+Application ..> AppTrigger
+Application ..> Flows
+Disbursement ..> DisbursementTrigger
+DisbursementTrigger --> DisbursementService : clear completed pointer
+
+Upload --> Application
+AppTrigger --> BulkService
+BulkService --> Contact
+BulkService --> Application
+BulkService --> DisbursementService
+
+OptionService --> OptionMDT
+DisbursementService --> OptionMDT
+DisbursementService --> ConfigRepo
+ConfigRepo --> ConfigMDT
+ExceptionService --> ErrorMDT
+
+note bottom of AppService
+  GrantDTO membawa request.
+  GrantConstants menyediakan nilai status.
+end note
+
+note bottom of ExceptionService
+  GrantException membawa business error.
+  GrantSupportOptionDTO membawa option ke UI.
+end note
+
+note bottom of BulkService
+  Placeholder GrantIntegrationService,
+  GrantRetryService, GrantUtility, dan sample
+  "coba" tidak berada pada alur grant utama.
+end note
+
+@enduml

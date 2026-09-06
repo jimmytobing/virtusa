@@ -1,0 +1,66 @@
+@startuml
+title Task 1 - Sequence Submit Grant Application
+
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor Applicant
+boundary "LWC / Visualforce" as UI
+control "Controller" as Controller
+control "GrantApplicationService" as AppService
+control "GrantSupportOptionService" as OptionService
+control "ContactMatchingService" as ContactService
+database "Contact" as Contact
+database "Grant_Application__c" as Application
+control "Application Trigger + Flow" as Automation
+queue "Queueable Job" as Job
+control "GrantDisbursementService" as DisbursementService
+database "Grant_Disbursement__c" as Disbursement
+
+Applicant -> UI : Isi dan submit form
+UI -> Controller : GrantDTO
+Controller -> AppService : submitApplication(request)
+AppService -> AppService : Validasi request
+AppService -> OptionService : Cari active option\nberdasarkan DeveloperName
+OptionService --> AppService : amount, duration, label
+AppService -> ContactService : upsertApplicantByPhone(request)
+ContactService -> Contact : insert / update Contact
+Contact -> ContactService : Contact trigger dapat\nvalidasi dan merge duplikat
+ContactService --> AppService : applicant aktif / keeper
+AppService -> AppService : Cari active application\npointer lalu histori disbursement
+
+alt Guest user dan active application ditemukan
+  AppService -> Job : enqueue GuestUpdateJob
+  AppService --> Controller : active application Id
+else Application baru atau internal update
+  AppService -> Application : insert / update application
+  Application -> Automation : before-save Flow + trigger(s)
+  alt Guest user dan application baru
+    AppService -> Job : enqueue ApplicantLinkJob
+    AppService --> Controller : application Id\nsebelum job selesai
+  else Internal / non-guest
+    AppService -> Contact : Set active application pointer
+    AppService -> DisbursementService : recalculateForApplicationIds
+    DisbursementService -> Disbursement : Pertahankan paid,\nhapus dan buat ulang unpaid
+    AppService --> Controller : application Id
+  end
+end
+
+Controller --> UI : success atau handled error
+UI --> Applicant : toast / page message
+
+... Transaksi asynchronous guest ...
+Job -> Application : Link applicant atau update application
+Application -> Automation : after-update trigger + Flow
+Job -> Contact : Set active application pointer
+Job -> DisbursementService : recalculateForApplicationIds
+DisbursementService -> Disbursement : Buat / hitung ulang jadwal
+
+note over AppService,Job
+  Guest menerima Id sebelum linking dan jadwal selesai.
+  Verifikasi akhir harus dilakukan setelah Queueable selesai.
+end note
+
+@enduml

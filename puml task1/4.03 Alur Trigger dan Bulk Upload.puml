@@ -1,0 +1,49 @@
+@startuml
+title Task 1 - Trigger, Bulk Upload, dan Recursion Guard
+
+skinparam shadowing false
+skinparam activity {
+  BackgroundColor #E8F1FB
+  BorderColor #5D6D7E
+  DiamondBackgroundColor #FCF3CF
+  DiamondBorderColor #7D6608
+}
+
+start
+:Insert Grant_Application__c;
+:Before-save Flow membaca active Grant Configuration\nlalu mengisi Current Stage dan Submitted Date;
+:GrantApplicationTrigger.beforeInsert;
+if (Current_Stage__c masih null?) then (ya)
+  :Set "Submitted";
+endif
+:BulkUploadService.validateBeforeInsert;
+if (Ada minimal satu applicant staging field?) then (ya)
+  :Validasi first name, last name, phone,\npostal code, income, dan support option;
+  if (Ada addError?) then (ya)
+    stop
+  endif
+else (tidak)
+  :Lewati logika bulk upload;
+endif
+:Record di-insert;
+:GrantApplicationTrigger.afterInsert;
+:Pilih hanya record dengan applicant staging field;
+if (Daftar upload kosong?) then (ya)
+  stop
+endif
+:Query existing Contact secara bulk berdasarkan phone;
+:Insert Contact baru dan update Contact lama;
+note right
+  ContactTrigger ikut berjalan:
+  validasi grant fields dan merge
+  exact duplicate phone.
+end note
+:Update application dengan Applicant, Grant Type,\nRequested Amount, status, dan tanggal;
+:Aktifkan static recursion guard\nprocessingApplicationUpdates;
+:Application after-update trigger dipanggil,\ntetapi service berhenti karena guard;
+:Matikan recursion guard;
+:Update Contact.Grant_Application__c;
+:Recalculate disbursement sekali secara eksplisit;
+stop
+
+@enduml

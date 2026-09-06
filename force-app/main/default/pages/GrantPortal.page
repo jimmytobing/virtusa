@@ -65,7 +65,7 @@
         <apex:pageMessages />
 
         <div class="field-row">
-          <label for="firstName">First Name</label>
+          <label for="firstName">Nama Depan</label>
           <apex:inputText
             id="firstName"
             value="{!firstName}"
@@ -75,7 +75,7 @@
         </div>
 
         <div class="field-row">
-          <label for="lastName">Last Name</label>
+          <label for="lastName">Nama Belakang</label>
           <apex:inputText
             id="lastName"
             value="{!lastName}"

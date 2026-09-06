@@ -1,76 +1,278 @@
 @startuml
-title Service Cloud Extension Class Diagram
+title Grant Application - Apex Class Diagram
 
 left to right direction
+skinparam shadowing false
 skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
 hide empty members
 
-package "Presentation" {
-  class CaseIntakeController <<AuraEnabled>>
-  class ServiceConsoleActionController <<AuraEnabled>>
+legend left
+  + public
+  {static} static member
+  Only production Apex classes and public members are shown.
+endlegend
+
+package "Presentation" #EAF2F8 {
+  class GrantApplicationController <<AuraEnabled>> {
+    + {static} Id submitApplication(GrantDTO request)
+    + {static} List<String> getActiveGrantTypes()
+    + {static} List<GrantSupportOptionDTO> getActiveSupportOptions()
+  }
+
+  class GrantPortalController <<Visualforce Controller>> {
+    + String firstName
+    + String lastName
+    + String phone
+    + String email
+    + String mailingPostalCode
+    + Decimal monthlyIncome
+    + String supportOption
+    + String reason
+    + List<SelectOption> getSupportOptions()
+    + PageReference submit()
+  }
 }
 
-package "Application Services" {
-  class CaseIntakeService
-  class CitizenVerificationService
-  class CaseRoutingService
-  class CaseLifecycleService
-  class FeedbackAnalysisService
-  class KnowledgeSuggestionService
-  class IntegrationErrorService
-  class MigrationReconciliationService
+package "Application Services" #E8F8F5 {
+  class GrantApplicationService {
+    + {static} Id submitApplication(GrantDTO request)
+    + {static} void validateApplicantRequest(GrantDTO request)
+  }
+
+  class ContactMatchingService {
+    + {static} Contact upsertApplicantByPhone(GrantDTO request)
+    + {static} Set<Id> mergeDuplicatePhoneContacts(List<Contact> records)
+  }
+
+  class GrantApplicationBulkUploadService {
+    + {static} void validateBeforeInsert(List<Grant_Application__c> records)
+    + {static} void processAfterInsert(List<Grant_Application__c> records)
+    + {static} void processAfterUpdate(List<Grant_Application__c> records, Map<Id, Grant_Application__c> oldMap)
+  }
+
+  class GrantDisbursementService {
+    + {static} void recalculateDisbursementsFromFlow(List<FlowRequest> requests) <<InvocableMethod>>
+    + {static} void recalculateForApplicationIds(Set<Id> applicationIds)
+    + {static} void clearCompletedApplicationReferences(Set<Id> applicationIds)
+  }
+
+  class GrantSupportOptionService {
+    + {static} List<GrantSupportOptionDTO> getActiveOptions()
+    + {static} Grant_Support_Option__mdt getActiveOption(String developerName)
+  }
+
+  class GrantConfigurationService {
+    + {static} Grant_Configuration__mdt getConfiguration(String grantType)
+    + {static} List<String> getActiveGrantTypes()
+  }
+
+  class GrantExceptionService {
+    + {static} String REQUEST_NULL
+    + {static} String APPLICANT_FIRST_NAME_REQUIRED
+    + {static} String APPLICANT_LAST_NAME_REQUIRED
+    + {static} String PHONE_INVALID
+    + {static} String EMAIL_INVALID
+    + {static} String POSTAL_CODE_INVALID
+    + {static} String MONTHLY_INCOME_INVALID
+    + {static} String MONTHLY_INCOME_REQUIRED
+    + {static} String SUPPORT_OPTION_REQUIRED
+    + {static} String SUPPORT_OPTION_UNAVAILABLE
+    + {static} String GRANT_CONFIGURATION_NOT_FOUND
+    + {static} String DISBURSEMENT_OPTION_TOTAL_TOO_LOW
+    + {static} String DISBURSEMENT_OPTION_NO_MONTHS
+    + {static} String REST_CALLOUT_FAILED
+    + {static} String UNEXPECTED_ERROR
+    + {static} String UNEXPECTED_ERROR_NULL
+    + {static} String getMessage(String code, String defaultMessage)
+    + {static} String formatMessage(String code, String defaultMessage, List<String> values)
+    + {static} Map<String, String> getClientMessages()
+  }
+
+  class GrantUtility {
+    + {static} Boolean isBlank(String value)
+    + {static} Boolean isNull(Object value)
+    + {static} String generateTransactionId()
+  }
+
+  class GrantIntegrationService {
+    + GrantIntegrationService()
+  }
+
+  class GrantRetryService {
+    + GrantRetryService()
+  }
 }
 
-package "Data Access" {
-  class ContactRepository
-  class CaseRepository
-  class KnowledgeRepository
-  class IntegrationErrorRepository
+package "Data Access" #FCF3CF {
+  class ContactRepository <<Repository>> {
+    + {static} Contact getById(Id contactId)
+    + {static} Contact getByPhone(String phone)
+  }
+
+  class GrantApplicationRepository <<Repository>> {
+    + {static} Id save(Grant_Application__c application)
+    + {static} Grant_Application__c getById(Id applicationId)
+  }
+
+  class GrantConfigurationRepository <<Repository>> {
+    + {static} Grant_Configuration__mdt getByGrantType(String grantType)
+    + {static} List<Grant_Configuration__mdt> getActiveConfigurations()
+  }
 }
 
-package "Automation" {
-  class CaseTriggerHandler
-  class CaseMilestoneFlow
-  class CaseAssignmentFlow
-  class MDMVerificationQueueable
-  class IntegrationRetryBatch
+package "Automation" #F5EEF8 {
+  class ContactTrigger <<Trigger>>
+  class GrantApplicationTrigger <<Trigger>>
+  class GrantDisbursementTrigger <<Trigger>>
+
+  class ContactTriggerHandler <<Trigger Handler>> {
+    + void beforeInsert(List<Contact> records)
+    + void beforeUpdate(List<Contact> records)
+    + void afterInsert(List<Contact> records)
+  }
+
+  class GrantApplicationTriggerHandler <<Trigger Handler>> {
+    + void beforeInsert(List<Grant_Application__c> records)
+    + void beforeUpdate(List<Grant_Application__c> records, Map<Id, Grant_Application__c> oldMap)
+    + void afterInsert(List<Grant_Application__c> records)
+    + void afterUpdate(List<Grant_Application__c> records, Map<Id, Grant_Application__c> oldMap)
+  }
+
+  class GrantApplicationApplicantLinkJob <<Queueable>> {
+    + GrantApplicationApplicantLinkJob(Id applicationId, Id applicantId)
+    + void execute(QueueableContext context)
+  }
+
+  class GrantApplicationGuestUpdateJob <<Queueable>> {
+    + GrantApplicationGuestUpdateJob(Id applicationId, Id applicantId, String grantType, Decimal requestedAmount, String reason)
+    + void execute(QueueableContext context)
+  }
+
+  class "GrantDisbursementService.FlowRequest" as FlowRequest <<Invocable Input>> {
+    + Id grantApplicationId
+  }
 }
 
-package "DTOs and Shared" {
-  class CaseIntakeDTO
-  class VerificationResultDTO
-  class RoutingContextDTO
-  class ServiceConstants
-  class ServiceException
+package "DTOs and Shared" #FDEDEC {
+  class GrantDTO <<DTO>> {
+    + Id applicationId
+    + Id applicantId
+    + String firstName
+    + String lastName
+    + String phone
+    + String email
+    + String mailingPostalCode
+    + Decimal monthlyIncome
+    + String supportOption
+    + String grantType
+    + Decimal requestedAmount
+    + String reason
+    + String status
+  }
+
+  class GrantSupportOptionDTO <<DTO>> {
+    + String value
+    + String label
+    + Decimal monthlyAmount
+    + Integer durationMonths
+    + Decimal totalAmount
+    + GrantSupportOptionDTO(Grant_Support_Option__mdt option)
+  }
+
+  class GrantConstants <<Constants>> {
+    + {static} String STATUS_DRAFT
+    + {static} String STATUS_PENDING
+    + {static} String STATUS_APPROVED
+    + {static} String STATUS_REJECTED
+    + {static} String INTEGRATION_PENDING
+    + {static} String INTEGRATION_SUCCESS
+    + {static} String INTEGRATION_FAILED
+    + {static} String GRANT_EDUCATION
+    + {static} String GRANT_HEALTHCARE
+    + {static} String ERROR_VALIDATION
+    + {static} String ERROR_INTEGRATION
+    + {static} String ERROR_SYSTEM
+    + {static} Integer MAX_RETRY
+  }
+
+  class GrantException <<Exception>>
 }
 
-package "Salesforce Data Model" {
-  class Contact <<SObject>>
-  class Case <<SObject>>
-  class Knowledge__kav <<SObject>>
-  class ContentDocumentLink <<SObject>>
+package "Sample / Utility Metadata" #F2F3F4 {
+  class coba <<Sample>> {
+    + coba()
+    + {static} List<Account> getAccountsWithActiveOpportunities()
+    + {static} SampleAccountPayload parseAccountPayload(String jsonBody)
+    + {static} SampleAccountPayload getAccountPayloadFromRest(String endpoint)
+    + {static} Id publishSampleAccountEvent(Id accountId, String accountName, String message)
+  }
+
+  class "coba.SampleAccountPayload" as SampleAccountPayload {
+    + String id
+    + String name
+    + String username
+    + String email
+  }
+
+  class "coba.RestCalloutException" as RestCalloutException <<Exception>>
+  class "coba.PlatformEventPublishException" as PlatformEventPublishException <<Exception>>
+}
+
+package "Salesforce Data Model" #EBF5FB {
+  class Account <<Standard Object>>
+  class Opportunity <<Standard Object>>
+  class Contact <<Standard Object>>
+  class Grant_Application__c <<Custom Object>>
+  class Grant_Disbursement__c <<Custom Object>>
   class Integration_Error__c <<Custom Object>>
-  class Migration_Batch__c <<Custom Object>>
-  class Case_Routing_Rule__mdt <<Custom Metadata>>
+  class Sample_Account_Event__e <<Platform Event>>
+  class Grant_Configuration__mdt <<Custom Metadata>>
+  class Grant_Support_Option__mdt <<Custom Metadata>>
+  class Grant_Error_Message__mdt <<Custom Metadata>>
 }
 
-CaseIntakeController --> CaseIntakeService
-ServiceConsoleActionController --> CitizenVerificationService
-CaseIntakeService --> ContactRepository
-CaseIntakeService --> CaseRepository
-CaseIntakeService --> CitizenVerificationService
-CaseIntakeService --> CaseRoutingService
-CaseIntakeService --> CaseLifecycleService
-CitizenVerificationService --> MDMVerificationQueueable
-CitizenVerificationService --> IntegrationErrorService
-CaseRoutingService --> Case_Routing_Rule__mdt
-CaseLifecycleService --> CaseRepository
-FeedbackAnalysisService --> CaseRepository
-KnowledgeSuggestionService --> KnowledgeRepository
-IntegrationErrorService --> IntegrationErrorRepository
-MigrationReconciliationService --> Migration_Batch__c
-CaseTriggerHandler --> CaseLifecycleService
-CaseAssignmentFlow --> CaseRoutingService
-IntegrationRetryBatch --> CitizenVerificationService
+' Presentation dependencies
+GrantApplicationController --> GrantApplicationService
+GrantApplicationController --> GrantConfigurationService
+GrantApplicationController --> GrantSupportOptionService
+GrantPortalController --> GrantApplicationService
+
+' Core application dependencies
+GrantApplicationService --> ContactMatchingService
+GrantApplicationService --> GrantApplicationRepository
+GrantApplicationService --> GrantSupportOptionService
+GrantApplicationService --> GrantDisbursementService
+GrantApplicationService --> GrantApplicationApplicantLinkJob
+GrantApplicationService --> GrantApplicationGuestUpdateJob
+
+ContactMatchingService --> ContactRepository
+GrantApplicationBulkUploadService --> GrantDisbursementService
+GrantDisbursementService --> GrantConfigurationRepository
+GrantDisbursementService *-- FlowRequest
+GrantSupportOptionService --> GrantSupportOptionDTO
+GrantConfigurationService --> GrantConfigurationRepository
+
+' Trigger and asynchronous dependencies
+ContactTrigger --> ContactTriggerHandler
+ContactTriggerHandler --> ContactMatchingService
+
+GrantApplicationTrigger --> GrantApplicationTriggerHandler
+GrantApplicationTriggerHandler --> GrantApplicationBulkUploadService
+
+GrantDisbursementTrigger --> GrantDisbursementService
+
+GrantApplicationApplicantLinkJob --> GrantDisbursementService
+GrantApplicationGuestUpdateJob --> GrantDisbursementService
+
+' Core data relationships represented in Apex/metadata
+Contact "1" -- "0..1 active" Grant_Application__c : Grant_Application__c
+Grant_Application__c "1" -- "0..*" Grant_Disbursement__c : Grant_Applicantion__c
+
+' Sample class dependencies
+coba *-- SampleAccountPayload
+coba *-- RestCalloutException
+coba *-- PlatformEventPublishException
 
 @enduml

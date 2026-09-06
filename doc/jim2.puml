@@ -1,0 +1,21 @@
+@startuml
+
+
+|#PaleGreen|grantApplicationForm.submitApplication()|
+    start
+    :validateForm();
+    :GrantApplicationController.submitApplication(dto);
+|GrantApplicationController.submitApplication(GrantDTO)|
+    :GrantApplicationService.submitApplication(request);
+|GrantApplicationService.submitApplication(GrantDTO)|
+    if (request == null) then (yes)
+        :throw GrantExceptionService.REQUEST_NULL;
+    endif
+    :validateApplicantRequest(request);
+|GrantApplicationService.validateApplicantRequest(GrantDTO)|
+    :test;
+|GrantApplicationService.submitApplication(GrantDTO)|
+    :lanjut90;
+    stop
+
+@enduml

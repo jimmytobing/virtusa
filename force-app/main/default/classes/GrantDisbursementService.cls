@@ -21,6 +21,8 @@ public without sharing class GrantDisbursementService {
     recalculateForApplicationIds(applicationIds);
   }
 
+  /* Change 2026-08-12 */
+
   public static void recalculateForApplicationIds(Set<Id> applicationIds) {
     if (applicationIds == null || applicationIds.isEmpty()) {
       return;

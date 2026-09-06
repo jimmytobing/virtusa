@@ -1,0 +1,55 @@
+@startuml
+title Task 1 - Decision Flow Recalculation Disbursement
+
+skinparam shadowing false
+skinparam activity {
+  BackgroundColor #E7F4E4
+  BorderColor #4D7A57
+  DiamondBackgroundColor #FCF3CF
+  DiamondBorderColor #7D6608
+}
+
+start
+:Terima Set<Grant Application Id>;
+if (Set null / kosong?) then (ya)
+  stop
+endif
+:Load semua active Support Option\n(key = DeveloperName dan MasterLabel);
+:Pilih Income Threshold dari active configuration\ndengan Priority terkecil;
+:Query application + applicant monthly income;
+if (Grant Type kosong atau option tidak ditemukan?) then (ya)
+  :Lewati application;\nTidak ada error eksplisit;
+  stop
+endif
+:Normalisasi Grant Type ke MasterLabel\ndan Requested Amount ke option total;
+if (Income > threshold?) then (ya)
+  :Hapus hanya disbursement yang belum dibayar;
+  :Jangan membuat jadwal baru;
+  stop
+endif
+:Query semua disbursement lama;
+:Jumlahkan amount dan bulan yang sudah dibayar;
+:Tandai semua unpaid lama untuk dihapus;
+if (Total paid > total option baru?) then (ya)
+  :Throw DISBURSEMENT_OPTION_TOTAL_TOO_LOW;
+  stop
+endif
+:remainingMonths = duration - paidMonths;
+:remainingAmount = optionTotal - totalPaid;
+if (remainingAmount > 0 dan remainingMonths <= 0?) then (ya)
+  :Throw DISBURSEMENT_OPTION_NO_MONTHS;
+  stop
+endif
+if (remainingAmount <= 0?) then (ya)
+  :Tidak membuat jadwal baru;
+else (tidak)
+  :monthlyAmount = remainingAmount / remainingMonths;
+  :Mulai tanggal 1 bulan berikutnya;
+  :Buat satu record per remaining month;
+endif
+:Delete unpaid lama;
+:Insert jadwal baru;
+:Update application bila label / total dinormalisasi;
+stop
+
+@enduml
