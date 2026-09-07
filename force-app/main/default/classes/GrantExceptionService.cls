@@ -21,40 +21,7 @@ public with sharing class GrantExceptionService {
       return defaultMessage;
     }
 
-    Grant_Error_Message__mdt errorMessage = Grant_Error_Message__mdt.getInstance(
-      code
-    );
-
-    if (
-      errorMessage != null &&
-      errorMessage.Active__c == true &&
-      !String.isBlank(errorMessage.Message__c)
-    ) {
-      return errorMessage.Message__c;
-    }
-
     return defaultMessage;
-  }
-
-  public static String formatMessage(
-    String code,
-    String defaultMessage,
-    List<String> values
-  ) {
-    String message = getMessage(code, defaultMessage);
-
-    if (values == null) {
-      return message;
-    }
-
-    for (Integer index = 0; index < values.size(); index++) {
-      message = message.replace(
-        '{' + String.valueOf(index) + '}',
-        values[index] == null ? '' : values[index]
-      );
-    }
-
-    return message;
   }
 
   @AuraEnabled(cacheable=true)

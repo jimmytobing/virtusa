@@ -11,7 +11,6 @@ export default class GrantApplicationForm extends LightningElement {
   firstName;
   lastName;
   phone;
-  email;
   mailingPostalCode;
   monthlyIncome;
   supportOption;
