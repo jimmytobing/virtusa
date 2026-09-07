@@ -152,15 +152,14 @@
     <enableSearch>false</enableSearch>
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
-    <externalSharingModel>Private</externalSharingModel>
+    <externalSharingModel>ControlledByParent</externalSharingModel>
     <label>Grant Disbursement</label>
     <nameField>
-        <displayFormat>GD-{00000}</displayFormat>
-        <label>Grant Disbursement Number</label>
-        <type>AutoNumber</type>
+        <label>Support Option</label>
+        <type>Text</type>
     </nameField>
     <pluralLabel>Grant Disbursements</pluralLabel>
     <searchLayouts />
-    <sharingModel>ReadWrite</sharingModel>
+    <sharingModel>ControlledByParent</sharingModel>
     <visibility>Public</visibility>
 </CustomObject>
