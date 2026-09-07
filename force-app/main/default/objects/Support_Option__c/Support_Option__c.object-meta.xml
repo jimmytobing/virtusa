@@ -149,17 +149,16 @@
     <enableHistory>false</enableHistory>
     <enableLicensing>false</enableLicensing>
     <enableReports>false</enableReports>
-    <enableSearch>false</enableSearch>
+    <enableSearch>true</enableSearch>
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
     <externalSharingModel>Private</externalSharingModel>
-    <label>Grant Disbursement</label>
+    <label>Support Option</label>
     <nameField>
-        <displayFormat>GD-{00000}</displayFormat>
-        <label>Grant Disbursement Number</label>
-        <type>AutoNumber</type>
+        <label>Option</label>
+        <type>Text</type>
     </nameField>
-    <pluralLabel>Grant Disbursements</pluralLabel>
+    <pluralLabel>Support Options</pluralLabel>
     <searchLayouts />
     <sharingModel>ReadWrite</sharingModel>
     <visibility>Public</visibility>

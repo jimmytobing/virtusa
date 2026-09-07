@@ -153,13 +153,12 @@
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
     <externalSharingModel>Private</externalSharingModel>
-    <label>Grant Disbursement</label>
+    <label>Grant Message</label>
     <nameField>
-        <displayFormat>GD-{00000}</displayFormat>
-        <label>Grant Disbursement Number</label>
-        <type>AutoNumber</type>
+        <label>Message Code</label>
+        <type>Text</type>
     </nameField>
-    <pluralLabel>Grant Disbursements</pluralLabel>
+    <pluralLabel>Grant Messages</pluralLabel>
     <searchLayouts />
     <sharingModel>ReadWrite</sharingModel>
     <visibility>Public</visibility>
