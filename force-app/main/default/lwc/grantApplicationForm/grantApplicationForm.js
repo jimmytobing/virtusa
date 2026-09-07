@@ -25,8 +25,8 @@ export default class GrantApplicationForm extends LightningElement {
   wiredSupportOptions({ data, error }) {
     if (data) {
       this.supportOptionOptions = data.map((option) => ({
-        label: `${option.label} - SGD ${option.monthlyAmount} per month for ${option.durationMonths} months`,
-        value: option.value
+        label: `${option.Name} - SGD ${option.Amount__c} per month for ${option.Duration__c} months`,
+        value: option.Id
       }));
     } else if (error) {
       this.dispatchEvent(
@@ -44,6 +44,12 @@ export default class GrantApplicationForm extends LightningElement {
     if (data) {
       this.clientMessages = data;
     }
+  }
+
+  getClientMessage(code, defaultMessage) {
+    return this.clientMessages && this.clientMessages[code]
+      ? this.clientMessages[code]
+      : defaultMessage;
   }
 
   get phonePatternMessage() {
@@ -74,25 +80,23 @@ export default class GrantApplicationForm extends LightningElement {
 
     try {
       const dto = {
-        firstName: this.firstName,
-        lastName: this.lastName,
-        phone: this.phone,
-        email: this.email,
-        mailingPostalCode: this.mailingPostalCode,
-        monthlyIncome: this.monthlyIncome,
-        supportOption: this.supportOption
+        FirstName: this.firstName,
+        LastName: this.lastName,
+        Phone: this.phone,
+        MailingPostalCode: this.mailingPostalCode,
+        Monthly_Income__c: this.monthlyIncome,
+        Support_Option__c: this.supportOption
       };
 
-      const applicationId = await submitApplication({
+      const contactId = await submitApplication({
         request: dto
       });
 
       this.dispatchEvent(
         new ShowToastEvent({
           title: "Success",
-
-          message: "Application requested [ Id: " + applicationId + " ]",
-
+          message:
+            "Application requested for contact [ Id: " + contactId + " ]",
           variant: "success"
         })
       );
@@ -100,9 +104,7 @@ export default class GrantApplicationForm extends LightningElement {
       this.dispatchEvent(
         new ShowToastEvent({
           title: "Error",
-
           message: this.getErrorMessage(error),
-
           variant: "error"
         })
       );
@@ -115,7 +117,7 @@ export default class GrantApplicationForm extends LightningElement {
     if (!error) {
       return this.getClientMessage(
         "UNEXPECTED_ERROR_NULL",
-        "Unexpected error(null)."
+        "Unexpected error(null error)."
       );
     }
 
@@ -151,12 +153,6 @@ export default class GrantApplicationForm extends LightningElement {
     }
 
     return this.getClientMessage("UNEXPECTED_ERROR", "Unexpected error.");
-  }
-
-  getClientMessage(code, defaultMessage) {
-    return this.clientMessages && this.clientMessages[code]
-      ? this.clientMessages[code]
-      : defaultMessage;
   }
 
   validateForm() {
