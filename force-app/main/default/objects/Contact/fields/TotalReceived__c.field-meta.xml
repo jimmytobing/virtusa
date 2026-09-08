@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>TotalReceived__c</fullName>
+    <label>TotalReceived</label>
+    <summarizedField
+  >Grant_Disbursement__c.Amount_to_be_disbursed__c</summarizedField>
+    <summaryFilterItems>
+        <field>Grant_Disbursement__c.Grant_is_disbursed__c</field>
+        <operation>equals</operation>
+        <value>True</value>
+    </summaryFilterItems>
+    <summaryForeignKey
+  >Grant_Disbursement__c.Grant_Applicant__c</summaryForeignKey>
+    <summaryOperation>sum</summaryOperation>
+    <type>Summary</type>
+</CustomField>

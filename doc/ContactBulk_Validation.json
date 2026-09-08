@@ -1,0 +1,31 @@
+{
+  "id": "0Affj00000QGJR7CAP",
+  "status": "Succeeded",
+  "checkOnly": true,
+  "completedDate": "2026-09-07T14:46:25.000Z",
+  "numberComponentsDeployed": 20,
+  "numberComponentsTotal": 20,
+  "numberComponentErrors": 0,
+  "numberTestsCompleted": 9,
+  "numberTestErrors": 0,
+  "targetOrgAlias": "hdbsf",
+  "testClass": "ContactBulkFlowTest",
+  "numTestsRun": 9,
+  "numFailures": 0,
+  "tests": [
+    "acceptsEveryCsvStyleAndOption",
+    "failedRowCanBeCorrectedAndRetried",
+    "pendingRowDoesNothing",
+    "rejectsAmbiguousOption",
+    "rejectsInvalidInputsWithoutCreatingContacts",
+    "rejectsMissingAccount",
+    "rejectsMissingOption",
+    "saveFaultCanBeReturnedWithoutChangingLegacyCallers",
+    "updatesNewestContactWithinDefaultAccountAndSkipsReplay"
+  ],
+  "limitations": [
+    "Check-only deployment; metadata was not deployed.",
+    "Processor invoked directly in tests; asynchronous delivery and Data Loader end-to-end import not tested.",
+    "One unique Phone per file; non-overlapping imports required."
+  ]
+}

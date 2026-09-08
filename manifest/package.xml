@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+	<types>
+		<members>Account.Guest_Account</members>
+		<members>Grant_Message__c.Guest_Message</members>
+		<members>Support_Option__c.Guest_SupportOption</members>
+		<name>SharingGuestRule</name>
+	</types>
+	<types>
+		<members>Contact.Mailing_Postal_Code_Format</members>
+		<name>ValidationRule</name>
+	</types>
+	<version>67.0</version>
+</Package>

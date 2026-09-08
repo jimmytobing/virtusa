@@ -1,0 +1,9 @@
+# Shared mapping for the four sample CSV files in doc.
+Applicant\ First\ Name=FirstName__c
+Applicant\ Last\ Name=LastName__c
+Phone=Phone__c
+Mailing\ Postal\ Code=MailingPostalCode__c
+Monthly\ Income=MonthlyIncome__c
+Support\ Option=SupportOptionRaw__c
+ImportBatch=ImportBatch__c
+Status=Status__c

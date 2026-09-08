@@ -3,6 +3,19 @@
     <apiVersion>67.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
     <assignments>
+        <name>Return_Save_Error</name>
+        <label>Return Save Error</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>varT_Error</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>$Flow.FaultMessage</elementReference>
+            </value>
+        </assignmentItems>
+    </assignments>
+    <assignments>
         <name>Set_Account</name>
         <label>Set Account</label>
         <locationX>0</locationX>
@@ -15,7 +28,7 @@
             </value>
         </assignmentItems>
         <connector>
-            <targetReference>Save_Contact</targetReference>
+            <targetReference>Choose_Error_Mode</targetReference>
         </connector>
     </assignments>
     <assignments>
@@ -38,7 +51,7 @@
             </value>
         </assignmentItems>
         <connector>
-            <targetReference>Save_Contact</targetReference>
+            <targetReference>Choose_Error_Mode</targetReference>
         </connector>
     </assignments>
     <decisions>
@@ -64,6 +77,32 @@
                 <targetReference>Set_Id_Account</targetReference>
             </connector>
             <label>Ada Contact</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Choose_Error_Mode</name>
+        <label>Choose Error Mode</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Save_Contact</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Default fault behavior</defaultConnectorLabel>
+        <rules>
+            <name>Return_Error_To_Caller</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>varB_ReturnErrors</leftValueReference>
+                <operator>EqualTo</operator>
+                <rightValue>
+                    <booleanValue>true</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference
+        >Save_Contact_With_Error_Output</targetReference>
+            </connector>
+            <label>Return Error To Caller</label>
         </rules>
     </decisions>
     <description>Add Account Default</description>
@@ -96,6 +135,17 @@
         <locationX>0</locationX>
         <locationY>0</locationY>
         <doesUpsert>true</doesUpsert>
+        <inputReference>varR_Contact</inputReference>
+    </recordCreates>
+    <recordCreates>
+        <name>Save_Contact_With_Error_Output</name>
+        <label>Save Contact With Error Output</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <doesUpsert>true</doesUpsert>
+        <faultConnector>
+            <targetReference>Return_Save_Error</targetReference>
+        </faultConnector>
         <inputReference>varR_Contact</inputReference>
     </recordCreates>
     <recordLookups>
@@ -162,11 +212,28 @@
     </start>
     <status>Active</status>
     <variables>
+        <name>varB_ReturnErrors</name>
+        <dataType>Boolean</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+        <value>
+            <booleanValue>false</booleanValue>
+        </value>
+    </variables>
+    <variables>
         <name>varR_Contact</name>
         <dataType>SObject</dataType>
         <isCollection>false</isCollection>
         <isInput>true</isInput>
         <isOutput>true</isOutput>
         <objectType>Contact</objectType>
+    </variables>
+    <variables>
+        <name>varT_Error</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>true</isOutput>
     </variables>
 </Flow>

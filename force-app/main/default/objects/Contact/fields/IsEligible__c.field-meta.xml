@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>IsEligible__c</fullName>
+    <formula>Monthly_Income__c &lt; 1800</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>IsEligible</label>
+    <type>Checkbox</type>
+</CustomField>

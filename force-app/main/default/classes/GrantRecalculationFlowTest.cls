@@ -218,7 +218,7 @@ private class GrantRecalculationFlowTest {
   }
 
   @IsTest
-  static void currencyRoundingMatchesEqualInstallments() {
+  static void currencyRoundsToZeroDecimalPlaces() {
     Contact a = applicant(option(100, 4));
     payment(a.Id, 300, true);
     Test.startTest();
@@ -231,7 +231,7 @@ private class GrantRecalculationFlowTest {
     ];
     Assert.areEqual(3, unpaid.size());
     for (Grant_Disbursement__c row : unpaid) {
-      Assert.areEqual(33.33, row.Amount_to_be_disbursed__c);
+      Assert.areEqual(33, row.Amount_to_be_disbursed__c);
     }
   }
 
@@ -245,5 +245,64 @@ private class GrantRecalculationFlowTest {
     Test.startTest();
     expectError(a, 'Support Option is unavailable');
     Test.stopTest();
+  }
+  @IsTest
+  static void readsFreshRollupsAndKeepsProposedOption() {
+    Contact a = applicant(option(100, 4));
+    Contact staleInput = [
+      SELECT Id, Support_Option__c, TotalReceived__c
+      FROM Contact
+      WHERE Id = :a.Id
+    ];
+    payment(a.Id, 100, true);
+    Grant_Disbursement__c changed = payment(a.Id, 50, false);
+    update new Grant_Disbursement__c(
+      Id = changed.Id,
+      Grant_is_disbursed__c = true
+    );
+    Grant_Disbursement__c removed = payment(a.Id, 25, true);
+    delete removed;
+    Contact current = [
+      SELECT TotalReceived__c
+      FROM Contact
+      WHERE Id = :a.Id
+    ];
+    Assert.areEqual(150, current.TotalReceived__c);
+    Assert.areEqual(0, staleInput.TotalReceived__c);
+    staleInput.Support_Option__c = option(200, 4).Id;
+    Test.startTest();
+    runFlow(staleInput);
+    Test.stopTest();
+    List<Grant_Disbursement__c> rows = [
+      SELECT Amount_to_be_disbursed__c, Sequence_Number__c
+      FROM Grant_Disbursement__c
+      WHERE Grant_Applicant__c = :a.Id AND Grant_is_disbursed__c = FALSE
+      ORDER BY Sequence_Number__c
+    ];
+    Assert.areEqual(2, rows.size());
+    Assert.areEqual(325, rows[0].Amount_to_be_disbursed__c);
+    Assert.areEqual(325, rows[1].Amount_to_be_disbursed__c);
+    Assert.areEqual(3, rows[0].Sequence_Number__c);
+    Assert.areEqual(4, rows[1].Sequence_Number__c);
+  }
+
+  @IsTest
+  static void zeroAmountPaidRecordStillConsumesMonth() {
+    Contact a = applicant(option(100, 3));
+    payment(a.Id, 0, true);
+    Test.startTest();
+    runFlow(a);
+    Test.stopTest();
+    List<Grant_Disbursement__c> rows = [
+      SELECT Amount_to_be_disbursed__c, Sequence_Number__c
+      FROM Grant_Disbursement__c
+      WHERE Grant_Applicant__c = :a.Id AND Grant_is_disbursed__c = FALSE
+      ORDER BY Sequence_Number__c
+    ];
+    Assert.areEqual(2, rows.size());
+    Assert.areEqual(150, rows[0].Amount_to_be_disbursed__c);
+    Assert.areEqual(150, rows[1].Amount_to_be_disbursed__c);
+    Assert.areEqual(2, rows[0].Sequence_Number__c);
+    Assert.areEqual(3, rows[1].Sequence_Number__c);
   }
 }

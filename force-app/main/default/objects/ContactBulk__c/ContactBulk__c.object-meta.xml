@@ -143,23 +143,26 @@
     <allowInChatterGroups>false</allowInChatterGroups>
     <compactLayoutAssignment>SYSTEM</compactLayoutAssignment>
     <deploymentStatus>Deployed</deploymentStatus>
+    <description
+  >CSV import staging. Process one file at a time with one row per Phone.</description>
     <enableActivities>false</enableActivities>
     <enableBulkApi>true</enableBulkApi>
     <enableFeeds>false</enableFeeds>
     <enableHistory>false</enableHistory>
     <enableLicensing>false</enableLicensing>
-    <enableReports>false</enableReports>
-    <enableSearch>false</enableSearch>
+    <enableReports>true</enableReports>
+    <enableSearch>true</enableSearch>
     <enableSharing>true</enableSharing>
     <enableStreamingApi>true</enableStreamingApi>
-    <externalSharingModel>ControlledByParent</externalSharingModel>
-    <label>Grant Disbursement</label>
+    <externalSharingModel>Private</externalSharingModel>
+    <label>Contact Bulk</label>
     <nameField>
-        <label>Disburse Name</label>
-        <type>Text</type>
+        <displayFormat>CB-{000000}</displayFormat>
+        <label>Import Row</label>
+        <type>AutoNumber</type>
     </nameField>
-    <pluralLabel>Grant Disbursements</pluralLabel>
+    <pluralLabel>Contact Bulk Imports</pluralLabel>
     <searchLayouts />
-    <sharingModel>ControlledByParent</sharingModel>
+    <sharingModel>Private</sharingModel>
     <visibility>Public</visibility>
 </CustomObject>
