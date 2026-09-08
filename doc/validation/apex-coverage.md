@@ -1,5 +1,7 @@
 # Apex coverage validation
 
+**Deployment completed:** The Apex classes/tests, seven Flows, and ContactBulk Phone field were deployed permanently to `hdbsf` on 8 September 2026. Deployment `0Affj00000QKFrzCAH` succeeded with `checkOnly=false`, **14/14 components**, **30/30 tests**, zero errors, and Apex coverage of **93.33% / 100%**. Evidence: [deployment result](apex-deployment-2026-09-08.json). The check-only results below are the earlier validation history.
+
 Validated on 8 September 2026 against `hdbsf` using a **check-only deployment** of repository Apex, Flow metadata, and the updated ContactBulk Phone field (Text). Validation `0Affj00000QKCR4CAP` succeeded with **30/30 tests passing**, zero component errors, and zero test failures. This check-only run did not persist changes to the org. It validates the current source after the Auto_processContactBulk edit.
 
 | Production Apex class      | Covered locations | Coverage |

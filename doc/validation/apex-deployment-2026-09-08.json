@@ -1,0 +1,414 @@
+{
+  "status": 0,
+  "result": {
+    "id": "0Affj00000QKFrzCAH",
+    "status": "Succeeded",
+    "success": true,
+    "checkOnly": false,
+    "completedDate": "2026-09-08T04:59:47.000Z",
+    "numberComponentsDeployed": 14,
+    "numberComponentsTotal": 14,
+    "numberComponentErrors": 0,
+    "numberTestsTotal": 30,
+    "numberTestErrors": 0,
+    "details": {
+      "runTestResult": {
+        "numTestsRun": 30,
+        "numFailures": 0,
+        "codeCoverage": [
+          {
+            "id": "01pfj00000JzvXtAAJ",
+            "name": "GrantExceptionService",
+            "namespace": null,
+            "numLocations": 26,
+            "numLocationsNotCovered": 0,
+            "type": "Class",
+            "dmlInfo": [],
+            "locationsNotCovered": [],
+            "methodInfo": [],
+            "soqlInfo": [],
+            "soslInfo": []
+          },
+          {
+            "id": "01pfj00000JzkxRAAR",
+            "locationsNotCovered": [
+              {
+                "column": 0,
+                "line": 38,
+                "numExecutions": 0,
+                "time": -1
+              }
+            ],
+            "name": "GrantApplicationController",
+            "namespace": null,
+            "numLocations": 15,
+            "numLocationsNotCovered": 1,
+            "type": "Class",
+            "dmlInfo": [],
+            "methodInfo": [],
+            "soqlInfo": [],
+            "soslInfo": []
+          }
+        ],
+        "flowCoverage": [
+          {
+            "flowId": "301fj00001q2NDO",
+            "flowName": "Auto_getActiveSupportOptions",
+            "flowNamespace": null,
+            "numElements": 2,
+            "numElementsNotCovered": 0,
+            "processType": "AutoLaunchedFlow",
+            "elementsNotCovered": []
+          },
+          {
+            "flowId": "301fj00001qCOg1",
+            "flowName": "Auto_getMessage",
+            "flowNamespace": null,
+            "numElements": 1,
+            "numElementsNotCovered": 0,
+            "processType": "AutoLaunchedFlow",
+            "elementsNotCovered": []
+          },
+          {
+            "elementsNotCovered": ["missing_result"],
+            "flowId": "301fj00001qXGfR",
+            "flowName": "Auto_processContactBulk",
+            "flowNamespace": null,
+            "numElements": 14,
+            "numElementsNotCovered": 1,
+            "processType": "AutoLaunchedFlow"
+          },
+          {
+            "flowId": "301fj00001qVwwc",
+            "flowName": "Auto_recalculateForApplications",
+            "flowNamespace": null,
+            "numElements": 21,
+            "numElementsNotCovered": 0,
+            "processType": "AutoLaunchedFlow",
+            "elementsNotCovered": []
+          },
+          {
+            "flowId": "301fj00001qKi3G",
+            "flowName": "Auto_submitApplication",
+            "flowNamespace": null,
+            "numElements": 9,
+            "numElementsNotCovered": 0,
+            "processType": "AutoLaunchedFlow",
+            "elementsNotCovered": []
+          },
+          {
+            "elementsNotCovered": ["process_staging"],
+            "flowId": "301fj00001qWzhq",
+            "flowName": "Tgr_OnUpsert_ContactBulk",
+            "flowNamespace": null,
+            "numElements": 1,
+            "numElementsNotCovered": 1,
+            "processType": "AutoLaunchedFlow"
+          },
+          {
+            "elementsNotCovered": [
+              "check_eligible",
+              "check_isapproved",
+              "pop_error",
+              "check_need_approval",
+              "check_error",
+              "get_setup",
+              "auto_recalculateforapplications"
+            ],
+            "flowId": "301fj00001qUZza",
+            "flowName": "Tgr_OnUpsert_Contact_Async",
+            "flowNamespace": null,
+            "numElements": 7,
+            "numElementsNotCovered": 7,
+            "processType": "AutoLaunchedFlow"
+          }
+        ],
+        "successes": [
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "acceptsEveryCsvStyleAndOption",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 3122
+          },
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "failedRowCanBeCorrectedAndRetried",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 417
+          },
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "processesPendingRowWhenInvokedDirectly",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 339
+          },
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "rejectsInvalidInputsWithoutCreatingContacts",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 423
+          },
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "rejectsMissingAccount",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 907
+          },
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "rejectsMissingOption",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 625
+          },
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "saveFaultCanBeReturnedWithoutChangingLegacyCallers",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 558
+          },
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "selectsOneMatchingOptionWhenDuplicatesExist",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 423
+          },
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "updatesNewestContactWithinDefaultAccountAndReprocessesReplay",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 1485
+          },
+          {
+            "id": "01pfj00000K9Vp3AAF",
+            "methodName": "propagatesSaveFailureWithoutCreatingContact",
+            "name": "GrantApplicationControllerTest",
+            "namespace": null,
+            "time": 261
+          },
+          {
+            "id": "01pfj00000K9Vp3AAF",
+            "methodName": "returnsEmptyListWhenNoOptionsExist",
+            "name": "GrantApplicationControllerTest",
+            "namespace": null,
+            "time": 289
+          },
+          {
+            "id": "01pfj00000K9Vp3AAF",
+            "methodName": "returnsOptionsInNameOrderWithValues",
+            "name": "GrantApplicationControllerTest",
+            "namespace": null,
+            "time": 148
+          },
+          {
+            "id": "01pfj00000K9Vp3AAF",
+            "methodName": "submitsContactAndReturnsPersistedId",
+            "name": "GrantApplicationControllerTest",
+            "namespace": null,
+            "time": 295
+          },
+          {
+            "id": "01pfj00000K9Vp3AAF",
+            "methodName": "updatesNewestMatchingContactOnly",
+            "name": "GrantApplicationControllerTest",
+            "namespace": null,
+            "time": 429
+          },
+          {
+            "id": "01pfj00000K9Vp4AAF",
+            "methodName": "blankCodeReturnsFallbackWithoutQueryingFlow",
+            "name": "GrantExceptionServiceTest",
+            "namespace": null,
+            "time": 98
+          },
+          {
+            "id": "01pfj00000K9Vp4AAF",
+            "methodName": "clientMessagesHaveExactFallbackContract",
+            "name": "GrantExceptionServiceTest",
+            "namespace": null,
+            "time": 319
+          },
+          {
+            "id": "01pfj00000K9Vp4AAF",
+            "methodName": "clientMessagesMixConfiguredAndFallbackValues",
+            "name": "GrantExceptionServiceTest",
+            "namespace": null,
+            "time": 214
+          },
+          {
+            "id": "01pfj00000K9Vp4AAF",
+            "methodName": "configuredMessageOverridesFallback",
+            "name": "GrantExceptionServiceTest",
+            "namespace": null,
+            "time": 157
+          },
+          {
+            "id": "01pfj00000K9Vp4AAF",
+            "methodName": "missingCodeReturnsSuppliedFallback",
+            "name": "GrantExceptionServiceTest",
+            "namespace": null,
+            "time": 117
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "createsFullScheduleWithoutExistingDisbursements",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 941
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "currencyRoundsToZeroDecimalPlaces",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 424
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "emptyInputReturnsErrorWithoutChanges",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 273
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "fullyPaidDeletesUnpaidWithoutReplacement",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 543
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "lowerTotalReturnsErrorBeforeChanges",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 542
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "missingOptionIsRejected",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 242
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "noRemainingMonthsUsesConfiguredMessage",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 398
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "readsFreshRollupsAndKeepsProposedOption",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 694
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "replacesOnlyUnpaidForInputContact",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 761
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "unavailableOptionReturnsError",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 376
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "zeroAmountPaidRecordStillConsumesMonth",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 417
+          }
+        ],
+        "failures": []
+      }
+    },
+    "components": [
+      {
+        "name": "ContactBulk__c.Phone__c",
+        "type": "CustomField",
+        "success": true
+      },
+      {
+        "name": "Auto_processContactBulk",
+        "type": "Flow",
+        "success": true
+      },
+      {
+        "name": "Auto_recalculateForApplications",
+        "type": "Flow",
+        "success": true
+      },
+      {
+        "name": "Tgr_OnUpsert_ContactBulk",
+        "type": "Flow",
+        "success": true
+      },
+      {
+        "name": "Tgr_OnUpsert_Contact_Async",
+        "type": "Flow",
+        "success": true
+      },
+      {
+        "name": "ContactBulkFlowTest",
+        "type": "ApexClass",
+        "success": true
+      },
+      {
+        "name": "GrantApplicationController",
+        "type": "ApexClass",
+        "success": true
+      },
+      {
+        "name": "GrantApplicationControllerTest",
+        "type": "ApexClass",
+        "success": true
+      },
+      {
+        "name": "GrantExceptionService",
+        "type": "ApexClass",
+        "success": true
+      },
+      {
+        "name": "GrantExceptionServiceTest",
+        "type": "ApexClass",
+        "success": true
+      },
+      {
+        "name": "GrantRecalculationFlowTest",
+        "type": "ApexClass",
+        "success": true
+      },
+      {
+        "name": "Auto_getActiveSupportOptions",
+        "type": "Flow",
+        "success": true
+      },
+      {
+        "name": "Auto_getMessage",
+        "type": "Flow",
+        "success": true
+      },
+      {
+        "name": "Auto_submitApplication",
+        "type": "Flow",
+        "success": true
+      }
+    ]
+  }
+}
