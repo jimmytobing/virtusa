@@ -221,6 +221,18 @@
         <locationY>0</locationY>
         <defaultConnectorLabel>Amount Same</defaultConnectorLabel>
         <rules>
+            <name>Proposed_Option_Changed</name><conditionLogic
+      >and</conditionLogic>
+            <conditions><leftValueReference
+        >varR_Contact.Support_Option__c</leftValueReference><operator
+        >NotEqualTo</operator><rightValue><elementReference
+          >Get_Contact.Support_Option__c</elementReference></rightValue></conditions>
+            <connector><targetReference
+        >Get_Support_Option</targetReference></connector><label
+      >Proposed Option Changed</label>
+        </rules>
+
+        <rules>
             <name>Disbursement_Empty</name>
             <conditionLogic>and</conditionLogic>
             <conditions>

@@ -153,6 +153,7 @@ private class ContactBulkFlowTest {
     List<Contact> contacts = new List<Contact>{
       new Contact(
         LastName = 'Old',
+        MailingPostalCode = '012345',
         Phone = '65 9000 0000',
         AccountId = accountId,
         Monthly_Income__c = 500,
@@ -160,6 +161,7 @@ private class ContactBulkFlowTest {
       ),
       new Contact(
         LastName = 'New',
+        MailingPostalCode = '012345',
         Phone = '65 9000 0000',
         AccountId = accountId,
         Monthly_Income__c = 500,
@@ -167,6 +169,7 @@ private class ContactBulkFlowTest {
       ),
       new Contact(
         LastName = 'Other',
+        MailingPostalCode = '012345',
         Phone = '65 9000 0000',
         AccountId = otherAccount.Id,
         Monthly_Income__c = 500,
@@ -314,6 +317,7 @@ private class ContactBulkFlowTest {
     ]
     .Id;
     Contact invalid = new Contact(
+      MailingPostalCode = '012345',
       Phone = '65 9000 0099',
       Monthly_Income__c = 1000,
       Support_Option__c = optionId

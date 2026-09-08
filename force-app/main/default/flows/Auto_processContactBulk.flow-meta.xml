@@ -3,6 +3,28 @@
     <apiVersion>67.0</apiVersion>
     <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
     <assignments>
+        <name>Count_Option</name><label>Count Option</label><locationX
+    >0</locationX><locationY>0</locationY>
+        <assignmentItems><assignToReference
+      >varN_Matches</assignToReference><operator>Add</operator><value
+      ><numberValue>1</numberValue></value></assignmentItems>
+        <assignmentItems><assignToReference
+      >varT_OptionId</assignToReference><operator>Assign</operator><value
+      ><elementReference
+        >Loop_Options.Id</elementReference></value></assignmentItems>
+        <connector><targetReference>Loop_Options</targetReference></connector>
+    </assignments>
+    <assignments>
+        <name>Invalid_Option_Count</name><label
+    >Invalid Option Count</label><locationX>0</locationX><locationY
+    >0</locationY>
+        <assignmentItems><assignToReference
+      >varT_Error</assignToReference><operator>Assign</operator><value
+      ><stringValue
+        >Support Option must match exactly one configured option.</stringValue></value></assignmentItems>
+        <connector><targetReference>Save_Failure</targetReference></connector>
+    </assignments>
+    <assignments>
         <name>Invalid_Input</name>
         <label>Invalid Input</label>
         <locationX>0</locationX>
@@ -68,7 +90,7 @@
       >varR_Contact.Support_Option__c</assignToReference>
             <operator>Assign</operator>
             <value>
-                <elementReference>Get_Options.Id</elementReference>
+                <elementReference>varT_OptionId</elementReference>
             </value>
         </assignmentItems>
         <connector>
@@ -108,6 +130,37 @@
             <targetReference>Save_Failure</targetReference>
         </connector>
     </assignments>
+    <decisions>
+        <name>Check_Ready</name><label>Check Ready</label><locationX
+    >0</locationX><locationY>0</locationY>
+        <defaultConnectorLabel
+    >Skip non-ready or missing row</defaultConnectorLabel>
+        <rules><name>Ready_Row</name><conditionLogic>and</conditionLogic>
+            <conditions><leftValueReference
+        >Get_Staging.Status__c</leftValueReference><operator
+        >EqualTo</operator><rightValue><stringValue
+          >Ready</stringValue></rightValue></conditions>
+            <connector><targetReference
+        >Validate_Input</targetReference></connector><label>Ready Row</label>
+        </rules>
+    </decisions>
+    <decisions>
+        <name>Check_Option_Count</name><label
+    >Check Option Count</label><locationX>0</locationX><locationY>0</locationY>
+        <defaultConnector><targetReference
+      >Invalid_Option_Count</targetReference></defaultConnector><defaultConnectorLabel
+    >Missing or ambiguous option</defaultConnectorLabel>
+        <rules><name>Exactly_One_Option</name><conditionLogic
+      >and</conditionLogic>
+            <conditions><leftValueReference
+        >varN_Matches</leftValueReference><operator
+        >EqualTo</operator><rightValue><numberValue
+          >1</numberValue></rightValue></conditions>
+            <connector><targetReference
+        >Map_Contact</targetReference></connector><label
+      >Exactly One Option</label>
+        </rules>
+    </decisions>
     <decisions>
         <name>Check_Account</name>
         <label>Check Account</label>
@@ -244,6 +297,16 @@
     <interviewLabel
   >[Auto] Process Contact Bulk {!$Flow.CurrentDateTime}</interviewLabel>
     <label>[Auto] Process Contact Bulk</label>
+    <loops>
+        <name>Loop_Options</name><label>Loop Options</label><locationX
+    >0</locationX><locationY>0</locationY>
+        <collectionReference>Get_Options</collectionReference><iterationOrder
+    >Asc</iterationOrder>
+        <nextValueConnector><targetReference
+      >Count_Option</targetReference></nextValueConnector>
+        <noMoreValuesConnector><targetReference
+      >Check_Option_Count</targetReference></noMoreValuesConnector>
+    </loops>
     <processMetadataValues>
         <name>BuilderType</name>
         <value>
@@ -287,7 +350,7 @@
         <assignNullValuesIfNoRecordsFound
     >false</assignNullValuesIfNoRecordsFound>
         <connector>
-            <targetReference>Map_Contact</targetReference>
+            <targetReference>Loop_Options</targetReference>
         </connector>
         <filterLogic>and</filterLogic>
         <filters>
@@ -304,7 +367,7 @@
                 <elementReference>Option_Duration</elementReference>
             </value>
         </filters>
-        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <getFirstRecordOnly>false</getFirstRecordOnly>
         <object>Support_Option__c</object>
         <storeOutputAutomatically>true</storeOutputAutomatically>
     </recordLookups>
@@ -316,7 +379,7 @@
         <assignNullValuesIfNoRecordsFound
     >false</assignNullValuesIfNoRecordsFound>
         <connector>
-            <targetReference>Validate_Input</targetReference>
+            <targetReference>Check_Ready</targetReference>
         </connector>
         <filterLogic>and</filterLogic>
         <filters>

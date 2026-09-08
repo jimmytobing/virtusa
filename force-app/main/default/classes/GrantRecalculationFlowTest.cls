@@ -13,6 +13,8 @@ private class GrantRecalculationFlowTest {
   private static Contact applicant(Support_Option__c support) {
     Contact result = new Contact(
       LastName = 'Flow Test',
+      Phone = '65 9000 1234',
+      MailingPostalCode = '012345',
       Monthly_Income__c = 1000,
       Support_Option__c = support.Id
     );
@@ -123,7 +125,7 @@ private class GrantRecalculationFlowTest {
       Assert.areEqual(a.Id, row.Grant_Applicant__c);
       Assert.isFalse(row.Grant_is_disbursed__c);
       Assert.areEqual(300, row.Amount_to_be_disbursed__c);
-      Assert.areEqual(support.Name, row.Name);
+      Assert.areEqual('Dis ' + support.Name, row.Name);
       Assert.areEqual(
         Date.today()
           .toStartOfMonth()
