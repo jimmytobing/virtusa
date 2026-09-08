@@ -1,0 +1,362 @@
+{
+  "status": 0,
+  "result": {
+    "id": "0Affj00000QKCR4CAP",
+    "status": "Succeeded",
+    "success": true,
+    "checkOnly": true,
+    "completedDate": "2026-09-08T04:47:10.000Z",
+    "numberComponentErrors": 0,
+    "numberTestsTotal": 30,
+    "numberTestErrors": 0,
+    "details": {
+      "runTestResult": {
+        "numTestsRun": 30,
+        "numFailures": 0,
+        "codeCoverage": [
+          {
+            "id": "01pfj00000JzvXtAAJ",
+            "name": "GrantExceptionService",
+            "namespace": null,
+            "numLocations": 26,
+            "numLocationsNotCovered": 0,
+            "type": "Class",
+            "dmlInfo": [],
+            "locationsNotCovered": [],
+            "methodInfo": [],
+            "soqlInfo": [],
+            "soslInfo": []
+          },
+          {
+            "id": "01pfj00000JzkxRAAR",
+            "locationsNotCovered": [
+              {
+                "column": 0,
+                "line": 38,
+                "numExecutions": 0,
+                "time": -1
+              }
+            ],
+            "name": "GrantApplicationController",
+            "namespace": null,
+            "numLocations": 15,
+            "numLocationsNotCovered": 1,
+            "type": "Class",
+            "dmlInfo": [],
+            "methodInfo": [],
+            "soqlInfo": [],
+            "soslInfo": []
+          }
+        ],
+        "flowCoverage": [
+          {
+            "flowId": "301fj00001q2NDO",
+            "flowName": "Auto_getActiveSupportOptions",
+            "flowNamespace": null,
+            "numElements": 2,
+            "numElementsNotCovered": 0,
+            "processType": "AutoLaunchedFlow",
+            "elementsNotCovered": []
+          },
+          {
+            "flowId": "301fj00001qCOg1",
+            "flowName": "Auto_getMessage",
+            "flowNamespace": null,
+            "numElements": 1,
+            "numElementsNotCovered": 0,
+            "processType": "AutoLaunchedFlow",
+            "elementsNotCovered": []
+          },
+          {
+            "elementsNotCovered": ["missing_result"],
+            "flowId": "301fj00001qXGfR",
+            "flowName": "Auto_processContactBulk",
+            "flowNamespace": null,
+            "numElements": 14,
+            "numElementsNotCovered": 1,
+            "processType": "AutoLaunchedFlow"
+          },
+          {
+            "flowId": "301fj00001qVwwc",
+            "flowName": "Auto_recalculateForApplications",
+            "flowNamespace": null,
+            "numElements": 21,
+            "numElementsNotCovered": 0,
+            "processType": "AutoLaunchedFlow",
+            "elementsNotCovered": []
+          },
+          {
+            "flowId": "301fj00001qKi3G",
+            "flowName": "Auto_submitApplication",
+            "flowNamespace": null,
+            "numElements": 9,
+            "numElementsNotCovered": 0,
+            "processType": "AutoLaunchedFlow",
+            "elementsNotCovered": []
+          },
+          {
+            "elementsNotCovered": ["process_staging"],
+            "flowId": "301fj00001qWzhq",
+            "flowName": "Tgr_OnUpsert_ContactBulk",
+            "flowNamespace": null,
+            "numElements": 1,
+            "numElementsNotCovered": 1,
+            "processType": "AutoLaunchedFlow"
+          },
+          {
+            "elementsNotCovered": [
+              "check_eligible",
+              "check_isapproved",
+              "pop_error",
+              "check_need_approval",
+              "check_error",
+              "get_setup",
+              "auto_recalculateforapplications"
+            ],
+            "flowId": "301fj00001qUZza",
+            "flowName": "Tgr_OnUpsert_Contact_Async",
+            "flowNamespace": null,
+            "numElements": 7,
+            "numElementsNotCovered": 7,
+            "processType": "AutoLaunchedFlow"
+          }
+        ],
+        "successes": [
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "acceptsEveryCsvStyleAndOption",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 3127
+          },
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "failedRowCanBeCorrectedAndRetried",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 297
+          },
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "processesPendingRowWhenInvokedDirectly",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 225
+          },
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "rejectsInvalidInputsWithoutCreatingContacts",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 270
+          },
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "rejectsMissingAccount",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 649
+          },
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "rejectsMissingOption",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 393
+          },
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "saveFaultCanBeReturnedWithoutChangingLegacyCallers",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 341
+          },
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "selectsOneMatchingOptionWhenDuplicatesExist",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 317
+          },
+          {
+            "id": "01pfj00000K9c7NAAR",
+            "methodName": "updatesNewestContactWithinDefaultAccountAndReprocessesReplay",
+            "name": "ContactBulkFlowTest",
+            "namespace": null,
+            "time": 527
+          },
+          {
+            "id": "01pfj00000K9Vp3AAF",
+            "methodName": "propagatesSaveFailureWithoutCreatingContact",
+            "name": "GrantApplicationControllerTest",
+            "namespace": null,
+            "time": 167
+          },
+          {
+            "id": "01pfj00000K9Vp3AAF",
+            "methodName": "returnsEmptyListWhenNoOptionsExist",
+            "name": "GrantApplicationControllerTest",
+            "namespace": null,
+            "time": 218
+          },
+          {
+            "id": "01pfj00000K9Vp3AAF",
+            "methodName": "returnsOptionsInNameOrderWithValues",
+            "name": "GrantApplicationControllerTest",
+            "namespace": null,
+            "time": 102
+          },
+          {
+            "id": "01pfj00000K9Vp3AAF",
+            "methodName": "submitsContactAndReturnsPersistedId",
+            "name": "GrantApplicationControllerTest",
+            "namespace": null,
+            "time": 191
+          },
+          {
+            "id": "01pfj00000K9Vp3AAF",
+            "methodName": "updatesNewestMatchingContactOnly",
+            "name": "GrantApplicationControllerTest",
+            "namespace": null,
+            "time": 292
+          },
+          {
+            "id": "01pfj00000K9Vp4AAF",
+            "methodName": "blankCodeReturnsFallbackWithoutQueryingFlow",
+            "name": "GrantExceptionServiceTest",
+            "namespace": null,
+            "time": 61
+          },
+          {
+            "id": "01pfj00000K9Vp4AAF",
+            "methodName": "clientMessagesHaveExactFallbackContract",
+            "name": "GrantExceptionServiceTest",
+            "namespace": null,
+            "time": 195
+          },
+          {
+            "id": "01pfj00000K9Vp4AAF",
+            "methodName": "clientMessagesMixConfiguredAndFallbackValues",
+            "name": "GrantExceptionServiceTest",
+            "namespace": null,
+            "time": 142
+          },
+          {
+            "id": "01pfj00000K9Vp4AAF",
+            "methodName": "configuredMessageOverridesFallback",
+            "name": "GrantExceptionServiceTest",
+            "namespace": null,
+            "time": 96
+          },
+          {
+            "id": "01pfj00000K9Vp4AAF",
+            "methodName": "missingCodeReturnsSuppliedFallback",
+            "name": "GrantExceptionServiceTest",
+            "namespace": null,
+            "time": 72
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "createsFullScheduleWithoutExistingDisbursements",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 611
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "currencyRoundsToZeroDecimalPlaces",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 268
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "emptyInputReturnsErrorWithoutChanges",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 91
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "fullyPaidDeletesUnpaidWithoutReplacement",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 408
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "lowerTotalReturnsErrorBeforeChanges",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 394
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "missingOptionIsRejected",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 203
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "noRemainingMonthsUsesConfiguredMessage",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 248
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "readsFreshRollupsAndKeepsProposedOption",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 494
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "replacesOnlyUnpaidForInputContact",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 532
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "unavailableOptionReturnsError",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 249
+          },
+          {
+            "id": "01pfj00000K9Lo5AAF",
+            "methodName": "zeroAmountPaidRecordStillConsumesMonth",
+            "name": "GrantRecalculationFlowTest",
+            "namespace": null,
+            "time": 267
+          }
+        ],
+        "failures": []
+      }
+    }
+  },
+  "sourceSha256": {
+    "force-app/main/default/classes/ContactBulkFlowTest.cls": "04d52d324d42d436620164502c24c85141af4f1169be08c222acf0015e150f04",
+    "force-app/main/default/classes/ContactBulkFlowTest.cls-meta.xml": "dcb2c405df7dc3b158a0211123023cbdaadc67161a31428bbdbacf9e5c4f58bf",
+    "force-app/main/default/classes/GrantApplicationController.cls": "b3ebd47be1c8ab7707e1796080e298bb1f6b484a6fc2a730574c745fa57c118b",
+    "force-app/main/default/classes/GrantApplicationController.cls-meta.xml": "a242f6e22b472afffbd726be71165de394e417355cdf1edd81b5601278ddea32",
+    "force-app/main/default/classes/GrantApplicationControllerTest.cls": "58c865cfd6dc8dedf68d0fac9bd8732fd38009c8ca37599fddc4e821177efa98",
+    "force-app/main/default/classes/GrantApplicationControllerTest.cls-meta.xml": "dcb2c405df7dc3b158a0211123023cbdaadc67161a31428bbdbacf9e5c4f58bf",
+    "force-app/main/default/classes/GrantExceptionService.cls": "ab88947f609b7837fe0c22ad34bfe4bd580e7b9a03e9b5d2014f1c0191185af1",
+    "force-app/main/default/classes/GrantExceptionService.cls-meta.xml": "87b91a7450c6f89862eaf12fd41e143807888c976d917c53283bcfa8bf75cb1f",
+    "force-app/main/default/classes/GrantExceptionServiceTest.cls": "00678398c0e6193b35392b0ae3e749e4f9a85ce3c8f634d8067ce37d9c9bb20d",
+    "force-app/main/default/classes/GrantExceptionServiceTest.cls-meta.xml": "dcb2c405df7dc3b158a0211123023cbdaadc67161a31428bbdbacf9e5c4f58bf",
+    "force-app/main/default/classes/GrantRecalculationFlowTest.cls": "b7eb787f9803154d71315e3796f5bc1ce1b4c3bc9047e0fde7bb54b714f54c4a",
+    "force-app/main/default/classes/GrantRecalculationFlowTest.cls-meta.xml": "1b6a0b558626b1804cdca7c02c84a04b047ff9fb6f3186a4ca321e8132d13211",
+    "force-app/main/default/flows/Auto_getActiveSupportOptions.flow-meta.xml": "505c74b788b4fe95dfac2344a479afa22b876f3d5a4f2d3f3277d94247d62d1b",
+    "force-app/main/default/flows/Auto_getMessage.flow-meta.xml": "1f2f344ed15bdac8984a8efba5f173048e0d218946defdc94dd2008f5e6e5fe5",
+    "force-app/main/default/flows/Auto_processContactBulk.flow-meta.xml": "bf18040bca6535ff5649fbe968cd0d58737fe89b4b91dcf87358eef1ee058752",
+    "force-app/main/default/flows/Auto_recalculateForApplications.flow-meta.xml": "445f9f1587751aa3a17f784c198aaaf9625f6b88107cdac50876026afa0e43cb",
+    "force-app/main/default/flows/Auto_submitApplication.flow-meta.xml": "b636c7c6c60bde55d15ee91cbd973e7f7163fdbec2b4438f66e2e458e1729ced",
+    "force-app/main/default/flows/Tgr_OnUpsert_ContactBulk.flow-meta.xml": "9895693140fb0235f2e50734c901f34eafc117f52e45a99b08a96d8146c28751",
+    "force-app/main/default/flows/Tgr_OnUpsert_Contact_Async.flow-meta.xml": "dd8e800dc1fefb940284229249603a4c441638922c4890197674891e1bad2660",
+    "force-app/main/default/objects/ContactBulk__c/fields/Phone__c.field-meta.xml": "cf99f401c26e2fe70d67bee0858c7bee39da5877ed460347c2e16c1110299b41"
+  }
+}

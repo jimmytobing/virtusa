@@ -1,6 +1,6 @@
 # Apex coverage validation
 
-Validated on 8 September 2026 against `hdbsf` using a **check-only deployment** of repository Apex and Flow metadata. Validation `0Affj00000QJoOjCAL` succeeded with **30/30 tests passing**, zero component errors, and zero test failures. These source changes have not been deployed persistently to the org.
+Validated on 8 September 2026 against `hdbsf` using a **check-only deployment** of repository Apex, Flow metadata, and the updated ContactBulk Phone field (Text). Validation `0Affj00000QKCR4CAP` succeeded with **30/30 tests passing**, zero component errors, and zero test failures. This check-only run did not persist changes to the org. It validates the current source after the Auto_processContactBulk edit.
 
 | Production Apex class      | Covered locations | Coverage |
 | -------------------------- | ----------------: | -------: |
@@ -14,12 +14,19 @@ The 90% requirement is checked for **each production class/trigger in this repos
 
 - `GrantApplicationControllerTest` (5 tests): persisted Contact values and returned ID; newest matching Contact within the default account; preservation of other Contacts; save failure propagation with no Contact created; option values and name ordering; empty option collection.
 - `GrantExceptionServiceTest` (5 tests): null/empty/whitespace codes skip the Flow lookup; unknown codes return the supplied fallback, including null; configured messages override defaults; exact client message keys and values; mixed configured/fallback messages.
-- `ContactBulkFlowTest` (9 tests): CSV option formats, scoped matching, replay protection, invalid/missing/ambiguous input, Pending rows, corrected retries, and returned-versus-thrown save faults.
+- `ContactBulkFlowTest` (9 tests): CSV option formats, scoped matching and replay updates, invalid inputs, missing-option save faults, selection of one matching duplicate option, direct processing of Pending rows, corrected retries, and returned-versus-thrown save faults.
 - `GrantRecalculationFlowTest` (11 tests): schedule amounts/dates/sequences, paid-record preservation, applicant isolation, paid totals and remaining months, configured errors, fresh rollups with a proposed option, currency rounding, and zero-amount paid months.
 
 Tests use isolated records and invoke the real Flows. Direct Flow tests do not prove delivery/timing of platform asynchronous paths. The uncovered Apex location is the defensive new-empty-list branch in `getActiveSupportOptions`; the actual no-options Flow returns an empty collection, which is asserted. Production Apex was not changed to manufacture coverage.
 
-The validation exposed regressions that were fixed: missing phone/postal/required-option test data; bulk processing without a Ready-status guard or unique-option check; recalculation skipping a proposed option when the stored amount matched an existing payment. The disbursement-name assertion now checks the source's `Dis ` prefix.
+The latest Flow edit removes the Ready-status and unique-option guards. The initial recheck still measured 93.33%/100% Apex coverage, but four existing tests failed because they expected the previous behavior. Only test expectations and their behavioral assertions were updated; the user's Flow and Phone metadata edits were preserved:
+
+- Pending rows now process when the Flow is invoked directly.
+- Replaying a successful staging row applies changed values to the same Contact without creating a duplicate or modifying other Contacts.
+- Duplicate matching options yield one of the matching IDs. With no lookup sort order, the test does not assume which duplicate wins.
+- A missing option returns the Contact save fault for required `Support_Option__c`, leaves the row Failed, and creates no Contact.
+
+`Auto_processContactBulk` Flow element coverage is **13/14 (92.86%)**, measured separately from Apex coverage. `Missing_Result` is the only uncovered element. This is not a claim that all Flow decision outcomes or asynchronous trigger delivery were tested. The previous validation snapshot remains in `apex-coverage-2026-09-08.json`; the current evidence is `apex-coverage-flow-recheck-2026-09-08.json`, including SHA-256 hashes of the validated source files.
 
 ## Repeat the validation
 
@@ -29,6 +36,7 @@ From the repository root:
 sf project deploy start --target-org hdbsf \
   --source-dir force-app/main/default/classes \
   --source-dir force-app/main/default/flows \
+  --source-dir force-app/main/default/objects/ContactBulk__c/fields/Phone__c.field-meta.xml \
   --dry-run --test-level RunSpecifiedTests \
   --tests GrantApplicationControllerTest \
   --tests GrantExceptionServiceTest \
@@ -43,5 +51,5 @@ If the CLI returns an in-progress job, obtain its completed JSON with `sf projec
 The checked-in JSON contains the validation status, test outcomes, and Salesforce coverage evidence from this run. Check it with:
 
 ```sh
-python3 scripts/validation/check_apex_coverage.py doc/validation/apex-coverage-2026-09-08.json
+python3 scripts/validation/check_apex_coverage.py doc/validation/apex-coverage-flow-recheck-2026-09-08.json
 ```

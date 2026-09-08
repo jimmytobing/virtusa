@@ -139,7 +139,7 @@ private class ContactBulkFlowTest {
   }
 
   @IsTest
-  static void updatesNewestContactWithinDefaultAccountAndSkipsReplay() {
+  static void updatesNewestContactWithinDefaultAccountAndReprocessesReplay() {
     Id accountId = [SELECT Id FROM Account WHERE Name = 'hdbsf' LIMIT 1].Id;
     Id optionId = [
       SELECT Id
@@ -189,13 +189,19 @@ private class ContactBulkFlowTest {
       'Flow error: ' + result.ErrorMessage__c
     );
     Assert.areEqual(contacts[1].Id, result.Contact__c);
-    Integer beforeDml = Limits.getDmlStatements();
-    process(row);
+    // The current Flow has no status guard: a second call must apply new values
+    // to the same matching Contact even while the staging status is Success.
+    row.MonthlyIncome__c = 1250;
+    row.Status__c = 'Success';
+    update row;
+    ContactBulk__c replay = process(row);
     Assert.areEqual(
-      beforeDml,
-      Limits.getDmlStatements(),
-      'Successful rows must not be processed again.'
+      'Success',
+      replay.Status__c,
+      'Flow error: ' + replay.ErrorMessage__c
     );
+    Assert.areEqual(result.Contact__c, replay.Contact__c);
+    Assert.isTrue(String.isBlank(replay.ErrorMessage__c));
     Test.stopTest();
     Map<Id, Contact> saved = new Map<Id, Contact>(
       [SELECT LastName, Monthly_Income__c FROM Contact]
@@ -204,7 +210,9 @@ private class ContactBulkFlowTest {
     Assert.areEqual('Old', saved.get(contacts[0].Id).LastName);
     Assert.areEqual('Other', saved.get(contacts[2].Id).LastName);
     Assert.areEqual('Applicant', saved.get(contacts[1].Id).LastName);
-    Assert.areEqual(1500, saved.get(contacts[1].Id).Monthly_Income__c);
+    Assert.areEqual(1250, saved.get(contacts[1].Id).Monthly_Income__c);
+    Assert.areEqual(500, saved.get(contacts[0].Id).Monthly_Income__c);
+    Assert.areEqual(500, saved.get(contacts[2].Id).Monthly_Income__c);
   }
 
   @IsTest
@@ -233,7 +241,7 @@ private class ContactBulkFlowTest {
   }
 
   @IsTest
-  static void rejectsAmbiguousOption() {
+  static void selectsOneMatchingOptionWhenDuplicatesExist() {
     insert new Support_Option__c(
       Name = 'Duplicate',
       Amount__c = 500,
@@ -244,9 +252,35 @@ private class ContactBulkFlowTest {
     Test.startTest();
     ContactBulk__c result = process(row);
     Test.stopTest();
-    Assert.areEqual('Failed', result.Status__c);
-    Assert.isTrue(result.ErrorMessage__c.contains('exactly one'));
-    Assert.areEqual(0, [SELECT COUNT() FROM Contact]);
+    Assert.areEqual(
+      'Success',
+      result.Status__c,
+      'Flow error: ' + result.ErrorMessage__c
+    );
+    Assert.isTrue(String.isBlank(result.ErrorMessage__c));
+    Assert.isNotNull(result.ProcessedAt__c);
+    Assert.areEqual(1, [SELECT COUNT() FROM Contact]);
+    Contact saved = [
+      SELECT
+        Support_Option__c,
+        Support_Option__r.Amount__c,
+        Support_Option__r.Duration__c
+      FROM Contact
+      WHERE Id = :result.Contact__c
+    ];
+    Set<Id> matches = new Map<Id, Support_Option__c>(
+        [
+          SELECT Id
+          FROM Support_Option__c
+          WHERE Amount__c = 500 AND Duration__c = 3
+        ]
+      )
+      .keySet();
+    Assert.areEqual(2, matches.size());
+    // Get_Options returns one record without a sort order; neither ID is preferred.
+    Assert.isTrue(matches.contains(saved.Support_Option__c));
+    Assert.areEqual(500, saved.Support_Option__r.Amount__c);
+    Assert.areEqual(3, saved.Support_Option__r.Duration__c);
   }
 
   @IsTest
@@ -258,7 +292,15 @@ private class ContactBulkFlowTest {
     ContactBulk__c result = process(row);
     Test.stopTest();
     Assert.areEqual('Failed', result.Status__c);
-    Assert.isTrue(result.ErrorMessage__c.contains('exactly one'));
+    Assert.isNotNull(result.ErrorMessage__c);
+    Assert.isTrue(
+      result.ErrorMessage__c.contains('REQUIRED_FIELD_MISSING') &&
+      result.ErrorMessage__c.contains('Support_Option__c'),
+      'Missing option must return the required-field save fault: ' +
+      result.ErrorMessage__c
+    );
+    Assert.isNull(result.Contact__c);
+    Assert.isNotNull(result.ProcessedAt__c);
     Assert.areEqual(0, [SELECT COUNT() FROM Contact]);
   }
 
@@ -276,16 +318,29 @@ private class ContactBulkFlowTest {
   }
 
   @IsTest
-  static void pendingRowDoesNothing() {
+  static void processesPendingRowWhenInvokedDirectly() {
     ContactBulk__c row = staging('65 9000 0001', 'Option 1');
     row.Status__c = 'Pending';
     insert row;
     Test.startTest();
     ContactBulk__c result = process(row);
     Test.stopTest();
-    Assert.areEqual('Pending', result.Status__c);
-    Assert.isNull(result.ProcessedAt__c);
-    Assert.areEqual(0, [SELECT COUNT() FROM Contact]);
+    Assert.areEqual(
+      'Success',
+      result.Status__c,
+      'Flow error: ' + result.ErrorMessage__c
+    );
+    Assert.isNotNull(result.ProcessedAt__c);
+    Assert.isNotNull(result.Contact__c);
+    Assert.isTrue(String.isBlank(result.ErrorMessage__c));
+    Assert.areEqual(1, [SELECT COUNT() FROM Contact]);
+    Contact saved = [
+      SELECT Phone, Monthly_Income__c
+      FROM Contact
+      WHERE Id = :result.Contact__c
+    ];
+    Assert.areEqual(row.Phone__c, saved.Phone);
+    Assert.areEqual(row.MonthlyIncome__c, saved.Monthly_Income__c);
   }
 
   @IsTest
