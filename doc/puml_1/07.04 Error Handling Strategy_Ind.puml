@@ -1,0 +1,18 @@
+@startuml
+start
+:Receive submission or schedule command;
+if (Expected business validation?) then (yes)
+  :Resolve stable error code;
+  :Return safe configured message;
+elseif (Transient dependency/platform fault?) then (yes)
+  :Roll back transaction;
+  :Log restricted event and correlation;
+  :Apply bounded asynchronous retry;
+else (unexpected)
+  :Roll back transaction;
+  :Log restricted technical detail;
+  :Show generic safe message;
+  :Create admin exception;
+endif
+stop
+@enduml

@@ -1,0 +1,35 @@
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+package "Personas" {
+  [Guest Applicant] as Guest
+  [Grant Administrator] as Admin
+  [Integration / Import User] as Integration
+  [System Administrator] as Sys
+}
+package "Controls" {
+  [Guest page + Apex class allow-list] as GuestControl
+  [Permission Set + FLS + sharing] as AdminControl
+  [API-only least privilege] as IntControl
+  [Break-glass audited access] as SysControl
+}
+package "Protected assets" {
+  [Contact PII and income] as PII
+  [Grant schedules] as Schedules
+  [Configuration and errors] as Config
+  [Import staging / technical logs] as Logs
+}
+Guest --> GuestControl
+Admin --> AdminControl
+Integration --> IntControl
+Sys --> SysControl
+GuestControl --> PII : controlled server write only
+AdminControl --> PII
+AdminControl --> Schedules
+AdminControl --> Config
+IntControl --> Logs
+SysControl --> PII
+SysControl --> Schedules
+SysControl --> Config
+SysControl --> Logs
+@enduml

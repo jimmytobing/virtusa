@@ -1,0 +1,24 @@
+@startuml
+start
+:Applicant enters first name,\nlast name, phone, postal code,\nincome, and option;
+:LWC validates required fields\nand display formats;
+if (Client input valid?) then (yes)
+  :Submit allow-listed request;
+  :Server validates format,\nactive option, and income;
+  if (Phone matches Contact?) then (yes)
+    :Complete existing-contact\nproofing;
+  else (no)
+    :Apply new-application\nabuse controls;
+  endif
+  if (Authorized and eligible?) then (yes)
+    :Create/update Contact;
+    :Create schedule or\ninvoke option recalculation;
+    :Show safe confirmation;
+  else (no)
+    :Show configured safe error;
+  endif
+else (no)
+  :Show field-level guidance;
+endif
+stop
+@enduml

@@ -1,0 +1,13 @@
+@startuml
+start
+:Receive application\n(public, manual, or staged CSV);
+:Validate fields, authorization,\nand active support option;
+if (Valid and eligible?) then (yes)
+  :Match or create Contact;
+  :Create or recalculate\nGrant Disbursement schedule;
+  :Record safe success and\noperational audit;
+else (no)
+  :Return configured message\nor mark staging row Failed;
+endif
+stop
+@enduml

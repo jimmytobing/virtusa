@@ -1,0 +1,22 @@
+@startuml
+left to right direction
+state "Submitted" as Submitted
+state "Ineligible" as Ineligible
+state "Pending Proofing" as Proofing
+state "Scheduled" as Scheduled
+state "Active Support" as Active
+state "Completed" as Completed
+state "Exception" as Exception
+[*] --> Submitted
+Submitted --> PendingProofing : existing phone
+PendingProofing --> Ineligible : rejected / failed validation
+Submitted --> Ineligible : income >= threshold
+PendingProofing --> Scheduled : approved
+Submitted --> Scheduled : new eligible
+Scheduled --> Active : first row due
+Active --> Active : option change accepted
+Active --> Exception : due-date issue
+Exception --> Active : remedied
+Active --> Completed : all rows disbursed
+Scheduled --> Completed : zero future rows only by authorized correction
+@enduml

@@ -1,0 +1,62 @@
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+
+actor "Grant Applicant" as Applicant
+actor "Grant Administrator" as Admin
+rectangle "Experience Cloud" {
+  [grantApplicationForm LWC] as LWC
+}
+rectangle "Apex" {
+  [GrantApplicationController\n(without sharing)] as Controller
+  [GrantExceptionService] as Messages
+}
+rectangle "Flow" {
+  [Auto_submitApplication] as Submit
+  [Auto_getActiveSupportOptions] as GetOptions
+  [Auto_getMessage] as GetMessage
+  [Tgr Create Contact Async] as CreateTrigger
+  [Tgr Update Contact Async] as UpdateTrigger
+  [Auto_validateEligibility] as Eligibility
+  [Auto_recalculateForApplications] as Recalculate
+  [Tgr OnUpsert ContactBulk] as BulkTrigger
+  [Auto_processContactBulk] as BulkProcess
+}
+database "Account [hdbsf]" as Account
+database "Contact" as Contact
+database "Support_Option__c" as Option
+database "Grant_Disbursement__c" as Disb
+database "ContactBulk__c" as Bulk
+database "Grant_Message__c" as Message
+database "Grant_Setup__mdt" as Mdt
+
+Applicant -[#red]> LWC
+LWC -[#red]-> Controller
+Controller -[#red]-> Submit
+Submit -[#red]-> Contact
+Contact -[#red].> UpdateTrigger
+UpdateTrigger -[#red]-> Eligibility
+Eligibility -> Mdt
+
+Controller --> GetOptions
+GetOptions --> Option
+
+LWC --> Messages
+Messages --> GetMessage
+GetMessage --> Message
+
+Contact . Account
+
+Admin -[#blue]> Bulk : <<Data Loader>>
+Bulk -[#blue].> BulkTrigger
+BulkTrigger -[#blue]-> BulkProcess
+BulkProcess -[#blue]-> Submit
+Submit -[#blue]-> Contact
+Contact -[#blue].> CreateTrigger
+CreateTrigger -[#blue]-> Eligibility
+Eligibility -[#blue]-> Recalculate
+Recalculate -[#blue]> Disb
+
+
+
+@enduml

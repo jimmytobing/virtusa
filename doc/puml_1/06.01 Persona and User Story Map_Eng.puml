@@ -1,0 +1,21 @@
+@startuml
+left to right direction
+actor "Grant Applicant" as Applicant
+actor "Grant Administrator" as Admin
+rectangle "Grant Application" {
+  usecase "Submit required\nfinancial-support information" as Submit
+  usecase "Amend selected option\nusing same phone" as Amend
+  usecase "Receive safe validation\noutcome" as Outcome
+  usecase "Create a manual application" as Manual
+  usecase "Load and monitor CSV batch" as Bulk
+  usecase "Maintain active support options" as Options
+  usecase "Monitor schedules and exceptions" as Monitor
+}
+Applicant --> Submit
+Applicant --> Amend
+Applicant --> Outcome
+Admin --> Manual
+Admin --> Bulk
+Admin --> Options
+Admin --> Monitor
+@enduml

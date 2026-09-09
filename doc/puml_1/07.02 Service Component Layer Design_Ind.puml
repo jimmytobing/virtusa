@@ -1,0 +1,30 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide empty members
+class GrantSubmissionFacade <<Apex boundary>>
+class GrantSubmissionFlow <<Autolaunched Flow>>
+class InputValidationPolicy
+class ContactMatchService
+class GrantDisbursementService
+class GrantOptionRepository
+class ErrorMessageResolver
+class ContactBulkProcessor <<Async Flow>>
+class DueDateProcessor <<Scheduled Flow>>
+class "Contact" as Contact <<SObject>>
+class "Grant_Disbursement__c" as Disb <<SObject>>
+class "Support_Option__c" as Option <<SObject>>
+class "ContactBulk__c" as Bulk <<SObject>>
+GrantSubmissionFacade --> GrantSubmissionFlow
+ContactBulkProcessor --> GrantSubmissionFlow
+GrantSubmissionFlow --> InputValidationPolicy
+GrantSubmissionFlow --> ContactMatchService
+GrantSubmissionFlow --> GrantDisbursementService
+InputValidationPolicy --> ErrorMessageResolver
+GrantDisbursementService --> GrantOptionRepository
+ContactMatchService --> Contact
+GrantDisbursementService --> Contact
+GrantDisbursementService --> Disb
+GrantOptionRepository --> Option
+ContactBulkProcessor --> Bulk
+DueDateProcessor --> Disb
+@enduml

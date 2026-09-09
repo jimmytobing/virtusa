@@ -1,0 +1,37 @@
+@startuml
+hide methods
+entity "Support_Option__c" as Option {
+  * Name
+  --
+  Amount__c
+  Duration__c
+  Total__c
+  Active__c
+  Effective_From__c
+  Effective_To__c
+}
+entity "Grant_Setup__mdt" as Setup {
+  * DeveloperName
+  --
+  Income_Threshold__c
+  Phone_Pattern__c
+  Postal_Code_Pattern__c
+  Max_Retry__c
+}
+entity "Error_Message__mdt" as Message {
+  * DeveloperName
+  --
+  Error_Code__c
+  Locale__c
+  User_Message__c
+  Active__c
+}
+entity "Grant_Disbursement__c" as Disb {
+  Amount_to_be_disbursed__c
+  Disbursed_Date__c
+  Grant_is_disbursed__c
+}
+Option --> Disb : selected option snapshots
+Setup ..> Option : validates
+Setup ..> Message : controls
+@enduml

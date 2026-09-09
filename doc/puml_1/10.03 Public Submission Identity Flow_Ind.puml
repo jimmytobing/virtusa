@@ -1,0 +1,21 @@
+@startuml
+actor Applicant
+participant "Experience Cloud LWC" as LWC
+participant "GrantSubmissionFacade" as Facade
+participant "OTP provider\nTBD" as OTP
+database "Contact" as Contact
+Applicant -> LWC : Enter application
+LWC -> Facade : validate/submit DTO
+Facade -> Contact : private phone match
+alt no matching Contact
+  Facade --> LWC : continue new application
+else matching Contact
+  Facade -> OTP : send/verify challenge
+  OTP --> Facade : verified / rejected
+  alt verified
+    Facade --> LWC : continue amendment
+  else rejected
+    Facade --> LWC : safe non-disclosing outcome
+  end
+end
+@enduml

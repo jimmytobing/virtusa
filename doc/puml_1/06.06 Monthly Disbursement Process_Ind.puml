@@ -1,0 +1,14 @@
+@startuml
+start
+:Scheduled Flow finds Planned rows\nwith Disbursed Date <= today;
+if (Agency confirmation rule\nsatisfied?) then (yes)
+  :Set Grant is disbursed = true;
+  :Set status = Disbursed;
+  :Write audit timestamp/user;
+else (no)
+  :Set status = Exception;
+  :Create administrator work item;
+endif
+:Refresh Contact roll-ups\nand monitoring reports;
+stop
+@enduml

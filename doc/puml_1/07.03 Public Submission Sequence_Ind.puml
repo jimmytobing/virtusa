@@ -1,0 +1,23 @@
+@startuml
+actor Applicant
+participant LWC
+participant "GrantSubmissionFacade" as Facade
+participant "Proofing service\nconditional" as OTP
+participant "Submission Flow" as Flow
+participant "GrantDisbursementService" as Service
+database Salesforce
+Applicant -> LWC : Enter required fields
+LWC -> Facade : submit(request DTO)
+Facade -> Facade : validate allow-list / abuse controls
+alt existing phone
+  Facade -> OTP : verify possession
+  OTP --> Facade : verified / rejected
+end
+Facade -> Flow : accepted request
+Flow -> Service : validate, match, schedule/recalculate
+Service -> Salesforce : lock, validate, commit Contact + rows
+Salesforce --> Service : IDs / DML result
+Service --> Flow : outcome code
+Flow --> Facade : safe outcome
+Facade --> LWC : confirmation or safe message
+@enduml

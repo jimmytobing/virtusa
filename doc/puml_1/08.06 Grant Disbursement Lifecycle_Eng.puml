@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+state "Planned" as Planned
+state "Due" as Due
+state "Disbursed" as Disbursed
+state "Superseded" as Superseded
+state "Exception" as Exception
+state "Cancelled" as Cancelled
+[*] --> Planned
+Planned --> Due : Disbursed Date reached
+Due --> Disbursed : confirmation rule
+Due --> Exception : cannot confirm
+Exception --> Due : remediated
+Planned --> Superseded : allowed option change
+Planned --> Cancelled : authorized cancellation
+Disbursed --> [*]
+Superseded --> [*]
+Cancelled --> [*]
+@enduml

@@ -1,0 +1,18 @@
+@startuml
+left to right direction
+database "Application data" as App
+database "Schedule data" as Schedule
+database "Import/error data" as Ops
+component "Quality metrics\nvalidity, duplicate, failure rate" as Quality
+component "Allocation metrics\nplanned, disbursed, exceptions" as Allocation
+component "Configuration metrics\noption uptake/change outcomes" as Config
+component "Operations review" as Review
+App --> Quality
+Ops --> Quality
+Schedule --> Allocation
+App --> Config
+Schedule --> Config
+Quality --> Review
+Allocation --> Review
+Config --> Review
+@enduml

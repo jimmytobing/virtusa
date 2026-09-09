@@ -1,0 +1,33 @@
+@startuml
+skinparam componentStyle rectangle
+left to right direction
+package "User interfaces" {
+  [grantApplicationForm LWC] as LWC
+  [Admin workspace] as AdminUI
+  [Data Loader] as Loader
+}
+package "Application entry" {
+  [GrantSubmissionFacade] as Facade
+  [Grant intake Flow] as Flow
+  [ContactBulk processor] as Bulk
+}
+package "Domain logic" {
+  [Validation Policy] as Validation
+  [Contact Match] as Match
+  [Grant Schedule] as Schedule
+  [Message Resolver] as Message
+}
+database "Data and metadata" as Data
+LWC --> Facade
+AdminUI --> Flow
+Loader --> Bulk
+Facade --> Flow
+Bulk --> Flow
+Flow --> Validation
+Flow --> Match
+Flow --> Schedule
+Validation --> Message
+Match --> Data
+Schedule --> Data
+Message --> Data
+@enduml

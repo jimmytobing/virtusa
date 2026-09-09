@@ -1,0 +1,21 @@
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+actor "Grant Administrator" as Admin
+component "CSV file\none current row / phone" as CSV
+component "Data Loader / approved ETL" as Loader
+database "ContactBulk__c\nPending / Ready / Processed / Failed" as Stage
+component "After-commit bulk processor" as Processor
+component "Common submission service" as Service
+database "Contact + Grant Disbursement" as Core
+component "Import exception dashboard" as Dashboard
+Admin --> CSV
+CSV --> Loader
+Loader --> Stage : insert source fields
+Admin --> Stage : approve batch Ready
+Stage --> Processor
+Processor --> Service
+Service --> Core
+Stage --> Dashboard
+Core --> Dashboard
+@enduml

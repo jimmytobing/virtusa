@@ -1,0 +1,22 @@
+@startuml
+start
+:Receive correlated request;
+if (Outcome already terminal?) then (yes)
+  :Return stored safe outcome\nor skip staged row;
+  stop
+endif
+:Execute all-or-none policy;
+if (Committed?) then (yes)
+  :Persist success correlation\nand schedule totals;
+else (no)
+  :Roll back Contact/schedule;
+  if (Transient external fault?) then (yes)
+    :Increment bounded retry count;
+    :Retry after backoff;
+  else (no)
+    :Persist Failed / exception\nwith safe error code;
+  endif
+endif
+:Reconcile source count, terminal\nrow count, Contact links, and\nschedule row/amount totals;
+stop
+@enduml

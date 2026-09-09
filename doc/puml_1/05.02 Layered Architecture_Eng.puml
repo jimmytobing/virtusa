@@ -1,0 +1,41 @@
+@startuml
+skinparam componentStyle rectangle
+top to bottom direction
+package "Presentation" {
+  [Experience Cloud LWC] as UI
+  [Admin Guided Action] as AdminUI
+  [Data Loader CSV] as CSV
+}
+package "Entry and Orchestration" {
+  [Public Apex Facade] as Facade
+  [Autolaunched Submission Flow] as SubmitFlow
+  [Bulk Processor Flow] as BulkFlow
+  [Scheduled Flow] as DueFlow
+}
+package "Domain Services" {
+  [Input / Eligibility Policy] as Policy
+  [Contact Match Service] as Match
+  [Grant Schedule Service] as Schedule
+  [Error Message Resolver] as Errors
+}
+package "Persistence and Configuration" {
+  database "Contact and Grant Disbursement" as Core
+  database "Support Option, Message, Import Staging" as Config
+}
+UI --> Facade
+AdminUI --> SubmitFlow
+CSV --> BulkFlow
+Facade --> SubmitFlow
+SubmitFlow --> Policy
+SubmitFlow --> Match
+SubmitFlow --> Schedule
+BulkFlow --> Policy
+BulkFlow --> Match
+BulkFlow --> Schedule
+DueFlow --> Schedule
+Policy --> Errors
+Match --> Core
+Schedule --> Core
+Policy --> Config
+Errors --> Config
+@enduml

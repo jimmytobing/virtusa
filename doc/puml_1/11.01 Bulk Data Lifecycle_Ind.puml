@@ -1,0 +1,15 @@
+@startuml
+left to right direction
+database "Validated CSV source" as Source
+database "ContactBulk__c\nPending" as Pending
+database "ContactBulk__c\nReady" as Ready
+database "ContactBulk__c\nProcessed / Failed" as Terminal
+database "Contact and active schedule" as Core
+database "Archived batch evidence\npolicy TBD" as Archive
+Source --> Pending
+Pending --> Ready : operator review
+Ready --> Core : common policy
+Ready --> Terminal : outcome
+Terminal --> Archive : retention decision
+Core --> Archive : audit/archive decision
+@enduml

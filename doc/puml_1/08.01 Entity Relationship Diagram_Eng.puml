@@ -1,0 +1,67 @@
+@startuml
+hide methods
+hide circle
+left to right direction
+entity Account {
+  * Id
+  --
+  Name
+  OwnerId
+}
+entity Contact {
+  * Id
+  --
+  AccountId
+  FirstName
+  LastName
+  Phone
+  MailingPostalCode
+  Monthly_Income__c
+  Support_Option__c
+  Is_Eligible__c
+  Application_Status__c
+  TotalReceived__c
+  TotalUnreceived__c
+}
+entity "Support_Option__c" as Option {
+  * Id
+  --
+  Name
+  Amount__c
+  Duration__c
+  Total__c
+  Active__c
+}
+entity "Grant_Disbursement__c" as Disb {
+  * Id
+  --
+  Grant_Applicant__c
+  Amount_to_be_disbursed__c
+  Disbursed_Date__c
+  Grant_is_disbursed__c
+  Status__c
+  Sequence_Number__c
+  Option_Name_Snapshot__c
+}
+entity "ContactBulk__c" as Bulk {
+  * Id
+  --
+  ImportBatch__c
+  Phone__c
+  SupportOptionRaw__c
+  Status__c
+  Contact__c
+  ErrorMessage__c
+  CorrelationKey__c
+}
+entity "Error_Message__mdt" as Message {
+  Error_Code__c
+  User_Message__c
+}
+Account ||--o{ Contact : contains
+Contact ||--o{ Disb : applicant
+Option ||--o{ Contact : current selection
+Contact ||--o{ Bulk : resolved applicant
+Message ..> Bulk : message
+Message ..> Contact : validation
+@enduml

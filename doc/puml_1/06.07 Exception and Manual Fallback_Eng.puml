@@ -1,0 +1,17 @@
+@startuml
+start
+:Validation, proofing, option,\nor schedule operation fails;
+:Classify stable error code;
+if (Public caller?) then (yes)
+  :Return configured safe message\nand correlation reference;
+else (no)
+  :Mark staged row Failed or\nshow admin guidance;
+endif
+if (Retryable platform failure?) then (yes)
+  :Persist restricted error event;\nqueue bounded retry;
+else (no)
+  :Create admin exception work item;
+endif
+:No partial schedule is committed;
+stop
+@enduml

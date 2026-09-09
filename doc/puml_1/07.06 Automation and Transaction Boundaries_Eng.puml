@@ -1,0 +1,25 @@
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+rectangle "Synchronous transaction" {
+  [Public/manual request] as Request
+  [Validate and authorize] as Validate
+  [Contact lock and upsert] as Upsert
+  [Schedule create/recalculate] as Schedule
+  [Commit or roll back] as Commit
+}
+rectangle "After commit / asynchronous" {
+  [Ready ContactBulk row] as Ready
+  [One-row processor] as Processor
+  [Row status and alert] as RowStatus
+  [Due-date job] as Due
+}
+Request --> Validate
+Validate --> Upsert
+Upsert --> Schedule
+Schedule --> Commit
+Ready --> Processor
+Processor --> Request : same policy
+Processor --> RowStatus
+Due --> Schedule
+@enduml

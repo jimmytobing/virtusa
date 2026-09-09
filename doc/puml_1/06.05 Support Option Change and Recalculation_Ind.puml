@@ -1,0 +1,19 @@
+@startuml
+start
+:Lock Contact and read\npaid/unpaid disbursements;
+if (Option changed?) then (yes)
+  :Read active new option;
+  :Calculate paid amount P,\npaid month count M, new total T,\nand duration D;
+  if (P < T and M < D?) then (yes)
+    :Delete or supersede only\nunpaid future rows;
+    :R = T - P;\nN = D - M;\namount = R / N;
+    :Create N dated future rows\nwhose sum equals R;
+    :Update Contact option;
+  else (no)
+    :Reject without Contact or\nschedule change;
+  endif
+else (no)
+  :Update allowed Contact fields\nwithout schedule mutation;
+endif
+stop
+@enduml

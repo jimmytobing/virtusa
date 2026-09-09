@@ -1,0 +1,36 @@
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+
+package "Task 1 Requirements" {
+  [Public application LWC] as R1
+  [Required applicant fields] as R2
+  [Phone-based Contact upsert] as R3
+  [Income eligibility] as R4
+  [Monthly disbursement schedule] as R5
+  [Change support option] as R6
+  [Manual and CSV intake] as R7
+  [Configurable errors and options] as R8
+  [Production-quality Apex tests] as R9
+}
+package "Target Capabilities" {
+  [Experience Cloud LWC] as C1
+  [Submission API and validation] as C2
+  [Contact and duplicate policy] as C3
+  [Eligibility and schedule service] as C4
+  [Grant Disbursement__c] as C5
+  [Recalculation and lifecycle controls] as C6
+  [ContactBulk__c staging] as C7
+  [Support Option and message configuration] as C8
+  [Automated test and deployment gates] as C9
+}
+R1 --> C1
+R2 --> C2
+R3 --> C3
+R4 --> C4
+R5 --> C5
+R6 --> C6
+R7 --> C7
+R8 --> C8
+R9 --> C9
+@enduml

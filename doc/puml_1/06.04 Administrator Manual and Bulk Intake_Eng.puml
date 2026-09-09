@@ -1,0 +1,20 @@
+@startuml
+start
+if (Input channel?) then (Manual)
+  :Administrator opens guided action;
+  :Submit common request;
+else (CSV)
+  :Data Loader inserts\nContactBulk__c rows as Pending;
+  :Administrator validates batch\nand marks Ready;
+  :Async processor reads one row;
+  :Translate option label to\nactive option key;
+endif
+:Invoke common submission policy;
+if (Succeeded?) then (yes)
+  :Link Contact and mark\nrow Processed when staged;
+else (no)
+  :Do not partially mutate schedule;
+  :Mark row Failed with\nconfigured safe message;
+endif
+stop
+@enduml
